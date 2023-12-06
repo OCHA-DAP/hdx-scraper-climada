@@ -4,7 +4,7 @@
 
 This code is designed to take data from the Climada API for the 23 Data Grid countries on HDX,
 aggregate it over subnational regions (admin1) where appropriate, export it to CSV and then publish
-it to HDX>
+it to HDX.
 
 Getting started:
 https://github.com/CLIMADA-project/climada_python/blob/main/doc/tutorial/climada_util_api_client.ipynb
