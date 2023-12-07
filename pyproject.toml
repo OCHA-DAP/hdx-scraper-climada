@@ -1,0 +1,39 @@
+[project]
+name = "hdx_scraper_climada"
+version = "2023.12.1"
+description = "HDX Scraper for Climada"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+  {email = "ian.hopkinson@un.org"},
+  {name = "Ian Hopkinson"}
+]
+
+dependencies = [
+    "pandas",
+    "GDAL",
+    "hdx-python-api",
+    "hdx-python-country",
+    "pytest",
+    "pytest-cov",
+  "black==23.10.0",
+  "flake8>=6.1.0",
+  "pylint>=3.0.1"
+]
+
+[build-system]
+requires = ["setuptools >= 61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+# A regex preceded with ^/ will apply only to files and directories
+# in the root of the project.
+^/foo.py  # exclude a file named foo.py in the root of the project (in addition to the defaults)
+'''
