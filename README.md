@@ -35,7 +35,15 @@ sourced from
 pip install climada
 ```
 
+The `.from_shape_and_countries` method for `litpop` (at least) requires the following file to be downloaded:
 
+http://sedac.ciesin.columbia.edu/downloads/data/gpw-v4/gpw-v4-population-count-rev11/gpw-v4-population-count-rev11_2020_30_sec_tif.zip
+
+to
+
+~\climada\data\gpw-v4-population-count-rev11_2020_30_sec_tif\gpw_v4_population_count_rev11_2020_30_sec.tif
+
+This requires an account to be created for the download.
 
 
 

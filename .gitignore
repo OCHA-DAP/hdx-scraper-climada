@@ -2,3 +2,9 @@
 venv/
 
 src/hdx_scraper_climada.egg-info/
+
+src/hdx_scraper_climada/output/
+
+bin/
+
+*.pbix
