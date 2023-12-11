@@ -2,7 +2,6 @@
 # encoding: utf-8
 
 import os
-import json
 
 from collections import OrderedDict
 from climada.util.api_client import Client
@@ -10,16 +9,23 @@ import pandas as pd
 import climada.util.coordinates as u_coord
 from climada.entity import LitPop
 
+from hdx.location.country import Country
+
+from hdx_scraper_climada.utilities import write_dictionary
 
 CLIENT = Client()
 
-HXL_TAGS = [
-    ("country_name", "#country"),
-    ("region_name", "#adm1+name"),
-    ("latitude", "#geo+lat"),
-    ("longitude", "#geo+lon"),
-    ("value", "#indicator+num"),
-]
+HXL_TAGS = OrderedDict(
+    [
+        ("country_name", "#country"),
+        ("region_name", "#adm1+name"),
+        ("latitude", "#geo+lat"),
+        ("longitude", "#geo+lon"),
+        ("aggregation", ""),
+        ("indicator", "#indicator+name"),
+        ("value", "#indicator+num"),
+    ]
+)
 
 
 def print_overview_information(data_type="litpop"):
@@ -52,8 +58,8 @@ def print_overview_information(data_type="litpop"):
     print(f"Available for {len(litpop_default['country_iso3alpha'])} countries", flush=True)
 
 
-def export_litpop_data_to_csv(country: str = "Haiti"):
-    country_iso3a = "HTI"
+def export_litpop_data_to_csv(country: str = "Haiti", indicator: str = "litpop"):
+    country_iso3a = Country.get_iso3_country_code(country)
     admin1_info, admin1_shapes = u_coord.get_admin1_info(country_iso3a)
 
     admin1_info = admin1_info[country_iso3a]
@@ -70,6 +76,8 @@ def export_litpop_data_to_csv(country: str = "Haiti"):
         admin1_litpop_gdf = admin1_litpop.gdf
         admin1_litpop_gdf["region_name"] = len(admin1_litpop_gdf) * [admin1_names[i]]
         admin1_litpop_gdf["country_name"] = len(admin1_litpop_gdf) * [country]
+        admin1_litpop_gdf["indicator"] = len(admin1_litpop_gdf) * [indicator]
+        admin1_litpop_gdf["aggregation"] = len(admin1_litpop_gdf) * ["none"]
 
         # haiti_litpop = haiti_litpop.append(admin1_litpop_gdf)
         print(admin1_litpop_gdf[0:10], flush=True)
@@ -78,7 +86,7 @@ def export_litpop_data_to_csv(country: str = "Haiti"):
 
     haiti_litpop_gdf = pd.concat(haiti_dataframes, axis=0, ignore_index=True)
 
-    print(haiti_litpop_gdf.columns.to_list(), flush=True)
+    # print(haiti_litpop_gdf.columns.to_list(), flush=True)
 
     # Drop "df index", Index, geometry, impf_ columns
     haiti_litpop_gdf.drop(["index", "region_id", "geometry", "impf_"], axis=1)
@@ -86,20 +94,47 @@ def export_litpop_data_to_csv(country: str = "Haiti"):
     # Reorder to:
     # region_name, region_id, latitude, longitude, value
     haiti_litpop_gdf = haiti_litpop_gdf[
-        ["country_name", "region_name", "latitude", "longitude", "value"]
+        [
+            "country_name",
+            "region_name",
+            "latitude",
+            "longitude",
+            "aggregation",
+            "indicator",
+            "value",
+        ]
     ]
 
-    hxl_tag_row = pd.DataFrame([OrderedDict(HXL_TAGS)])
+    # hxl_tag_row = pd.DataFrame([HXL_TAGS])
 
-    haiti_litpop_gdf = pd.concat([hxl_tag_row, haiti_litpop_gdf], axis=0, ignore_index=True)
+    # haiti_litpop_gdf = pd.concat([hxl_tag_row, haiti_litpop_gdf], axis=0, ignore_index=True)
 
     haiti_litpop_gdf.to_csv(
-        os.path.join(os.path.dirname(__file__), "output", f"{country}-admin1-litpop.csv"),
+        os.path.join(os.path.dirname(__file__), "output", "litpop", f"{country}-admin1-litpop.csv"),
         index=False,
     )
 
+    summary_rows = []
     for df in haiti_dataframes:
-        print(f"{df['region_name'][0]:<20}, {df.value.sum():0.0f}", flush=True)
+        row = HXL_TAGS.copy()
+        row["country_name"] = country
+        row["region_name"] = df["region_name"][0]
+        row["latitude"] = round(df["latitude"].mean(), 4)
+        row["longitude"] = round(df["latitude"].mean(), 4)
+        row["aggregation"] = "sum"
+        row["indicator"] = indicator
+        row["value"] = df["value"].sum()
+
+        print(f"{df['region_name'][0]:<20}, {df['value'].sum():0.0f}", flush=True)
+        summary_rows.append(row)
+
+    status = write_dictionary(
+        os.path.join(
+            os.path.dirname(__file__), "output", "litpop", f"{country}-country-litpop.csv"
+        ),
+        summary_rows,
+    )
+    print(status, flush=True)
 
     # litpop = CLIENT.get_litpop(country=country)
     # # print(dir(litpop), flush=True)
@@ -109,4 +144,5 @@ def export_litpop_data_to_csv(country: str = "Haiti"):
 
 if __name__ == "__main__":
     # print_overview_information(data_type="litpop")
-    export_litpop_data_to_csv(country="Haiti")
+    # export_litpop_data_to_csv(country="Haiti")
+    export_litpop_data_to_csv(country="Chad")
