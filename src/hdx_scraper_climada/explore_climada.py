@@ -3,6 +3,8 @@
 
 import os
 import json
+
+from collections import OrderedDict
 from climada.util.api_client import Client
 import pandas as pd
 import climada.util.coordinates as u_coord
@@ -10,6 +12,14 @@ from climada.entity import LitPop
 
 
 CLIENT = Client()
+
+HXL_TAGS = [
+    ("country_name", "#country"),
+    ("region_name", "#adm1+name"),
+    ("latitude", "#geo+lat"),
+    ("longitude", "#geo+lon"),
+    ("value", "#indicator+num"),
+]
 
 
 def print_overview_information(data_type="litpop"):
@@ -59,6 +69,7 @@ def export_litpop_data_to_csv(country: str = "Haiti"):
         admin1_litpop = LitPop.from_shape_and_countries(admin1_shape, country, res_arcsec=150)
         admin1_litpop_gdf = admin1_litpop.gdf
         admin1_litpop_gdf["region_name"] = len(admin1_litpop_gdf) * [admin1_names[i]]
+        admin1_litpop_gdf["country_name"] = len(admin1_litpop_gdf) * [country]
 
         # haiti_litpop = haiti_litpop.append(admin1_litpop_gdf)
         print(admin1_litpop_gdf[0:10], flush=True)
@@ -67,12 +78,28 @@ def export_litpop_data_to_csv(country: str = "Haiti"):
 
     haiti_litpop_gdf = pd.concat(haiti_dataframes, axis=0, ignore_index=True)
 
-    for df in haiti_dataframes:
-        print(f"{df['region_name'][0]:<20}, {df.value.mean():0.0f}", flush=True)
+    print(haiti_litpop_gdf.columns.to_list(), flush=True)
+
+    # Drop "df index", Index, geometry, impf_ columns
+    haiti_litpop_gdf.drop(["index", "region_id", "geometry", "impf_"], axis=1)
+
+    # Reorder to:
+    # region_name, region_id, latitude, longitude, value
+    haiti_litpop_gdf = haiti_litpop_gdf[
+        ["country_name", "region_name", "latitude", "longitude", "value"]
+    ]
+
+    hxl_tag_row = pd.DataFrame([OrderedDict(HXL_TAGS)])
+
+    haiti_litpop_gdf = pd.concat([hxl_tag_row, haiti_litpop_gdf], axis=0, ignore_index=True)
 
     haiti_litpop_gdf.to_csv(
-        os.path.join(os.path.dirname(__file__), "output", f"{country}-admin1-litpop.csv")
+        os.path.join(os.path.dirname(__file__), "output", f"{country}-admin1-litpop.csv"),
+        index=False,
     )
+
+    for df in haiti_dataframes:
+        print(f"{df['region_name'][0]:<20}, {df.value.sum():0.0f}", flush=True)
 
     # litpop = CLIENT.get_litpop(country=country)
     # # print(dir(litpop), flush=True)
