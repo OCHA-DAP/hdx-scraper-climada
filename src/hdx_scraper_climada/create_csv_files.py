@@ -19,6 +19,7 @@ import climada.util.coordinates as u_coord
 from climada.entity import LitPop
 
 from hdx_scraper_climada.utilities import write_dictionary
+from hdx_scraper_climada.download_admin1_geometry import get_admin1_shapes_from_hdx
 
 CLIENT = Client()
 
@@ -89,7 +90,9 @@ def export_litpop_data_to_csv(country: str = "Haiti", indicator: str = "litpop")
     # )
 
     # Get admin1 dataset
-    admin1_names, admin1_shapes = get_admin1_shapes_from_natural_earth(country_iso3a)
+    # admin1_names, admin1_shapes = get_admin1_shapes_from_natural_earth(country_iso3a)
+    admin1_names, admin1_shapes = get_admin1_shapes_from_hdx(country_iso3a)
+
     if admin1_names is None and admin1_shapes is None:
         return
 
@@ -191,16 +194,6 @@ def get_admin1_shapes_from_natural_earth(country_iso3a):
     admin1_names = [record["name"] for record in admin1_info]
 
     return admin1_names, admin1_shapes
-
-
-def download_hdx_admin1_boundaries():
-    boundary_dataset = Dataset.read_from_hdx("unmap-international-boundaries-geojson")
-    boundary_resources = boundary_dataset.get_resources()
-    subn_resources = []
-    for resource in boundary_resources:
-        if "polbnda_adm" in resource["name"]:
-            _, resource_file = resource.download(folder=TEMP_FOLDER)
-            subn_resources.append(resource_file)
 
 
 if __name__ == "__main__":
