@@ -8,3 +8,5 @@ src/hdx_scraper_climada/output/
 bin/
 
 *.pbix
+
+src/hdx_scraper_climada/admin1_geometry/

@@ -34,8 +34,6 @@ HXL_TAGS = OrderedDict(
     ]
 )
 
-TEMP_FOLDER = os.path.join(os.path.dirname(__file__), "temp")
-
 
 def print_overview_information(data_type="litpop"):
     data_types = CLIENT.list_data_type_infos()
