@@ -7,6 +7,8 @@ import sys
 
 import geopandas
 
+import climada.util.coordinates as u_coord
+
 from hdx.data.dataset import Dataset
 from hdx.utilities.easy_logging import setup_logging
 from hdx.api.configuration import Configuration
@@ -62,6 +64,21 @@ def get_admin1_shapes_from_hdx(country_iso3a):
         admin1_shapes.append(admin1_shape_geoseries)
 
     assert len(admin1_names) == len(admin1_shapes)
+    return admin1_names, admin1_shapes
+
+
+def get_admin1_shapes_from_natural_earth(country_iso3a):
+    try:
+        admin1_info, admin1_shapes = u_coord.get_admin1_info(country_iso3a)
+        admin1_info = admin1_info[country_iso3a]
+        admin1_shapes = admin1_shapes[country_iso3a]
+
+        admin1_names = [record["name"] for record in admin1_info]
+    except LookupError as error:
+        print(error, flush=True)
+        admin1_names = []
+        admin1_shapes = []
+
     return admin1_names, admin1_shapes
 
 

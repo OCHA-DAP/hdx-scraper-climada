@@ -14,11 +14,13 @@ from hdx.location.country import Country
 
 from climada.util.api_client import Client
 
-import climada.util.coordinates as u_coord
 from climada.entity import LitPop
 
 from hdx_scraper_climada.utilities import write_dictionary
-from hdx_scraper_climada.download_admin1_geometry import get_admin1_shapes_from_hdx
+from hdx_scraper_climada.download_admin1_geometry import (
+    get_admin1_shapes_from_hdx,
+    get_admin1_shapes_from_natural_earth,
+)
 
 CLIENT = Client()
 
@@ -65,12 +67,14 @@ def print_overview_information(data_type="litpop"):
     print(f"Available for {len(litpop_default['country_iso3alpha'])} countries", flush=True)
 
 
-def export_litpop_data_to_csv(country: str = "Haiti", indicator: str = "litpop"):
+def export_indicator_data_to_csv(
+    country: str = "Haiti", indicator: str = "litpop", use_hdx_admin1: bool = True
+):
     country_iso3a = Country.get_iso3_country_code(country)
     t0 = time.time()
     print(f"\nProcessing {country}", flush=True)
     output_file_path = os.path.join(
-        os.path.dirname(__file__), "output", "litpop", f"{country}-admin1-litpop.csv"
+        os.path.dirname(__file__), "output", f"{indicator}", f"{country}-admin1-{indicator}.csv"
     )
 
     if os.path.exists(output_file_path):
@@ -79,23 +83,17 @@ def export_litpop_data_to_csv(country: str = "Haiti", indicator: str = "litpop")
         )
         return
 
-    # Get whole country dataset
-    # whole_country = LitPop.from_countries(country_iso3a)
-    # whole_country.gdf.to_csv(
-    #     os.path.join(
-    #         os.path.dirname(__file__), "output", "litpop", f"{country}-country-litpop.csv"
-    #     ),
-    #     index=False,
-    # )
-
     # Get admin1 dataset
-    # admin1_names, admin1_shapes = get_admin1_shapes_from_natural_earth(country_iso3a)
-    admin1_names, admin1_shapes = get_admin1_shapes_from_hdx(country_iso3a)
+    if use_hdx_admin1:
+        admin1_names, admin1_shapes = get_admin1_shapes_from_hdx(country_iso3a)
+    else:
+        admin1_names, admin1_shapes = get_admin1_shapes_from_natural_earth(country_iso3a)
 
-    if admin1_names is None and admin1_shapes is None:
+    if len(admin1_names) == 0 and len(admin1_shapes) == 0:
+        print(f"No Admin1 areas found for {country}", flush=True)
         return
 
-    print("Admin1 areas in this country:")
+    print("Admin1 areas in {country}:")
     print(admin1_names, flush=True)
 
     country_dataframes = []
@@ -140,12 +138,24 @@ def export_litpop_data_to_csv(country: str = "Haiti", indicator: str = "litpop")
     # hxl_tag_row = pd.DataFrame([HXL_TAGS])
     # country_litpop_gdf = pd.concat([hxl_tag_row, country_litpop_gdf], axis=0, ignore_index=True)
 
-    n_lines = len(country_litpop_gdf)
     country_litpop_gdf.to_csv(
         output_file_path,
         index=False,
     )
 
+    # Make summary file
+    n_lines = len(country_litpop_gdf)
+    status = write_summary_data(country_dataframes, country, indicator)
+    print(status, flush=True)
+
+    print(
+        f"Processing for {country} took {time.time()-t0:0.0f} seconds "
+        f"and generated {n_lines} lines of output",
+        flush=True,
+    )
+
+
+def write_summary_data(country_dataframes: list, country: str, indicator: str) -> str:
     summary_rows = []
     for df in country_dataframes:
         if len(df) == 0:
@@ -164,35 +174,13 @@ def export_litpop_data_to_csv(country: str = "Haiti", indicator: str = "litpop")
         summary_rows.append(row)
 
     status = write_dictionary(
-        os.path.join(os.path.dirname(__file__), "output", "litpop", "admin1-summaries-litpop.csv"),
+        os.path.join(
+            os.path.dirname(__file__), "output", "{indicator}", "admin1-summaries-{indicator}.csv"
+        ),
         summary_rows,
         append=True,
     )
-    print(status, flush=True)
-
-    # litpop = CLIENT.get_litpop(country=country)
-    # # print(dir(litpop), flush=True)
-    # print(litpop.gdf, flush=True)
-    # litpop.gdf.to_csv(os.path.join(os.path.dirname(__file__), "output", "litpop.csv"))
-    print(
-        f"Processing for {country} took {time.time()-t0:0.0f} seconds and generated {n_lines} lines of output",
-        flush=True,
-    )
-
-
-def get_admin1_shapes_from_natural_earth(country_iso3a):
-    try:
-        admin1_info, admin1_shapes = u_coord.get_admin1_info(country_iso3a)
-    except LookupError as error:
-        print(error, flush=True)
-        return None, None
-
-    admin1_info = admin1_info[country_iso3a]
-    admin1_shapes = admin1_shapes[country_iso3a]
-
-    admin1_names = [record["name"] for record in admin1_info]
-
-    return admin1_names, admin1_shapes
+    return status
 
 
 if __name__ == "__main__":
@@ -202,12 +190,9 @@ if __name__ == "__main__":
     print("============================", flush=True)
     print(f"Timestamp: {datetime.datetime.now().isoformat()}", flush=True)
     T0 = time.time()
-    with open(
-        os.path.join(os.path.dirname(__file__), "metadata", "countries.csv"), encoding="utf-8"
-    ) as COUNTRIES_FILE:
-        ROWS = csv.DictReader(COUNTRIES_FILE)
-        for ROW in ROWS:
-            export_litpop_data_to_csv(country=ROW["country_name"])
+    ROWS = read_countries()
+    for ROW in ROWS:
+        export_indicator_data_to_csv(country=ROW["country_name"])
 
     print(f"Processed all countries in {time.time()-T0:0.0f} seconds")
     print(f"Timestamp: {datetime.datetime.now().isoformat()}", flush=True)

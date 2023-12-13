@@ -9,6 +9,25 @@ it to HDX.
 Getting started:
 https://github.com/CLIMADA-project/climada_python/blob/main/doc/tutorial/climada_util_api_client.ipynb
 
+The data can be explored using this browser:
+
+https://climada.ethz.ch/datasets/
+
+
+## Datasets
+
+### LitPop
+
+There is a nice explanation of the LitPop data at the beginning of the tutorial notebook:
+
+```
+[doc/tutorial/climada_entity_LitPop.ipynb](https://github.com/CLIMADA-project/climada_python/blob/main/doc/tutorial/climada_entity_LitPop.ipynb)
+```
+
+### Crop production
+
+
+
 ## Development environment
 Create a virtual environment (assuming Windows for the `activate` command):
 
@@ -44,6 +63,14 @@ to
 ~\climada\data\gpw-v4-population-count-rev11_2020_30_sec_tif\gpw_v4_population_count_rev11_2020_30_sec.tif
 
 This requires an account to be created for the download.
+
+To use the UNMAP boundaries the LitPop.from_shape_and_countries needs to be monkey patched. In a virtual environment this file needs to be
+changed at line 424 replacing `gdf = gdf.append(...` with `gdf = gdf._append(...`
+
+```
+venv\Lib\site-packages\climada\entity\exposures\litpop\litpop.py
+```
+
 
 
 
