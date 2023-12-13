@@ -43,5 +43,5 @@ def test_get_admin1_shapes_from_hdx_no_data_case():
 
     admin1_names, admin1_shapes = get_admin1_shapes_from_hdx(country_isoa3)
 
-    assert admin1_names is None
-    assert admin1_shapes is None
+    assert len(admin1_names) == 0
+    assert len(admin1_shapes) == 0
