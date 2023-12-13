@@ -78,5 +78,3 @@ if __name__ == "__main__":
     print(f"Admin1 boundaries for {COUNTRY_NAME} contain {len(ADMIN1_NAMES)} areas named:")
     for ADMIN1_NAME in ADMIN1_NAMES:
         print(ADMIN1_NAME, flush=True)
-
-    print(dir(ADMIN1_SHAPES), flush=True)
