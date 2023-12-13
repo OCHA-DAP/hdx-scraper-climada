@@ -10,7 +10,6 @@ from collections import OrderedDict
 
 import pandas as pd
 
-from hdx.data.dataset import Dataset
 from hdx.location.country import Country
 
 from climada.util.api_client import Client
