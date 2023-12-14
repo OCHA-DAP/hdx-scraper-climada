@@ -60,7 +60,9 @@ def create_datasets_in_hdx(dataset_name: str):
                 resource = Resource(
                     {
                         "name": os.path.basename(resource_file_path),
-                        "description": attributes["description"].format(country=country_str),
+                        "description": attributes["description"].format(
+                            country=country["country_name"]
+                        ),
                         "format": attributes["file_format"],
                     }
                 )

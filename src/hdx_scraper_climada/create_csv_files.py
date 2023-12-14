@@ -114,8 +114,6 @@ def export_indicator_data_to_csv(
 
     country_litpop_gdf = pd.concat(country_dataframes, axis=0, ignore_index=True)
 
-    # print(country_litpop_gdf.columns.to_list(), flush=True)
-
     # Drop "df index", Index, geometry, impf_ columns
     country_litpop_gdf.drop(["index", "region_id", "geometry", "impf_"], axis=1)
 
@@ -134,8 +132,8 @@ def export_indicator_data_to_csv(
     ]
 
     # Skip HXL line for now since it messes up visualisation in PowerBI.
-    # hxl_tag_row = pd.DataFrame([HXL_TAGS])
-    # country_litpop_gdf = pd.concat([hxl_tag_row, country_litpop_gdf], axis=0, ignore_index=True)
+    hxl_tag_row = pd.DataFrame([HXL_TAGS])
+    country_litpop_gdf = pd.concat([hxl_tag_row, country_litpop_gdf], axis=0, ignore_index=True)
 
     country_litpop_gdf.to_csv(
         output_file_path,
@@ -155,7 +153,12 @@ def export_indicator_data_to_csv(
 
 
 def write_summary_data(country_dataframes: list, country: str, indicator: str) -> str:
+    output_summary_path = os.path.join(
+        os.path.dirname(__file__), "output", f"{indicator}", f"admin1-summaries-{indicator}.csv"
+    )
     summary_rows = []
+    if not os.path.exists(output_summary_path):
+        summary_rows.append(HXL_TAGS)
     for df in country_dataframes:
         if len(df) == 0:
             print("Dataframe length is zero", flush=True)
@@ -173,9 +176,7 @@ def write_summary_data(country_dataframes: list, country: str, indicator: str) -
         summary_rows.append(row)
 
     status = write_dictionary(
-        os.path.join(
-            os.path.dirname(__file__), "output", "{indicator}", "admin1-summaries-{indicator}.csv"
-        ),
+        output_summary_path,
         summary_rows,
         append=True,
     )
