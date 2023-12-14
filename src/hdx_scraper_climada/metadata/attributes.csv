@@ -1,0 +1,13 @@
+dataset_name,timestamp,attribute,value,secondary_value
+climada-litpop-dataset,2023-12-13T18:40:20.097715,entity_type,"dataset",
+climada-litpop-dataset,2023-12-13T18:40:20.097715,dataset_template,"climada-litpop.json",
+climada-litpop-dataset,2023-12-13T18:40:20.097715,resource,"climada-litpop-summary",
+climada-litpop-dataset,2023-12-13T18:40:20.097715,resource,"climada-litpop-{country}",
+climada-litpop-summary,2023-12-13T18:40:20.097715,entity_type,"resource",
+climada-litpop-summary,2023-12-13T18:40:20.097715,description,"Summed LitPop data at admin1 level for the HRP countries",
+climada-litpop-summary,2023-12-13T18:40:20.097715,filename_template,"admin1-summaries-litpop.csv",
+climada-litpop-summary,2023-12-13T18:40:20.097715,file_format,"CSV",
+climada-litpop-{country},2023-12-13T18:40:20.097715,entity_type,"resource",
+climada-litpop-{country},2023-12-13T18:40:20.097715,description,"Gridded LitPop data for {country} with admin1 indicator",
+climada-litpop-{country},2023-12-13T18:40:20.097715,filename_template,"{country}-admin1-litpop.csv",
+climada-litpop-{country},2023-12-13T18:40:20.097715,file_format,"CSV",

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import csv
 import datetime
 import os
 import time
@@ -16,7 +15,7 @@ from climada.util.api_client import Client
 
 from climada.entity import LitPop
 
-from hdx_scraper_climada.utilities import write_dictionary
+from hdx_scraper_climada.utilities import write_dictionary, read_countries
 from hdx_scraper_climada.download_admin1_geometry import (
     get_admin1_shapes_from_hdx,
     get_admin1_shapes_from_natural_earth,
@@ -73,8 +72,9 @@ def export_indicator_data_to_csv(
     country_iso3a = Country.get_iso3_country_code(country)
     t0 = time.time()
     print(f"\nProcessing {country}", flush=True)
+    country_str = country.lower().replace(" ", "-")
     output_file_path = os.path.join(
-        os.path.dirname(__file__), "output", f"{indicator}", f"{country}-admin1-{indicator}.csv"
+        os.path.dirname(__file__), "output", f"{indicator}", f"{country_str}-admin1-{indicator}.csv"
     )
 
     if os.path.exists(output_file_path):
@@ -109,7 +109,6 @@ def export_indicator_data_to_csv(
         admin1_litpop_gdf["indicator"] = len(admin1_litpop_gdf) * [indicator]
         admin1_litpop_gdf["aggregation"] = len(admin1_litpop_gdf) * ["none"]
 
-        # print(admin1_litpop_gdf[0:10], flush=True)
         print(f"Wrote {len(admin1_litpop_gdf)} lines", flush=True)
         country_dataframes.append(admin1_litpop_gdf)
 

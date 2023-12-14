@@ -6,6 +6,8 @@ import os
 
 from typing import Any
 
+ATTRIBUTES_FILEPATH = os.path.join(os.path.dirname(__file__), "metadata", "attributes.csv")
+
 
 def write_dictionary(
     output_filepath: str, output_rows: list[dict[str, Any]], append: bool = True
@@ -41,3 +43,31 @@ def _make_write_dictionary_status(append: bool, filepath: str, newfile: bool) ->
     else:
         status = f"New file {filepath} is being created"
     return status
+
+
+def read_attributes(dataset_name: str) -> dict:
+    with open(ATTRIBUTES_FILEPATH, "r", encoding="UTF-8") as attributes_filehandle:
+        attribute_rows = csv.DictReader(attributes_filehandle)
+
+        attributes = {}
+        for row in attribute_rows:
+            if row["dataset_name"] != dataset_name:
+                continue
+            if row["attribute"] == "resource":
+                if "resource" not in attributes:
+                    attributes["resource"] = [row["value"]]
+                else:
+                    attributes["resource"].append(row["value"])
+            else:
+                attributes[row["attribute"]] = row["value"]
+
+    return attributes
+
+
+def read_countries():
+    with open(
+        os.path.join(os.path.dirname(__file__), "metadata", "countries.csv"), encoding="utf-8"
+    ) as countries_file:
+        rows = list(csv.DictReader(countries_file))
+
+    return rows
