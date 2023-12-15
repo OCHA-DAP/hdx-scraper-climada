@@ -71,6 +71,11 @@ changed at line 424 replacing `gdf = gdf.append(...` with `gdf = gdf._append(...
 venv\Lib\site-packages\climada\entity\exposures\litpop\litpop.py
 ```
 
+We use `nbstripout` to remove output cells from Jupyter Notebooks prior, this needs to be installed per repository with:
+
+```
+nbstripout --install
+```
 
 
 
