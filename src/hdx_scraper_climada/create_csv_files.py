@@ -184,8 +184,6 @@ def write_summary_data(country_dataframes: list, country: str, indicator: str) -
 
 
 if __name__ == "__main__":
-    # print_overview_information(data_type="litpop")
-    # export_litpop_data_to_csv(country="Haiti")
     print("Generating Climada csv files", flush=True)
     print("============================", flush=True)
     print(f"Timestamp: {datetime.datetime.now().isoformat()}", flush=True)
