@@ -19,7 +19,7 @@ LOGGER = logging.getLogger(__name__)
 Configuration.create(
     user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
     user_agent_lookup="hdx-scraper-climada",
-    hdx_site="prod",
+    hdx_site="stage",
 )
 
 INDICATOR_DIRECTORY = os.path.join(os.path.dirname(__file__), "output", "litpop")
