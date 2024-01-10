@@ -19,6 +19,7 @@ LOGGER = logging.getLogger(__name__)
 Configuration.create(
     user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
     user_agent_lookup="hdx-scraper-climada",
+    hdx_site="prod",
 )
 
 INDICATOR_DIRECTORY = os.path.join(os.path.dirname(__file__), "output", "litpop")
@@ -53,6 +54,9 @@ def create_datasets_in_hdx(dataset_name: str):
         attributes = read_attributes(resource_name)
         if "{country}" in resource_name:
             for country in countries_data:
+                if country["iso3alpha_country_code"] == "SYR":
+                    LOGGER.info("2024-01-10: Skipping Syria data whilst issue is addressed")
+                    continue
                 country_str = country["country_name"].lower().replace(" ", "-")
                 resource_file_path = os.path.join(
                     INDICATOR_DIRECTORY, attributes["filename_template"].format(country=country_str)
