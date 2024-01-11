@@ -12,7 +12,7 @@ authors = [
 dependencies = [
     "pandas",
     "GDAL",
-    "hdx-python-api",
+    "hdx-python-api>=6.2.1",
     "hdx-python-country",
     "pytest",
     "pytest-cov",

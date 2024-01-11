@@ -10,10 +10,13 @@ Getting started:
 https://github.com/CLIMADA-project/climada_python/blob/main/doc/tutorial/climada_util_api_client.ipynb
 
 The data can be explored using this browser:
-
 https://climada.ethz.ch/datasets/
 
+The maintainer for this dataset is set in the `climada-litpop.json` file to `emanuel-schmid-3262` and the organisation to `eth-zurich-weather-and-climate-risks`
 
+## Update Process
+
+The data are generated using the `create_csv_files.py` script and then uploaded to hdx using the `create_datasets.py` script.
 ## Datasets
 
 ### LitPop

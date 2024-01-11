@@ -34,7 +34,7 @@ def create_datasets_in_hdx(dataset_name: str):
     t0 = time.time()
     dataset_attributes = read_attributes(dataset_name)
 
-    dataset = create_or_fetch_base_dataset(dataset_name, dataset_attributes)
+    dataset, _ = create_or_fetch_base_dataset(dataset_name, dataset_attributes)
 
     countries_data = read_countries()
     countries_group = [{"name": x["iso3alpha_country_code"].lower()} for x in countries_data]
@@ -90,9 +90,13 @@ def create_datasets_in_hdx(dataset_name: str):
     LOGGER.info(f"Elapsed time: {time.time() - t0: 0.2f} seconds")
 
 
-def create_or_fetch_base_dataset(dataset_name, dataset_attributes):
+def create_or_fetch_base_dataset(
+    dataset_name: str, dataset_attributes: dict, force_create: bool = False
+) -> (Dataset, bool):
     dataset = Dataset.read_from_hdx(dataset_name)
-    if dataset is not None:
+    is_new = True
+    if dataset is not None and not force_create:
+        is_new = False
         LOGGER.info(f"Dataset already exists in hdx_site: `{Configuration.read().hdx_site}`")
         LOGGER.info("Updating")
     else:
@@ -109,7 +113,7 @@ def create_or_fetch_base_dataset(dataset_name, dataset_attributes):
         )
 
         dataset = Dataset.load_from_json(dataset_template_filepath)
-    return dataset
+    return dataset, is_new
 
 
 if __name__ == "__main__":

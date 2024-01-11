@@ -11,7 +11,7 @@ import climada.util.coordinates as u_coord
 
 from hdx.data.dataset import Dataset
 from hdx.utilities.easy_logging import setup_logging
-from hdx.api.configuration import Configuration
+from hdx.api.configuration import Configuration, ConfigurationError
 
 ADMIN1_GEOMETRY_FOLDER = os.path.join(os.path.dirname(__file__), "admin1_geometry")
 UNMAP_DATASET_NAME = "unmap-international-boundaries-geojson"
@@ -19,7 +19,13 @@ UNMAP_DATASET_NAME = "unmap-international-boundaries-geojson"
 setup_logging()
 LOGGER = logging.getLogger(__name__)
 
-Configuration.create(hdx_site="prod", user_agent="hdxds_climada")
+
+try:
+    Configuration.create(hdx_site="prod", user_agent="hdxds_climada")
+except ConfigurationError:
+    LOGGER.info(
+        "Configuration already exists when trying to create in `download_admin1_geometry.py`"
+    )
 
 
 def download_hdx_admin1_boundaries():

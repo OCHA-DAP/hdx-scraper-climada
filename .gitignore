@@ -10,3 +10,5 @@ bin/
 *.pbix
 
 src/hdx_scraper_climada/admin1_geometry/
+
+.coverage
