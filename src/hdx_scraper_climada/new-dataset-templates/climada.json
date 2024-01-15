@@ -1,0 +1,46 @@
+{
+    "name": "climada-litpop-dataset",
+    "title": "",
+    "private": false,
+    "caveats": "",
+    "notes": "",
+    "dataset_source": "ETH Zurich Climada",
+    "dataset_date": "[2020-01-01T00:00:00 TO 2023-10-17T23:59:59]",
+    "data_update_frequency": "365",
+    "has_geodata": true,
+    "groups": [
+        {
+            "name": "afg"
+        },
+        {
+            "name": "world"
+        }
+    ],
+    "isopen": true,
+    "license_id": "cc-by",
+    "maintainer": "76f545b9-6944-41c8-a999-eeb1bb70de7a",
+    "methodology": "Other",
+    "methodology_other": "",
+    "owner_org": "cf1b5a3d-f79b-47cf-a4dc-522ed4a5ce67",
+    "subnational": "0",
+    "tags": [
+        {
+            "name": "hxl"
+        },
+        {
+            "name": "economics"
+        },
+        {
+            "name": "forecasting"
+        },
+        {
+            "name": "geodata"
+        },
+        {
+            "name": "hazards and risk"
+        },
+        {
+            "name": "humanitarian response plan-hrp"
+        }
+    ]
+}

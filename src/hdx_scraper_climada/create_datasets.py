@@ -115,6 +115,10 @@ def create_or_fetch_base_dataset(
         )
 
         dataset = Dataset.load_from_json(dataset_template_filepath)
+
+        for attribute in ["title", "notes", "methodology_other", "caveats"]:
+            dataset[attribute] = dataset_attributes[attribute]
+
     return dataset, is_new
 
 
