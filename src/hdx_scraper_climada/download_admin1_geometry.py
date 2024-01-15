@@ -21,7 +21,10 @@ LOGGER = logging.getLogger(__name__)
 
 
 try:
-    Configuration.create(hdx_site="prod", user_agent="hdxds_climada")
+    Configuration.create(
+        user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
+        user_agent_lookup="hdx-scraper-climada",
+    )
 except ConfigurationError:
     LOGGER.info(
         "Configuration already exists when trying to create in `download_admin1_geometry.py`"

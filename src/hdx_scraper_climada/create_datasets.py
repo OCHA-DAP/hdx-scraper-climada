@@ -7,7 +7,7 @@ import os
 import time
 
 from hdx.utilities.easy_logging import setup_logging
-from hdx.api.configuration import Configuration
+from hdx.api.configuration import Configuration, ConfigurationError
 from hdx.data.dataset import Dataset
 from hdx.data.resource import Resource
 
@@ -16,11 +16,13 @@ from hdx_scraper_climada.utilities import read_attributes, read_countries
 setup_logging()
 LOGGER = logging.getLogger(__name__)
 
-Configuration.create(
-    user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
-    user_agent_lookup="hdx-scraper-climada",
-    hdx_site="stage",
-)
+try:
+    Configuration.create(
+        user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
+        user_agent_lookup="hdx-scraper-climada",
+    )
+except ConfigurationError:
+    LOGGER.info("Configuration already exists when trying to create in `create_datasets.py`")
 
 INDICATOR_DIRECTORY = os.path.join(os.path.dirname(__file__), "output", "litpop")
 
