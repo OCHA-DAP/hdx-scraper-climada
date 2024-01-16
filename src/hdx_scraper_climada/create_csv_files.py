@@ -39,7 +39,6 @@ HXL_TAGS = OrderedDict(
 def export_indicator_data_to_csv(
     country: str = "Haiti", indicator: str = "litpop", use_hdx_admin1: bool = True
 ):
-    country_iso3a = Country.get_iso3_country_code(country)
     t0 = time.time()
     print(f"\nProcessing {country}", flush=True)
     # Construct file path
@@ -54,6 +53,31 @@ def export_indicator_data_to_csv(
         )
         return None
 
+    country_litpop_gdf, country_dataframes = create_dataframes(
+        country, indicator, use_hdx_admin1=use_hdx_admin1
+    )
+    # Export Files
+    country_litpop_gdf.to_csv(
+        output_file_path,
+        index=False,
+    )
+
+    # Make summary file
+    n_lines = len(country_litpop_gdf)
+    status = write_summary_data(country_dataframes, country, indicator)
+    print(status, flush=True)
+
+    print(
+        f"Processing for {country} took {time.time()-t0:0.0f} seconds "
+        f"and generated {n_lines} lines of output",
+        flush=True,
+    )
+
+    return country_dataframes
+
+
+def create_dataframes(country: str, indicator: str = "litpop", use_hdx_admin1: bool = True):
+    country_iso3a = Country.get_iso3_country_code(country)
     # Get admin1 dataset
     if use_hdx_admin1:
         admin1_names, admin1_shapes = get_admin1_shapes_from_hdx(country_iso3a)
@@ -104,24 +128,7 @@ def export_indicator_data_to_csv(
     hxl_tag_row = pd.DataFrame([HXL_TAGS])
     country_litpop_gdf = pd.concat([hxl_tag_row, country_litpop_gdf], axis=0, ignore_index=True)
 
-    # Export Files
-    country_litpop_gdf.to_csv(
-        output_file_path,
-        index=False,
-    )
-
-    # Make summary file
-    n_lines = len(country_litpop_gdf)
-    status = write_summary_data(country_dataframes, country, indicator)
-    print(status, flush=True)
-
-    print(
-        f"Processing for {country} took {time.time()-t0:0.0f} seconds "
-        f"and generated {n_lines} lines of output",
-        flush=True,
-    )
-
-    return country_dataframes
+    return country_litpop_gdf, country_dataframes
 
 
 def write_summary_data(country_dataframes: list, country: str, indicator: str) -> str:
