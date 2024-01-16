@@ -3,7 +3,8 @@
 
 import json
 
-from hdx_scraper_climada.create_datasets import create_or_fetch_base_dataset, read_attributes
+from hdx_scraper_climada.create_datasets import create_or_fetch_base_dataset, create_datasets_in_hdx
+from hdx_scraper_climada.utilities import read_attributes
 
 
 def test_create_or_fetch_base_dataset():
@@ -22,3 +23,14 @@ def test_create_or_fetch_base_dataset():
     )
     assert is_new
     assert "Röösli" in dataset["methodology_other"]
+
+
+def test_create_datasets_in_hdx():
+    dataset_name = "climada-litpop-dataset"
+
+    dataset = create_datasets_in_hdx(
+        dataset_name,
+        dry_run=True,
+    )
+
+    assert dataset["name"] == "climada-litpop-dataset"

@@ -24,10 +24,13 @@ try:
 except ConfigurationError:
     LOGGER.info("Configuration already exists when trying to create in `create_datasets.py`")
 
-INDICATOR_DIRECTORY = os.path.join(os.path.dirname(__file__), "output", "litpop")
+INDICATOR_DIRECTORY = os.path.join(os.path.dirname(__file__), "output")
 
 
-def create_datasets_in_hdx(dataset_name: str):
+def create_datasets_in_hdx(
+    dataset_name: str,
+    dry_run: bool = False,
+):
     LOGGER.info("*********************************************")
     LOGGER.info("* Climada - Create dataset   *")
     LOGGER.info(f"* Invoked at: {datetime.datetime.now().isoformat(): <23}    *")
@@ -56,12 +59,14 @@ def create_datasets_in_hdx(dataset_name: str):
         attributes = read_attributes(resource_name)
         if "{country}" in resource_name:
             for country in countries_data:
-                if country["iso3alpha_country_code"] == "SYR":
+                if country["iso3alpha_country_code"] in dataset_attributes["skip_country"]:
                     LOGGER.info("2024-01-10: Skipping Syria data whilst issue is addressed")
                     continue
                 country_str = country["country_name"].lower().replace(" ", "-")
                 resource_file_path = os.path.join(
-                    INDICATOR_DIRECTORY, attributes["filename_template"].format(country=country_str)
+                    INDICATOR_DIRECTORY,
+                    dataset_attributes["output_subdirectory"],
+                    attributes["filename_template"].format(country=country_str),
                 )
                 resource = Resource(
                     {
@@ -75,7 +80,12 @@ def create_datasets_in_hdx(dataset_name: str):
                 resource.set_file_to_upload(resource_file_path)
                 resource_list.append(resource)
         else:
-            resource_file_path = os.path.join(INDICATOR_DIRECTORY, attributes["filename_template"])
+            print(attributes, flush=True)
+            resource_file_path = os.path.join(
+                INDICATOR_DIRECTORY,
+                dataset_attributes["output_subdirectory"],
+                attributes["filename_template"],
+            )
             resource = Resource(
                 {
                     "name": os.path.basename(resource_file_path),
@@ -87,9 +97,15 @@ def create_datasets_in_hdx(dataset_name: str):
             resource_list.append(resource)
 
     dataset.add_update_resources(resource_list)
-    dataset.create_in_hdx()
+    if not dry_run:
+        LOGGER.info("Dry_run flag not set so no data written to HDX")
+        dataset.create_in_hdx()
+    else:
+        LOGGER.info("Dry_run flag set so no data written to HDX")
     LOGGER.info(f"Processing finished at {datetime.datetime.now().isoformat()}")
     LOGGER.info(f"Elapsed time: {time.time() - t0: 0.2f} seconds")
+
+    return dataset
 
 
 def create_or_fetch_base_dataset(
