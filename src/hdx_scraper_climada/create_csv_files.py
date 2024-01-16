@@ -36,42 +36,13 @@ HXL_TAGS = OrderedDict(
 )
 
 
-def print_overview_information(data_type="litpop"):
-    data_types = CLIENT.list_data_type_infos()
-    print("Available Data Types\n====================", flush=True)
-    for dataset in data_types:
-        print(f"{dataset.data_type} ({dataset.data_type_group})", flush=True)
-
-    print(f"\nDetails for {data_type}\n=======================", flush=True)
-
-    for dataset in data_types:
-        if dataset.data_type != data_type:
-            continue
-        print(f"Data_type: {data_types[0].data_type}", flush=True)
-        print(f"Data_type_group: {data_types[0].data_type_group}", flush=True)
-        print(f"Description:\n {data_types[0].description} \n", flush=True)
-        print(f"Key reference: {data_types[0].key_reference[0]['key_reference']}", flush=True)
-        print("\nProperties:", flush=True)
-        for i, property_ in enumerate(data_types[0].properties, start=1):
-            print(f"{i}. {property_['property']}: {property_['description']}", flush=True)
-        print(f"status: {data_types[0].status}", flush=True)
-        print(f"version_notes: {data_types[0].version_notes[0]['version']}", flush=True)
-
-    litpop_dataset_infos = CLIENT.list_dataset_infos(data_type="litpop")
-    litpop_default = CLIENT.get_property_values(
-        litpop_dataset_infos,
-        known_property_values={"fin_mode": "pc", "exponents": "(1,1)"},
-    )
-
-    print(f"Available for {len(litpop_default['country_iso3alpha'])} countries", flush=True)
-
-
 def export_indicator_data_to_csv(
     country: str = "Haiti", indicator: str = "litpop", use_hdx_admin1: bool = True
 ):
     country_iso3a = Country.get_iso3_country_code(country)
     t0 = time.time()
     print(f"\nProcessing {country}", flush=True)
+    # Construct file path
     country_str = country.lower().replace(" ", "-")
     output_file_path = os.path.join(
         os.path.dirname(__file__), "output", f"{indicator}", f"{country_str}-admin1-{indicator}.csv"
@@ -81,7 +52,7 @@ def export_indicator_data_to_csv(
         print(
             f"Output file {output_file_path} already exists, continuing to next country", flush=True
         )
-        return
+        return None
 
     # Get admin1 dataset
     if use_hdx_admin1:
@@ -102,7 +73,9 @@ def export_indicator_data_to_csv(
         if admin1_names[i] is None:
             print("Admin1 name was 'None', continuing to next admin1", flush=True)
         print(f"{i+1} of {n_regions} Processing {admin1_names[i]}", flush=True)
+
         admin1_litpop = LitPop.from_shape_and_countries(admin1_shape, country_iso3a, res_arcsec=150)
+
         admin1_litpop_gdf = admin1_litpop.gdf
         admin1_litpop_gdf["region_name"] = len(admin1_litpop_gdf) * [admin1_names[i]]
         admin1_litpop_gdf["country_name"] = len(admin1_litpop_gdf) * [country]
@@ -114,11 +87,8 @@ def export_indicator_data_to_csv(
 
     country_litpop_gdf = pd.concat(country_dataframes, axis=0, ignore_index=True)
 
-    # Drop "df index", Index, geometry, impf_ columns
+    # Restructure dataframe
     country_litpop_gdf.drop(["index", "region_id", "geometry", "impf_"], axis=1)
-
-    # Reorder to:
-    # region_name, region_id, latitude, longitude, value
     country_litpop_gdf = country_litpop_gdf[
         [
             "country_name",
@@ -131,10 +101,10 @@ def export_indicator_data_to_csv(
         ]
     ]
 
-    # Skip HXL line for now since it messes up visualisation in PowerBI.
     hxl_tag_row = pd.DataFrame([HXL_TAGS])
     country_litpop_gdf = pd.concat([hxl_tag_row, country_litpop_gdf], axis=0, ignore_index=True)
 
+    # Export Files
     country_litpop_gdf.to_csv(
         output_file_path,
         index=False,
@@ -150,6 +120,8 @@ def export_indicator_data_to_csv(
         f"and generated {n_lines} lines of output",
         flush=True,
     )
+
+    return country_dataframes
 
 
 def write_summary_data(country_dataframes: list, country: str, indicator: str) -> str:
