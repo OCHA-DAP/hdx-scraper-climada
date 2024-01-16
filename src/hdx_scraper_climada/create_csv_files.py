@@ -53,10 +53,13 @@ def export_indicator_data_to_csv(
         )
         return None
 
-    country_litpop_gdf, country_dataframes = create_dataframes(
-        country, indicator, use_hdx_admin1=use_hdx_admin1
-    )
-    # Export Files
+    # Create the data
+    country_dataframes = create_dataframes(country, indicator, use_hdx_admin1=use_hdx_admin1)
+
+    # Make detail files
+    country_litpop_gdf = pd.concat(country_dataframes, axis=0, ignore_index=True)
+    hxl_tag_row = pd.DataFrame([HXL_TAGS])
+    country_litpop_gdf = pd.concat([hxl_tag_row, country_litpop_gdf], axis=0, ignore_index=True)
     country_litpop_gdf.to_csv(
         output_file_path,
         index=False,
@@ -64,7 +67,8 @@ def export_indicator_data_to_csv(
 
     # Make summary file
     n_lines = len(country_litpop_gdf)
-    status = write_summary_data(country_dataframes, country, indicator)
+    summary_rows = create_summary_data(country_dataframes, country, indicator)
+    status = write_summary_data(summary_rows, indicator)
     print(status, flush=True)
 
     print(
@@ -106,38 +110,28 @@ def create_dataframes(country: str, indicator: str = "litpop", use_hdx_admin1: b
         admin1_litpop_gdf["indicator"] = len(admin1_litpop_gdf) * [indicator]
         admin1_litpop_gdf["aggregation"] = len(admin1_litpop_gdf) * ["none"]
 
+        # Restructure dataframe
+        admin1_litpop_gdf.drop(["index", "region_id", "geometry", "impf_"], axis=1)
+        admin1_litpop_gdf = admin1_litpop_gdf[
+            [
+                "country_name",
+                "region_name",
+                "latitude",
+                "longitude",
+                "aggregation",
+                "indicator",
+                "value",
+            ]
+        ]
+
         print(f"Wrote {len(admin1_litpop_gdf)} lines", flush=True)
         country_dataframes.append(admin1_litpop_gdf)
 
-    country_litpop_gdf = pd.concat(country_dataframes, axis=0, ignore_index=True)
-
-    # Restructure dataframe
-    country_litpop_gdf.drop(["index", "region_id", "geometry", "impf_"], axis=1)
-    country_litpop_gdf = country_litpop_gdf[
-        [
-            "country_name",
-            "region_name",
-            "latitude",
-            "longitude",
-            "aggregation",
-            "indicator",
-            "value",
-        ]
-    ]
-
-    hxl_tag_row = pd.DataFrame([HXL_TAGS])
-    country_litpop_gdf = pd.concat([hxl_tag_row, country_litpop_gdf], axis=0, ignore_index=True)
-
-    return country_litpop_gdf, country_dataframes
+    return country_dataframes
 
 
-def write_summary_data(country_dataframes: list, country: str, indicator: str) -> str:
-    output_summary_path = os.path.join(
-        os.path.dirname(__file__), "output", f"{indicator}", f"admin1-summaries-{indicator}.csv"
-    )
+def create_summary_data(country_dataframes: list, country: str, indicator: str) -> list[dict]:
     summary_rows = []
-    if not os.path.exists(output_summary_path):
-        summary_rows.append(HXL_TAGS)
     for df in country_dataframes:
         if len(df) == 0:
             print("Dataframe length is zero", flush=True)
@@ -146,13 +140,24 @@ def write_summary_data(country_dataframes: list, country: str, indicator: str) -
         row["country_name"] = country
         row["region_name"] = df["region_name"][0]
         row["latitude"] = round(df["latitude"].mean(), 4)
-        row["longitude"] = round(df["latitude"].mean(), 4)
+        row["longitude"] = round(df["longitude"].mean(), 4)
         row["aggregation"] = "sum"
         row["indicator"] = indicator
         row["value"] = df["value"].sum()
 
         print(f"{df['region_name'][0]:<20}, {df['value'].sum():0.0f}", flush=True)
         summary_rows.append(row)
+
+    return summary_rows
+
+
+def write_summary_data(summary_rows: list, indicator: str) -> str:
+    output_summary_path = os.path.join(
+        os.path.dirname(__file__), "output", f"{indicator}", f"admin1-summaries-{indicator}.csv"
+    )
+    summary_rows = []
+    if not os.path.exists(output_summary_path):
+        summary_rows.append(HXL_TAGS)
 
     status = write_dictionary(
         output_summary_path,

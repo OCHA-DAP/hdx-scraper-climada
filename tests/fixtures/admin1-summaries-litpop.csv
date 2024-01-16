@@ -1,0 +1,12 @@
+country_name,region_name,latitude,longitude,aggregation,indicator,value
+#country,#adm1+name,#geo+lat,#geo+lon,,#indicator+name,#indicator+num
+Haiti,Centre,19.0069,19.0069,sum,litpop,175640026.23530233
+Haiti,North-West,19.815,19.815,sum,litpop,100300535.88346314
+Haiti,South-East,18.2533,18.2533,sum,litpop,360997949.64265114
+Haiti,South,18.2841,18.2841,sum,litpop,171142385.4288843
+Haiti,Nippes,18.4347,18.4347,sum,litpop,58832613.94815971
+Haiti,Grande'Anse,18.5094,18.5094,sum,litpop,70598102.17570587
+Haiti,West,18.5789,18.5789,sum,litpop,46547124120.69713
+Haiti,North,19.594,19.594,sum,litpop,580298755.596155
+Haiti,North-East,19.5035,19.5035,sum,litpop,112169364.03633007
+Haiti,Artibonite,19.3355,19.3355,sum,litpop,1221209653.7700317
