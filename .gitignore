@@ -12,3 +12,7 @@ bin/
 src/hdx_scraper_climada/admin1_geometry/
 
 .coverage
+
+docs/2024-01-11-data-type-review.xlsx
+
+tests/temp/
