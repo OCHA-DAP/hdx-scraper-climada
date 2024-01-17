@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+import csv
 import os
 import pytest
 
@@ -54,8 +55,33 @@ def test_write_detail_data(haiti_detail_dataframes):
     status = write_detail_data(haiti_detail_dataframes, output_detail_path)
 
     print(status, flush=True)
-
     assert os.path.exists(output_detail_path)
+
+    with open(output_detail_path, encoding="utf-8") as summary_file:
+        rows = list(csv.DictReader(summary_file))
+
+    assert len(rows) == 1313
+
+    assert set(list(rows[0].keys())) == set(
+        [
+            "country_name",
+            "region_name",
+            "latitude",
+            "longitude",
+            "aggregation",
+            "indicator",
+            "value",
+        ]
+    )
+
+    assert set(list(rows[0].values())) == set(
+        ["#country", "#adm1+name", "#geo+lat", "#geo+lon", "", "#indicator+name", "#indicator+num"]
+    )
+
+    rows[1]["value"] = rows[1]["value"][0:11]
+    assert set(list(rows[1].values())) == set(
+        ["Haiti", "Centre", "19.3125", "-72.02083333", "none", "litpop", "759341.9415"]
+    )
 
 
 def test_write_summary_data(haiti_detail_dataframes):
@@ -72,6 +98,31 @@ def test_write_summary_data(haiti_detail_dataframes):
     print(status, flush=True)
 
     assert os.path.exists(output_summary_path)
+
+    with open(output_summary_path, encoding="utf-8") as summary_file:
+        rows = list(csv.DictReader(summary_file))
+
+    assert len(rows) == 11
+
+    assert set(list(rows[0].keys())) == set(
+        [
+            "country_name",
+            "region_name",
+            "latitude",
+            "longitude",
+            "aggregation",
+            "indicator",
+            "value",
+        ]
+    )
+
+    assert set(list(rows[0].values())) == set(
+        ["#country", "#adm1+name", "#geo+lat", "#geo+lon", "", "#indicator+name", "#indicator+num"]
+    )
+
+    assert set(list(rows[1].values())) == set(
+        ["Haiti", "Centre", "19.0069", "-71.9886", "sum", "litpop", "175640026.24312034"]
+    )
 
 
 def test_prepare_output_directory():
