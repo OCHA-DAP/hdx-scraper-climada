@@ -1,13 +1,30 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-from hdx_scraper_climada.create_csv_files import create_dataframes, create_summary_data
+import os
+import pytest
+
+from hdx_scraper_climada.create_csv_files import (
+    create_detail_dataframes,
+    create_summary_data,
+    write_detail_data,
+    write_summary_data,
+    prepare_output_directory,
+)
+
+EXPORT_DIRECTORY = os.path.join(os.path.dirname(__file__), "temp")
+COUNTRY = "Haiti"
+INDICATOR = "litpop"
 
 
-def test_create_dataframes():
-    country_geodataframes_list = create_dataframes("Haiti", "litpop", use_hdx_admin1=True)
+@pytest.fixture(scope="module")
+def haiti_detail_dataframes():
+    country_geodataframes_list = create_detail_dataframes(COUNTRY, INDICATOR, use_hdx_admin1=True)
+    return country_geodataframes_list
 
-    assert country_geodataframes_list[0].columns.to_list() == [
+
+def test_create_dataframes(haiti_detail_dataframes):
+    assert haiti_detail_dataframes[0].columns.to_list() == [
         "country_name",
         "region_name",
         "latitude",
@@ -16,16 +33,47 @@ def test_create_dataframes():
         "indicator",
         "value",
     ]
-    assert len(country_geodataframes_list) == 10
+    assert len(haiti_detail_dataframes) == 10
 
 
-def test_create_summary():
-    country = "Haiti"
-    indicator = "litpop"
-    country_geodataframes_list = create_dataframes("Haiti", "litpop", use_hdx_admin1=True)
-    summary_rows = create_summary_data(country_geodataframes_list, country, indicator)
-
-    for row in summary_rows:
-        print(row, flush=True)
+def test_create_summary(haiti_detail_dataframes):
+    summary_rows, n_lines = create_summary_data(haiti_detail_dataframes, COUNTRY, INDICATOR)
 
     assert len(summary_rows) == 10
+    assert n_lines == 1312
+
+
+def test_write_detail_data(haiti_detail_dataframes):
+    output_detail_path, _ = prepare_output_directory(
+        COUNTRY, INDICATOR, export_directory=EXPORT_DIRECTORY
+    )
+
+    if os.path.exists(output_detail_path):
+        os.remove(output_detail_path)
+
+    status = write_detail_data(haiti_detail_dataframes, output_detail_path)
+
+    print(status, flush=True)
+
+    assert os.path.exists(output_detail_path)
+
+
+def test_write_summary_data(haiti_detail_dataframes):
+    _, output_summary_path = prepare_output_directory(
+        COUNTRY, INDICATOR, export_directory=EXPORT_DIRECTORY
+    )
+
+    if os.path.exists(output_summary_path):
+        os.remove(output_summary_path)
+
+    summary_rows, _ = create_summary_data(haiti_detail_dataframes, COUNTRY, INDICATOR)
+    status = write_summary_data(summary_rows, output_summary_path)
+
+    print(status, flush=True)
+
+    assert os.path.exists(output_summary_path)
+
+
+def test_prepare_output_directory():
+    _, _ = prepare_output_directory(COUNTRY, INDICATOR, export_directory=EXPORT_DIRECTORY)
+    assert os.path.exists(os.path.join(EXPORT_DIRECTORY, f"{INDICATOR}"))

@@ -50,8 +50,7 @@ pip install GDAL-3.4.3-cp310-cp310-win_amd64.whl
 ```
 
 The climada Python Library (https://github.com/CLIMADA-project/climada_python) is installed with the
-following, assuming the host machine is Windows based. GDAL is installed using a precompiled binary
-sourced from 
+following, assuming the host machine is Windows based. 
 
 ```shell
 pip install climada

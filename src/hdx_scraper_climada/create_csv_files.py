@@ -5,7 +5,7 @@ import datetime
 import os
 import time
 
-from collections import OrderedDict
+from collections import OrderedDict, deque
 
 import pandas as pd
 
@@ -43,18 +43,11 @@ def export_indicator_data_to_csv(
     export_directory: str = None,
 ) -> list[str]:
     statuses = []
-    if export_directory is None:
-        export_directory = os.path.join(os.path.dirname(__file__), "output")
     t0 = time.time()
     print(f"\nProcessing {country}", flush=True)
     # Construct file paths
-    country_str = country.lower().replace(" ", "-")
-    output_detail_path = os.path.join(
-        export_directory, f"{indicator}", f"{country_str}-admin1-{indicator}.csv"
-    )
-
-    output_summary_path = os.path.join(
-        export_directory, f"{indicator}", f"admin1-summaries-{indicator}.csv"
+    output_detail_path, output_summary_path = prepare_output_directory(
+        country, indicator, export_directory
     )
 
     if os.path.exists(output_detail_path):
@@ -79,6 +72,23 @@ def export_indicator_data_to_csv(
     )
 
     return statuses
+
+
+def prepare_output_directory(country, indicator, export_directory):
+    if export_directory is None:
+        export_directory = os.path.join(os.path.dirname(__file__), "output")
+    country_str = country.lower().replace(" ", "-")
+    output_detail_path = os.path.join(
+        export_directory, f"{indicator}", f"{country_str}-admin1-{indicator}.csv"
+    )
+
+    output_summary_path = os.path.join(
+        export_directory, f"{indicator}", f"admin1-summaries-{indicator}.csv"
+    )
+
+    os.makedirs(os.path.dirname(output_summary_path), exist_ok=True)
+
+    return output_detail_path, output_summary_path
 
 
 def create_detail_dataframes(
@@ -159,9 +169,12 @@ def create_summary_data(
 
 
 def write_summary_data(summary_rows: list, output_summary_path: str) -> str:
-    summary_rows = []
     if not os.path.exists(output_summary_path):
-        summary_rows.append(HXL_TAGS)
+        # This is slightly convoluted, but efficient
+        # https://www.geeksforgeeks.org/python-perform-append-at-beginning-of-list/
+        summary_rows = deque(summary_rows)
+        summary_rows.appendleft(HXL_TAGS)
+        summary_rows = list(summary_rows)
 
     status = write_dictionary(
         output_summary_path,
