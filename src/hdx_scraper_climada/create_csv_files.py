@@ -37,50 +37,53 @@ HXL_TAGS = OrderedDict(
 
 
 def export_indicator_data_to_csv(
-    country: str = "Haiti", indicator: str = "litpop", use_hdx_admin1: bool = True
-):
+    country: str = "Haiti",
+    indicator: str = "litpop",
+    use_hdx_admin1: bool = True,
+    export_directory: str = None,
+) -> list[str]:
+    statuses = []
+    if export_directory is None:
+        export_directory = os.path.join(os.path.dirname(__file__), "output")
     t0 = time.time()
     print(f"\nProcessing {country}", flush=True)
-    # Construct file path
+    # Construct file paths
     country_str = country.lower().replace(" ", "-")
-    output_file_path = os.path.join(
-        os.path.dirname(__file__), "output", f"{indicator}", f"{country_str}-admin1-{indicator}.csv"
+    output_detail_path = os.path.join(
+        export_directory, f"{indicator}", f"{country_str}-admin1-{indicator}.csv"
     )
 
-    if os.path.exists(output_file_path):
-        print(
-            f"Output file {output_file_path} already exists, continuing to next country", flush=True
-        )
-        return None
+    output_summary_path = os.path.join(
+        export_directory, f"{indicator}", f"admin1-summaries-{indicator}.csv"
+    )
 
-    # Create the data
-    country_dataframes = create_dataframes(country, indicator, use_hdx_admin1=use_hdx_admin1)
+    if os.path.exists(output_detail_path):
+        statuses.append(
+            f"Output file {output_detail_path} already exists, continuing to next country"
+        )
+        return statuses
 
     # Make detail files
-    country_litpop_gdf = pd.concat(country_dataframes, axis=0, ignore_index=True)
-    hxl_tag_row = pd.DataFrame([HXL_TAGS])
-    country_litpop_gdf = pd.concat([hxl_tag_row, country_litpop_gdf], axis=0, ignore_index=True)
-    country_litpop_gdf.to_csv(
-        output_file_path,
-        index=False,
-    )
+    country_dataframes = create_detail_dataframes(country, indicator, use_hdx_admin1=use_hdx_admin1)
+    status = write_detail_data(country_dataframes, output_detail_path)
+    statuses.append(status)
 
     # Make summary file
-    n_lines = len(country_litpop_gdf)
-    summary_rows = create_summary_data(country_dataframes, country, indicator)
-    status = write_summary_data(summary_rows, indicator)
-    print(status, flush=True)
+    summary_rows, n_lines = create_summary_data(country_dataframes, country, indicator)
+    status = write_summary_data(summary_rows, output_summary_path)
+    statuses.append(statuses)
 
-    print(
+    statuses.append(
         f"Processing for {country} took {time.time()-t0:0.0f} seconds "
         f"and generated {n_lines} lines of output",
-        flush=True,
     )
 
-    return country_dataframes
+    return statuses
 
 
-def create_dataframes(country: str, indicator: str = "litpop", use_hdx_admin1: bool = True):
+def create_detail_dataframes(
+    country: str, indicator: str = "litpop", use_hdx_admin1: bool = True
+) -> list:
     country_iso3a = Country.get_iso3_country_code(country)
     # Get admin1 dataset
     if use_hdx_admin1:
@@ -90,7 +93,7 @@ def create_dataframes(country: str, indicator: str = "litpop", use_hdx_admin1: b
 
     if len(admin1_names) == 0 and len(admin1_shapes) == 0:
         print(f"No Admin1 areas found for {country}", flush=True)
-        return
+        return []
 
     print("Admin1 areas in {country}:")
     print(admin1_names, flush=True)
@@ -130,12 +133,16 @@ def create_dataframes(country: str, indicator: str = "litpop", use_hdx_admin1: b
     return country_dataframes
 
 
-def create_summary_data(country_dataframes: list, country: str, indicator: str) -> list[dict]:
+def create_summary_data(
+    country_dataframes: list[pd.DataFrame], country: str, indicator: str
+) -> (list[dict], int):
     summary_rows = []
+    n_lines = 0
     for df in country_dataframes:
         if len(df) == 0:
             print("Dataframe length is zero", flush=True)
             continue
+        n_lines += len(df)
         row = HXL_TAGS.copy()
         row["country_name"] = country
         row["region_name"] = df["region_name"][0]
@@ -148,13 +155,10 @@ def create_summary_data(country_dataframes: list, country: str, indicator: str) 
         print(f"{df['region_name'][0]:<20}, {df['value'].sum():0.0f}", flush=True)
         summary_rows.append(row)
 
-    return summary_rows
+    return summary_rows, n_lines
 
 
-def write_summary_data(summary_rows: list, indicator: str) -> str:
-    output_summary_path = os.path.join(
-        os.path.dirname(__file__), "output", f"{indicator}", f"admin1-summaries-{indicator}.csv"
-    )
+def write_summary_data(summary_rows: list, output_summary_path: str) -> str:
     summary_rows = []
     if not os.path.exists(output_summary_path):
         summary_rows.append(HXL_TAGS)
@@ -167,6 +171,23 @@ def write_summary_data(summary_rows: list, indicator: str) -> str:
     return status
 
 
+def write_detail_data(country_dataframes: list[pd.DataFrame], output_file_path: str) -> str:
+    if os.path.exists(output_file_path):
+        status = f"Output file {output_file_path} already exists, not overwriting"
+        return status
+    country_litpop_gdf = pd.concat(country_dataframes, axis=0, ignore_index=True)
+    hxl_tag_row = pd.DataFrame([HXL_TAGS])
+    country_litpop_gdf = pd.concat([hxl_tag_row, country_litpop_gdf], axis=0, ignore_index=True)
+    country_litpop_gdf.to_csv(
+        output_file_path,
+        index=False,
+    )
+
+    status = f"Indicator data file written to {output_file_path}"
+
+    return status
+
+
 if __name__ == "__main__":
     print("Generating Climada csv files", flush=True)
     print("============================", flush=True)
@@ -174,7 +195,8 @@ if __name__ == "__main__":
     T0 = time.time()
     ROWS = read_countries()
     for ROW in ROWS:
-        export_indicator_data_to_csv(country=ROW["country_name"])
-
+        STATUSES = export_indicator_data_to_csv(country=ROW["country_name"])
+        for STATUS in STATUSES:
+            print(STATUS, flush=True)
     print(f"Processed all countries in {time.time()-T0:0.0f} seconds")
     print(f"Timestamp: {datetime.datetime.now().isoformat()}", flush=True)
