@@ -125,17 +125,18 @@ def create_detail_dataframes(
             LOGGER.info("Admin1 name was 'None', continuing to next admin1")
         LOGGER.info(f"{i+1} of {n_regions} Processing {admin1_names[i]}")
 
-        admin1_litpop = LitPop.from_shape_and_countries(admin1_shape, country_iso3a, res_arcsec=150)
+        admin1_indicator_gdf = calculate_indicator_for_admin1(
+            admin1_shape, country_iso3a, indicator
+        )
 
-        admin1_litpop_gdf = admin1_litpop.gdf
-        admin1_litpop_gdf["region_name"] = len(admin1_litpop_gdf) * [admin1_names[i]]
-        admin1_litpop_gdf["country_name"] = len(admin1_litpop_gdf) * [country]
-        admin1_litpop_gdf["indicator"] = len(admin1_litpop_gdf) * [indicator]
-        admin1_litpop_gdf["aggregation"] = len(admin1_litpop_gdf) * ["none"]
+        admin1_indicator_gdf["region_name"] = len(admin1_indicator_gdf) * [admin1_names[i]]
+        admin1_indicator_gdf["country_name"] = len(admin1_indicator_gdf) * [country]
+        admin1_indicator_gdf["indicator"] = len(admin1_indicator_gdf) * [indicator]
+        admin1_indicator_gdf["aggregation"] = len(admin1_indicator_gdf) * ["none"]
 
         # Restructure dataframe
-        admin1_litpop_gdf.drop(["index", "region_id", "geometry", "impf_"], axis=1)
-        admin1_litpop_gdf = admin1_litpop_gdf[
+        admin1_indicator_gdf.drop(["index", "region_id", "geometry", "impf_"], axis=1)
+        admin1_indicator_gdf = admin1_indicator_gdf[
             [
                 "country_name",
                 "region_name",
@@ -147,10 +148,23 @@ def create_detail_dataframes(
             ]
         ]
 
-        LOGGER.info(f"Wrote {len(admin1_litpop_gdf)} lines")
-        country_dataframes.append(admin1_litpop_gdf)
+        LOGGER.info(f"Wrote {len(admin1_indicator_gdf)} lines")
+        country_dataframes.append(admin1_indicator_gdf)
 
     return country_dataframes
+
+
+def calculate_indicator_for_admin1(admin1_shape, country_iso3a: str, indicator: str):
+    admin1_indicator_gdf = None
+    if indicator == "litpop":
+        admin1_indicator_data = LitPop.from_shape_and_countries(
+            admin1_shape, country_iso3a, res_arcsec=150
+        )
+        admin1_indicator_gdf = admin1_indicator_data.gdf
+    else:
+        LOGGER.info(f"Indicator {indicator} is not yet implemented")
+
+    return admin1_indicator_gdf
 
 
 def create_summary_data(
