@@ -2,9 +2,10 @@
 # encoding: utf-8
 
 import csv
+import logging
 import os
 from pathlib import Path
-from hdx_scraper_climada.utilities import read_attributes, write_dictionary
+from hdx_scraper_climada.utilities import read_attributes, write_dictionary, print_banner_to_log
 
 TEMP_FILE_PATH = os.path.join(Path(__file__).parent, "temp", "tmp.csv")
 DICT_LIST = [
@@ -12,6 +13,8 @@ DICT_LIST = [
     {"a": 4, "b": 5, "c": 6},
     {"a": 7, "b": 8, "c": 9},
 ]
+
+LOGGER = logging.getLogger(__name__)
 
 
 def test_read_attributes():
@@ -35,3 +38,13 @@ def test_write_dictionary_to_local_file():
     assert rows_read[0] == {"a": "1", "b": "2", "c": "3"}
     assert "New file" in status
     assert "is being created" in status
+
+
+def test_print_banner_to_log(caplog):
+    caplog.set_level(logging.INFO)
+    print_banner_to_log(LOGGER, "test-banner")
+
+    log_rows = caplog.text.split("\n")
+    assert len(log_rows) == 5
+    assert len(log_rows[0]) == len(log_rows[1])
+    assert "test-banner" in caplog.text

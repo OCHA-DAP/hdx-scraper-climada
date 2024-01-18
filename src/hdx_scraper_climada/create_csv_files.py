@@ -46,7 +46,7 @@ def export_indicator_data_to_csv(
     t0 = time.time()
     print(f"\nProcessing {country}", flush=True)
     # Construct file paths
-    output_detail_path, output_summary_path = prepare_output_directory(
+    output_detail_path, output_summary_path = make_detail_and_summary_file_paths(
         country, indicator, export_directory
     )
 
@@ -74,7 +74,9 @@ def export_indicator_data_to_csv(
     return statuses
 
 
-def prepare_output_directory(country, indicator, export_directory):
+def make_detail_and_summary_file_paths(
+    country: str, indicator: str, export_directory: str = None
+) -> (str, str):
     if export_directory is None:
         export_directory = os.path.join(os.path.dirname(__file__), "output")
     country_str = country.lower().replace(" ", "-")

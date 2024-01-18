@@ -10,7 +10,7 @@ from hdx_scraper_climada.create_csv_files import (
     create_summary_data,
     write_detail_data,
     write_summary_data,
-    prepare_output_directory,
+    make_detail_and_summary_file_paths,
 )
 
 EXPORT_DIRECTORY = os.path.join(os.path.dirname(__file__), "temp")
@@ -56,7 +56,7 @@ def test_create_summary(haiti_detail_dataframes):
 
 
 def test_write_detail_data(haiti_detail_dataframes):
-    output_detail_path, _ = prepare_output_directory(
+    output_detail_path, _ = make_detail_and_summary_file_paths(
         COUNTRY, INDICATOR, export_directory=EXPORT_DIRECTORY
     )
 
@@ -86,7 +86,7 @@ def test_write_detail_data(haiti_detail_dataframes):
 
 
 def test_write_summary_data(haiti_detail_dataframes):
-    _, output_summary_path = prepare_output_directory(
+    _, output_summary_path = make_detail_and_summary_file_paths(
         COUNTRY, INDICATOR, export_directory=EXPORT_DIRECTORY
     )
 
@@ -114,8 +114,8 @@ def test_write_summary_data(haiti_detail_dataframes):
     )
 
 
-def test_prepare_output_directory():
-    output_detail_path, output_summary_path = prepare_output_directory(
+def test_make_detail_and_summary_file_paths():
+    output_detail_path, output_summary_path = make_detail_and_summary_file_paths(
         COUNTRY, INDICATOR, export_directory=EXPORT_DIRECTORY
     )
 

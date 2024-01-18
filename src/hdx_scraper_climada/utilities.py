@@ -2,6 +2,8 @@
 # encoding: utf-8
 
 import csv
+import datetime
+import logging
 import os
 
 from typing import Any
@@ -71,3 +73,13 @@ def read_countries():
         rows = list(csv.DictReader(countries_file))
 
     return rows
+
+
+def print_banner_to_log(logger: logging.Logger, name: str):
+    title = f"Climada - {name}"
+    timestamp = f"Invoked at: {datetime.datetime.now().isoformat()}"
+    width = max(len(title), len(timestamp))
+    logger.info((width + 4) * "*")
+    logger.info(f"* {title:<{width}} *")
+    logger.info(f"* {timestamp:<{width}} *")
+    logger.info((width + 4) * "*")
