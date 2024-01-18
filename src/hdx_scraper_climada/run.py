@@ -25,9 +25,12 @@ def check_csv_files(indicator: str) -> set:
     # Check which countries are in the summary
     _, summary_file_path = make_detail_and_summary_file_paths("Haiti", indicator)
 
-    with open(summary_file_path, encoding="utf-8") as summary_file:
-        rows = csv.DictReader(summary_file)
-        summary_countries = {x["country_name"] for x in rows if x["country_name"] != "#country"}
+    if os.path.exists(summary_file_path):
+        with open(summary_file_path, encoding="utf-8") as summary_file:
+            rows = csv.DictReader(summary_file)
+            summary_countries = {x["country_name"] for x in rows if x["country_name"] != "#country"}
+    else:
+        summary_countries = set()
 
     detail_countries = set()
     # check which detail files exist
@@ -51,6 +54,8 @@ def check_csv_files(indicator: str) -> set:
         )
 
     countries_to_process = missing_detail_countries.union(missing_summary_countries)
+
+    countries_to_process = sorted(list(countries_to_process))
 
     return countries_to_process
 
