@@ -63,9 +63,8 @@ def test_write_detail_data(haiti_detail_dataframes):
     if os.path.exists(output_detail_path):
         os.remove(output_detail_path)
 
-    status = write_detail_data(haiti_detail_dataframes, output_detail_path)
+    _ = write_detail_data(haiti_detail_dataframes, output_detail_path)
 
-    print(status, flush=True)
     assert os.path.exists(output_detail_path)
 
     with open(output_detail_path, encoding="utf-8") as summary_file:
@@ -94,9 +93,7 @@ def test_write_summary_data(haiti_detail_dataframes):
         os.remove(output_summary_path)
 
     summary_rows, _ = create_summary_data(haiti_detail_dataframes, COUNTRY, INDICATOR)
-    status = write_summary_data(summary_rows, output_summary_path)
-
-    print(status, flush=True)
+    _ = write_summary_data(summary_rows, output_summary_path)
 
     assert os.path.exists(output_summary_path)
 

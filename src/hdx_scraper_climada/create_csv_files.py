@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 import datetime
+import logging
 import os
 import time
 
@@ -10,6 +11,7 @@ from collections import OrderedDict, deque
 import pandas as pd
 
 from hdx.location.country import Country
+from hdx.utilities.easy_logging import setup_logging
 
 from climada.util.api_client import Client
 
@@ -20,6 +22,9 @@ from hdx_scraper_climada.download_admin1_geometry import (
     get_admin1_shapes_from_hdx,
     get_admin1_shapes_from_natural_earth,
 )
+
+setup_logging()
+LOGGER = logging.getLogger(__name__)
 
 CLIENT = Client()
 
@@ -44,7 +49,7 @@ def export_indicator_data_to_csv(
 ) -> list[str]:
     statuses = []
     t0 = time.time()
-    print(f"\nProcessing {country}", flush=True)
+    LOGGER.info(f"\nProcessing {country}")
     # Construct file paths
     output_detail_path, output_summary_path = make_detail_and_summary_file_paths(
         country, indicator, export_directory
@@ -64,7 +69,7 @@ def export_indicator_data_to_csv(
     # Make summary file
     summary_rows, n_lines = create_summary_data(country_dataframes, country, indicator)
     status = write_summary_data(summary_rows, output_summary_path)
-    statuses.append(statuses)
+    statuses.append(status)
 
     statuses.append(
         f"Processing for {country} took {time.time()-t0:0.0f} seconds "
@@ -88,7 +93,10 @@ def make_detail_and_summary_file_paths(
         export_directory, f"{indicator}", f"admin1-summaries-{indicator}.csv"
     )
 
-    os.makedirs(os.path.dirname(output_summary_path), exist_ok=True)
+    indicator_directory = os.path.dirname(output_summary_path)
+    if not os.path.exists(indicator_directory):
+        LOGGER.info(f"Creating {os.path.dirname(output_summary_path)}")
+        os.makedirs(os.path.dirname(output_summary_path), exist_ok=True)
 
     return output_detail_path, output_summary_path
 
@@ -104,18 +112,18 @@ def create_detail_dataframes(
         admin1_names, admin1_shapes = get_admin1_shapes_from_natural_earth(country_iso3a)
 
     if len(admin1_names) == 0 and len(admin1_shapes) == 0:
-        print(f"No Admin1 areas found for {country}", flush=True)
+        LOGGER.info(f"No Admin1 areas found for {country}")
         return []
 
-    print("Admin1 areas in {country}:")
-    print(admin1_names, flush=True)
+    LOGGER.info(f"Admin1 areas in {country}:")
+    LOGGER.info(admin1_names)
 
     country_dataframes = []
     n_regions = len(admin1_shapes)
     for i, admin1_shape in enumerate(admin1_shapes, start=0):
         if admin1_names[i] is None:
-            print("Admin1 name was 'None', continuing to next admin1", flush=True)
-        print(f"{i+1} of {n_regions} Processing {admin1_names[i]}", flush=True)
+            LOGGER.info("Admin1 name was 'None', continuing to next admin1")
+        LOGGER.info(f"{i+1} of {n_regions} Processing {admin1_names[i]}")
 
         admin1_litpop = LitPop.from_shape_and_countries(admin1_shape, country_iso3a, res_arcsec=150)
 
@@ -139,7 +147,7 @@ def create_detail_dataframes(
             ]
         ]
 
-        print(f"Wrote {len(admin1_litpop_gdf)} lines", flush=True)
+        LOGGER.info(f"Wrote {len(admin1_litpop_gdf)} lines")
         country_dataframes.append(admin1_litpop_gdf)
 
     return country_dataframes
@@ -152,7 +160,7 @@ def create_summary_data(
     n_lines = 0
     for df in country_dataframes:
         if len(df) == 0:
-            print("Dataframe length is zero", flush=True)
+            LOGGER.info("Dataframe length is zero")
             continue
         n_lines += len(df)
         row = HXL_TAGS.copy()
@@ -164,7 +172,7 @@ def create_summary_data(
         row["indicator"] = indicator
         row["value"] = df["value"].sum()
 
-        print(f"{df['region_name'][0]:<20}, {df['value'].sum():0.0f}", flush=True)
+        LOGGER.info(f"{df['region_name'][0]:<20}, {df['value'].sum():0.0f}")
         summary_rows.append(row)
 
     return summary_rows, n_lines
@@ -204,14 +212,14 @@ def write_detail_data(country_dataframes: list[pd.DataFrame], output_file_path: 
 
 
 if __name__ == "__main__":
-    print("Generating Climada csv files", flush=True)
-    print("============================", flush=True)
-    print(f"Timestamp: {datetime.datetime.now().isoformat()}", flush=True)
+    LOGGER.info("Generating Climada csv files")
+    LOGGER.info("============================")
+    LOGGER.info(f"Timestamp: {datetime.datetime.now().isoformat()}")
     T0 = time.time()
     ROWS = read_countries()
     for ROW in ROWS:
         STATUSES = export_indicator_data_to_csv(country=ROW["country_name"])
         for STATUS in STATUSES:
-            print(STATUS, flush=True)
-    print(f"Processed all countries in {time.time()-T0:0.0f} seconds")
-    print(f"Timestamp: {datetime.datetime.now().isoformat()}", flush=True)
+            LOGGER.info(STATUS)
+    LOGGER.info(f"Processed all countries in {time.time()-T0:0.0f} seconds")
+    LOGGER.info(f"Timestamp: {datetime.datetime.now().isoformat()}")

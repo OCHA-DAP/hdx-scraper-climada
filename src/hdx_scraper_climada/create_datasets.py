@@ -51,7 +51,7 @@ def create_datasets_in_hdx(
     # dataset["dataset_date"] = f"[{iso_date} to {iso_date}]".replace("Z", "")
     dataset["groups"] = countries_group
 
-    print(dataset["dataset_date"], flush=True)
+    LOGGER.info(f"Dataset date: {dataset['dataset_date']}")
 
     resource_list = []
 
@@ -80,7 +80,6 @@ def create_datasets_in_hdx(
                 resource.set_file_to_upload(resource_file_path)
                 resource_list.append(resource)
         else:
-            print(attributes, flush=True)
             resource_file_path = os.path.join(
                 INDICATOR_DIRECTORY,
                 dataset_attributes["output_subdirectory"],

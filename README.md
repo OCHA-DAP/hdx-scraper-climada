@@ -1,10 +1,8 @@
 # HDX-SCRAPER-CLIMADA
 
-## Overview
+## Introduction
 
-This code is designed to take data from the Climada API for the 23 Data Grid countries on HDX,
-aggregate it over subnational regions (admin1) where appropriate, export it to CSV and then publish
-it to HDX.
+This code is designed to take data from the Climada API for the 23 Humanitarian Response Plan countries on HDX, aggregate it over subnational regions (admin1) where appropriate, export it to CSV and then publish it to HDX.
 
 Getting started:
 https://github.com/CLIMADA-project/climada_python/blob/main/doc/tutorial/climada_util_api_client.ipynb
@@ -14,24 +12,7 @@ https://climada.ethz.ch/datasets/
 
 The maintainer for this dataset is set in the `climada-litpop.json` file to `emanuel-schmid-3262` and the organisation to `eth-zurich-weather-and-climate-risks`
 
-## Update Process
-
-The data are generated using the `create_csv_files.py` script and then uploaded to hdx using the `create_datasets.py` script.
-## Datasets
-
-### LitPop
-
-There is a nice explanation of the LitPop data at the beginning of the tutorial notebook:
-
-```
-[doc/tutorial/climada_entity_LitPop.ipynb](https://github.com/CLIMADA-project/climada_python/blob/main/doc/tutorial/climada_entity_LitPop.ipynb)
-```
-
-### Crop production
-
-
-
-## Development environment
+## Installation 
 Create a virtual environment (assuming Windows for the `activate` command):
 
 ```shell
@@ -78,6 +59,25 @@ We use `nbstripout` to remove output cells from Jupyter Notebooks prior, this ne
 ```
 nbstripout --install
 ```
+
+## Dataset updates
+
+The data are generated using `make run`. Currently updates are manual since there are unresolved challenges in running the process in a GitHub Action
+
+### LitPop
+
+There is a nice explanation of the LitPop data at the beginning of the tutorial notebook:
+
+```
+[doc/tutorial/climada_entity_LitPop.ipynb](https://github.com/CLIMADA-project/climada_python/blob/main/doc/tutorial/climada_entity_LitPop.ipynb)
+```
+
+Runtime for Litpop is about 50 minutes and generates 58MB of CSV files.
+
+### Crop production
+
+
+
 
 
 

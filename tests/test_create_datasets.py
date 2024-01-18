@@ -15,8 +15,6 @@ def test_create_or_fetch_base_dataset():
         dataset_name, dataset_attributes, force_create=True
     )
 
-    print(json.dumps(dataset.data, indent=2), flush=True)
-
     assert dataset["title"] == (
         "LitPop: Humanitarian Response Plan (HRP) Countries "
         "Exposure Data for Disaster Risk Assessment"

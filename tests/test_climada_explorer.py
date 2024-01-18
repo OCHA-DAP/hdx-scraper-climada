@@ -22,10 +22,6 @@ def test_syria_litpop():
     syria_litpop = LitPop.from_countries(country_iso3a)
     syria_litpop_gdf = syria_litpop.gdf
 
-    print(syria_litpop_gdf.columns, flush=True)
-    print(syria_litpop_gdf, flush=True)
-    print(syria_litpop_gdf["value"].isna().sum(), flush=True)
-
     assert syria_litpop_gdf["value"].isna().sum() == len(syria_litpop_gdf)
 
 
@@ -34,10 +30,6 @@ def test_syria_litpop_nightlight_intensity():
     syria_litpop = LitPop.from_nightlight_intensity(country_iso3a)
     syria_litpop_gdf = syria_litpop.gdf
 
-    print(syria_litpop_gdf.columns, flush=True)
-    print(syria_litpop_gdf, flush=True)
-    print(syria_litpop_gdf["value"].isna().sum(), flush=True)
-
     assert syria_litpop_gdf["value"].isna().sum() == 0
 
 
@@ -45,9 +37,5 @@ def test_syria_litpop_population():
     country_iso3a = "SYR"
     syria_litpop = LitPop.from_population(country_iso3a)
     syria_litpop_gdf = syria_litpop.gdf
-
-    print(syria_litpop_gdf.columns, flush=True)
-    print(syria_litpop_gdf, flush=True)
-    print(syria_litpop_gdf["value"].isna().sum(), flush=True)
 
     assert syria_litpop_gdf["value"].isna().sum() == 0
