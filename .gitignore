@@ -18,3 +18,5 @@ docs/2024-01-11-data-type-review.xlsx
 tests/temp/
 
 src/hdx_scraper_climada/metadata/2024-01-11-data-type-metadata.csv
+
+src/hdx_scraper_climada/temp.csv
