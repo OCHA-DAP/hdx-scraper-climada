@@ -39,13 +39,13 @@ def download_hdx_admin1_boundaries():
         if "polbnda_adm1" in resource["name"]:
             expected_file_path = os.path.join(ADMIN1_GEOMETRY_FOLDER, f"{resource['name']}")
             if os.path.exists(expected_file_path):
-                logging.info(f"Expected file {expected_file_path} is already present, continuing")
+                LOGGER.info(f"Expected file {expected_file_path} is already present, continuing")
                 subn_resources.append(expected_file_path)
             else:
-                logging.info(f"Downloading {resource['name']}...")
+                LOGGER.info(f"Downloading {resource['name']}...")
                 resource_url, resource_file = resource.download(folder=ADMIN1_GEOMETRY_FOLDER)
 
-                logging.info(f"...from {resource_url}")
+                LOGGER.info(f"...from {resource_url}")
                 subn_resources.append(resource_file)
 
     return subn_resources
@@ -84,7 +84,7 @@ def get_admin1_shapes_from_natural_earth(country_iso3a):
 
         admin1_names = [record["name"] for record in admin1_info]
     except LookupError as error:
-        print(error, flush=True)
+        LOGGER.info(error)
         admin1_names = []
         admin1_shapes = []
 
@@ -96,11 +96,11 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         DATASET_NAME = sys.argv[1]
     RESOURCE_FILE_PATHS = download_hdx_admin1_boundaries()
-    print(f"{len(RESOURCE_FILE_PATHS)} resources downloaded/present with file paths:", flush=True)
+    LOGGER.info(f"{len(RESOURCE_FILE_PATHS)} resources downloaded/present with file paths:")
     for RESOURCE_FILE_PATH in RESOURCE_FILE_PATHS:
-        print(RESOURCE_FILE_PATH, flush=True)
+        LOGGER.info(RESOURCE_FILE_PATH)
     ADMIN1_NAMES, ADMIN1_SHAPES = get_admin1_shapes_from_hdx("HTI")
 
-    print(f"Admin1 boundaries for {COUNTRY_NAME} contain {len(ADMIN1_NAMES)} areas named:")
+    LOGGER.info(f"Admin1 boundaries for {COUNTRY_NAME} contain {len(ADMIN1_NAMES)} areas named:")
     for ADMIN1_NAME in ADMIN1_NAMES:
-        print(ADMIN1_NAME, flush=True)
+        LOGGER.info(ADMIN1_NAME)

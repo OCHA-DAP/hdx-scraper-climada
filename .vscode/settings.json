@@ -10,8 +10,6 @@
   "python.testing.pytestArgs": [
     "--cov=hdx_scraper_insecurity_climada",
     "--cov-config=config/.coveragerc",
-    "-p no:logging",
-    "-rP",
     "tests"
   ],
   "python.testing.unittestEnabled": false,

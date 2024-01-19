@@ -62,7 +62,7 @@ nbstripout --install
 
 ## Dataset updates
 
-The data are generated using `make run`. Currently updates are manual since there are unresolved challenges in running the process in a GitHub Action
+The data are generated using `make run`. Currently updates are manual since there are unresolved challenges in running the process in a GitHub Action.
 
 ### LitPop
 

@@ -13,20 +13,18 @@ import pandas as pd
 from hdx.location.country import Country
 from hdx.utilities.easy_logging import setup_logging
 
-from climada.util.api_client import Client
 
-from climada.entity import LitPop
-
-from hdx_scraper_climada.utilities import write_dictionary, read_countries
+from hdx_scraper_climada.utilities import write_dictionary
 from hdx_scraper_climada.download_admin1_geometry import (
     get_admin1_shapes_from_hdx,
     get_admin1_shapes_from_natural_earth,
 )
 
+from hdx_scraper_climada.climada_interface import calculate_indicator_for_admin1
+
 setup_logging()
 LOGGER = logging.getLogger(__name__)
 
-CLIENT = Client()
 
 HXL_TAGS = OrderedDict(
     [
@@ -118,6 +116,7 @@ def create_detail_dataframes(
     LOGGER.info(f"Admin1 areas in {country}:")
     LOGGER.info(admin1_names)
 
+    # This chunk produces a list of dataframes from the supplied
     country_dataframes = []
     n_regions = len(admin1_shapes)
     for i, admin1_shape in enumerate(admin1_shapes, start=0):
@@ -126,45 +125,13 @@ def create_detail_dataframes(
         LOGGER.info(f"{i+1} of {n_regions} Processing {admin1_names[i]}")
 
         admin1_indicator_gdf = calculate_indicator_for_admin1(
-            admin1_shape, country_iso3a, indicator
+            admin1_shape, admin1_names[i], country, indicator
         )
-
-        admin1_indicator_gdf["region_name"] = len(admin1_indicator_gdf) * [admin1_names[i]]
-        admin1_indicator_gdf["country_name"] = len(admin1_indicator_gdf) * [country]
-        admin1_indicator_gdf["indicator"] = len(admin1_indicator_gdf) * [indicator]
-        admin1_indicator_gdf["aggregation"] = len(admin1_indicator_gdf) * ["none"]
-
-        # Restructure dataframe
-        admin1_indicator_gdf.drop(["index", "region_id", "geometry", "impf_"], axis=1)
-        admin1_indicator_gdf = admin1_indicator_gdf[
-            [
-                "country_name",
-                "region_name",
-                "latitude",
-                "longitude",
-                "aggregation",
-                "indicator",
-                "value",
-            ]
-        ]
 
         LOGGER.info(f"Wrote {len(admin1_indicator_gdf)} lines")
         country_dataframes.append(admin1_indicator_gdf)
 
     return country_dataframes
-
-
-def calculate_indicator_for_admin1(admin1_shape, country_iso3a: str, indicator: str):
-    admin1_indicator_gdf = None
-    if indicator == "litpop":
-        admin1_indicator_data = LitPop.from_shape_and_countries(
-            admin1_shape, country_iso3a, res_arcsec=150
-        )
-        admin1_indicator_gdf = admin1_indicator_data.gdf
-    else:
-        LOGGER.info(f"Indicator {indicator} is not yet implemented")
-
-    return admin1_indicator_gdf
 
 
 def create_summary_data(
@@ -212,10 +179,12 @@ def write_detail_data(country_dataframes: list[pd.DataFrame], output_file_path: 
     if os.path.exists(output_file_path):
         status = f"Output file {output_file_path} already exists, not overwriting"
         return status
-    country_litpop_gdf = pd.concat(country_dataframes, axis=0, ignore_index=True)
+    country_indicator_gdf = pd.concat(country_dataframes, axis=0, ignore_index=True)
     hxl_tag_row = pd.DataFrame([HXL_TAGS])
-    country_litpop_gdf = pd.concat([hxl_tag_row, country_litpop_gdf], axis=0, ignore_index=True)
-    country_litpop_gdf.to_csv(
+    country_indicator_gdf = pd.concat(
+        [hxl_tag_row, country_indicator_gdf], axis=0, ignore_index=True
+    )
+    country_indicator_gdf.to_csv(
         output_file_path,
         index=False,
     )
@@ -230,10 +199,8 @@ if __name__ == "__main__":
     LOGGER.info("============================")
     LOGGER.info(f"Timestamp: {datetime.datetime.now().isoformat()}")
     T0 = time.time()
-    ROWS = read_countries()
-    for ROW in ROWS:
-        STATUSES = export_indicator_data_to_csv(country=ROW["country_name"])
-        for STATUS in STATUSES:
-            LOGGER.info(STATUS)
+    STATUSES = export_indicator_data_to_csv(country="Haiti", indicator="crop_production")
+    for STATUS in STATUSES:
+        LOGGER.info(STATUS)
     LOGGER.info(f"Processed all countries in {time.time()-T0:0.0f} seconds")
     LOGGER.info(f"Timestamp: {datetime.datetime.now().isoformat()}")
