@@ -11,6 +11,7 @@ from hdx_scraper_climada.create_csv_files import (
     write_detail_data,
     write_summary_data,
     make_detail_and_summary_file_paths,
+    export_indicator_data_to_csv,
 )
 
 EXPORT_DIRECTORY = os.path.join(os.path.dirname(__file__), "temp")
@@ -120,3 +121,25 @@ def test_make_detail_and_summary_file_paths():
     assert "admin1-summaries-litpop.csv" in output_summary_path
 
     assert os.path.exists(os.path.join(EXPORT_DIRECTORY, f"{INDICATOR}"))
+
+
+def test_export_indicator_data_to_csv():
+    country = "Haiti"
+    indicator = "crop_production"
+    output_detail_path, output_summary_path = make_detail_and_summary_file_paths(
+        country, indicator, export_directory=EXPORT_DIRECTORY
+    )
+    if os.path.exists(output_detail_path):
+        os.remove(output_detail_path)
+
+    if os.path.exists(output_summary_path):
+        os.remove(output_summary_path)
+
+    statuses = export_indicator_data_to_csv(country, indicator, export_directory=EXPORT_DIRECTORY)
+
+    for status in statuses:
+        print(status, flush=True)
+
+    assert len(statuses) == 3
+    assert os.path.exists(output_detail_path)
+    assert os.path.exists(output_summary_path)

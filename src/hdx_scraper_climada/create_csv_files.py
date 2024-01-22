@@ -140,20 +140,22 @@ def create_summary_data(
     summary_rows = []
     n_lines = 0
     for df in country_dataframes:
+        print(df.head(10), flush=True)
         if len(df) == 0:
             LOGGER.info("Dataframe length is zero")
             continue
+        print(df, flush=True)
         n_lines += len(df)
         row = HXL_TAGS.copy()
         row["country_name"] = country
-        row["region_name"] = df["region_name"][0]
+        row["region_name"] = df["region_name"].to_list()[0]
         row["latitude"] = round(df["latitude"].mean(), 4)
         row["longitude"] = round(df["longitude"].mean(), 4)
         row["aggregation"] = "sum"
         row["indicator"] = indicator
         row["value"] = df["value"].sum()
 
-        LOGGER.info(f"{df['region_name'][0]:<20}, {df['value'].sum():0.0f}")
+        LOGGER.info(f"{df['region_name'].to_list()[0]:<20}, {df['value'].sum():0.0f}")
         summary_rows.append(row)
 
     return summary_rows, n_lines
