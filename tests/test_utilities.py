@@ -5,6 +5,9 @@ import csv
 import logging
 import os
 from pathlib import Path
+
+import pytest
+
 from hdx_scraper_climada.utilities import read_attributes, write_dictionary, print_banner_to_log
 
 TEMP_FILE_PATH = os.path.join(Path(__file__).parent, "temp", "tmp.csv")
@@ -40,6 +43,10 @@ def test_write_dictionary_to_local_file():
     assert "is being created" in status
 
 
+@pytest.mark.skip(
+    reason="This test does not work in VS Code because "
+    "we supress logging with '-p no:logging' in settings.json"
+)
 def test_print_banner_to_log(caplog):
     caplog.set_level(logging.INFO)
     print_banner_to_log(LOGGER, "test-banner")

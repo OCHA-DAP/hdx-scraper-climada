@@ -8,8 +8,9 @@
   "editor.formatOnSave": true,
   "prettier.enable": false,
   "python.testing.pytestArgs": [
-    "--cov=hdx_scraper_insecurity_climada",
+    "--cov=hdx_scraper_climada",
     "--cov-config=config/.coveragerc",
+    "--cov-report=xml:cov.xml",
     "-p no:logging",
     "tests"
   ],
