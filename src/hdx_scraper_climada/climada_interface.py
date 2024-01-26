@@ -59,6 +59,8 @@ def calculate_indicator_for_admin1(
     admin1_indicator_gdf = None
     if indicator == "litpop":
         admin1_indicator_gdf = calculate_litpop_for_admin1(admin1_shape, country, indicator)
+    elif indicator == "litpop_alt":
+        admin1_indicator_gdf = calculate_litpop_alt_for_admin1(admin1_shape, country, indicator)
     elif indicator == "crop_production":
         admin1_indicator_gdf = calculate_crop_production_for_admin1(
             admin1_shape, country, indicator
@@ -157,6 +159,31 @@ def calculate_crop_production_for_admin1(
     return admin1_indicator_gdf
 
 
+def calculate_litpop_alt_for_admin1(
+    admin1_shape: list[geopandas.geoseries.GeoSeries],
+    country: str,
+    indicator: str,
+) -> pd.DataFrame:
+    country_iso_numeric = u_coord.country_to_iso(country, "numeric")
+    admin1_indicator_data = CLIENT.get_exposures(
+        "litpop",
+        properties={
+            "country_iso3num": str(country_iso_numeric),
+            "exponents": "(1,1)",
+            "fin_mode": "pc",
+        },
+    )
+
+    admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
+
+    # Geometry filter
+    admin1_indicator_gdf = filter_dataframe_with_geometry(
+        admin1_indicator_gdf, admin1_shape, indicator
+    )
+
+    return admin1_indicator_gdf
+
+
 def calculate_litpop_for_admin1(
     admin1_shape: list[geopandas.geoseries.GeoSeries],
     country: str,
@@ -193,5 +220,5 @@ def filter_dataframe_with_geometry(
 
 
 if __name__ == "__main__":
-    DATA_TYPE = "relative_cropyield"
+    DATA_TYPE = "litpop"
     print_overview_information(data_type=DATA_TYPE)
