@@ -7,6 +7,7 @@ Ian Hopkinson 2024-01-16
 """
 import pandas as pd
 
+
 from climada.entity import LitPop
 from hdx_scraper_climada.download_admin1_geometry import get_admin1_shapes_from_hdx
 from hdx_scraper_climada.climada_interface import calculate_indicator_for_admin1
