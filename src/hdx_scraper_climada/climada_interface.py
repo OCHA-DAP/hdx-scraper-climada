@@ -129,32 +129,39 @@ def calculate_crop_production_for_admin1(
     indicator: str,
 ) -> pd.DataFrame:
     global CROP_PRODUCTION_CACHE
-    crop = "mai"
-    irrigation_status = "noirr"
-    indicator_key = f"crop_production.{crop}.{irrigation_status}.USD"
-    if indicator_key not in CROP_PRODUCTION_CACHE:
-        admin1_indicator_data = CLIENT.get_exposures(
-            indicator,
-            properties={
-                "crop": crop,
-                "irrigation_status": irrigation_status,
-                "unit": "USD",
-                "spatial_coverage": "global",
-            },
-        )
-        CROP_PRODUCTION_CACHE[indicator_key] = admin1_indicator_data
-    else:
-        admin1_indicator_data = CROP_PRODUCTION_CACHE[indicator_key]
 
-    admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
-    country_iso_numeric = u_coord.country_to_iso(country, "numeric")
-    admin1_indicator_gdf = admin1_indicator_gdf[
-        admin1_indicator_gdf["region_id"] == country_iso_numeric
-    ]
-    # Geometry filter
-    admin1_indicator_gdf = filter_dataframe_with_geometry(
-        admin1_indicator_gdf, admin1_shape, indicator_key
-    )
+    crops = ["mai", "whe", "soy", "ric"]
+    crop_gdfs = []
+    for crop in crops:
+        irrigation_status = "noirr"
+        indicator_key = f"crop_production.{crop}.{irrigation_status}.USD"
+        if indicator_key not in CROP_PRODUCTION_CACHE:
+            admin1_indicator_data = CLIENT.get_exposures(
+                indicator,
+                properties={
+                    "crop": crop,
+                    "irrigation_status": irrigation_status,
+                    "unit": "USD",
+                    "spatial_coverage": "global",
+                },
+            )
+            CROP_PRODUCTION_CACHE[indicator_key] = admin1_indicator_data
+        else:
+            admin1_indicator_data = CROP_PRODUCTION_CACHE[indicator_key]
+
+        admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
+        country_iso_numeric = u_coord.country_to_iso(country, "numeric")
+        admin1_indicator_gdf = admin1_indicator_gdf[
+            admin1_indicator_gdf["region_id"] == country_iso_numeric
+        ]
+        # Geometry filter
+        admin1_indicator_gdf = filter_dataframe_with_geometry(
+            admin1_indicator_gdf, admin1_shape, indicator_key
+        )
+        crop_gdfs.append(admin1_indicator_gdf)
+
+    admin1_indicator_gdf = pd.concat(crop_gdfs, axis=0, ignore_index=True)
+    # admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
 
     return admin1_indicator_gdf
 
@@ -201,7 +208,7 @@ def filter_dataframe_with_geometry(
     admin1_shape: list[geopandas.geoseries.GeoSeries],
     indicator_key: str,
 ) -> pd.DataFrame:
-    admin1_indicator_gdf = geopandas.GeoDataFrame(
+    admin1_indicator_geo_gdf = geopandas.GeoDataFrame(
         admin1_indicator_gdf,
         geometry=geopandas.points_from_xy(
             admin1_indicator_gdf.longitude, admin1_indicator_gdf.latitude
@@ -210,15 +217,17 @@ def filter_dataframe_with_geometry(
 
     temp_gdf = []
     for shp in admin1_shape:
-        temp_gdf.append(admin1_indicator_gdf.loc[admin1_indicator_gdf.geometry.within(shp)])
-    admin1_indicator_gdf = pd.concat(temp_gdf)
+        temp_gdf.append(admin1_indicator_geo_gdf.loc[admin1_indicator_geo_gdf.geometry.within(shp)])
+    admin1_indicator_geo_gdf = pd.concat(temp_gdf)
 
-    admin1_indicator_gdf["indicator"] = len(admin1_indicator_gdf) * [indicator_key]
-    admin1_indicator_gdf = admin1_indicator_gdf[["latitude", "longitude", "indicator", "value"]]
+    admin1_indicator_geo_gdf["indicator"] = len(admin1_indicator_geo_gdf) * [indicator_key]
+    admin1_indicator_geo_gdf = admin1_indicator_geo_gdf[
+        ["latitude", "longitude", "indicator", "value"]
+    ]
 
-    return admin1_indicator_gdf
+    return admin1_indicator_geo_gdf
 
 
 if __name__ == "__main__":
-    DATA_TYPE = "litpop"
+    DATA_TYPE = "crop_production"
     print_overview_information(data_type=DATA_TYPE)

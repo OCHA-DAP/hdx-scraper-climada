@@ -5,6 +5,8 @@
 This test suite tests aspects of the climada interface for issue reporting 
 Ian Hopkinson 2024-01-16
 """
+
+import os
 import pandas as pd
 import pytest
 
@@ -12,6 +14,7 @@ import pytest
 from climada.entity import LitPop
 from hdx_scraper_climada.download_admin1_geometry import get_admin1_shapes_from_hdx
 from hdx_scraper_climada.climada_interface import calculate_indicator_for_admin1
+from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_paths
 
 COUNTRY_ISO3A = "HTI"
 COUNTRY = "Haiti"
@@ -138,6 +141,12 @@ def test_calculate_indicator_for_admin1_crop_production():
 
     admin1_indicator_gdf = pd.concat(admin1_indicator_gdf_list)
 
+    export_directory = os.path.join(os.path.dirname(__file__), "temp")
+    detail_file_path, _ = make_detail_and_summary_file_paths(
+        COUNTRY, indicator, export_directory=export_directory
+    )
+    admin1_indicator_gdf.to_csv(detail_file_path, index=False)
+
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Haiti",
         "region_name": "Centre",
@@ -148,4 +157,4 @@ def test_calculate_indicator_for_admin1_crop_production():
         "value": 4550041.218882989,
     }
 
-    assert len(admin1_indicator_gdf) == 13
+    assert len(admin1_indicator_gdf) == 52
