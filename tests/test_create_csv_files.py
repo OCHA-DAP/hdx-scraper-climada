@@ -50,7 +50,7 @@ def test_create_dataframes(haiti_detail_dataframes):
 
 
 def test_create_summary(haiti_detail_dataframes):
-    summary_rows, n_lines = create_summary_data(haiti_detail_dataframes, COUNTRY, INDICATOR)
+    summary_rows, n_lines = create_summary_data(haiti_detail_dataframes)
 
     assert len(summary_rows) == 10
     assert n_lines == 1312
@@ -93,7 +93,7 @@ def test_write_summary_data(haiti_detail_dataframes):
     if os.path.exists(output_summary_path):
         os.remove(output_summary_path)
 
-    summary_rows, _ = create_summary_data(haiti_detail_dataframes, COUNTRY, INDICATOR)
+    summary_rows, _ = create_summary_data(haiti_detail_dataframes)
     _ = write_summary_data(summary_rows, output_summary_path)
 
     assert os.path.exists(output_summary_path)
@@ -143,3 +143,8 @@ def test_export_indicator_data_to_csv():
     assert len(statuses) == 3
     assert os.path.exists(output_detail_path)
     assert os.path.exists(output_summary_path)
+
+    with open(output_summary_path, encoding="utf-8") as summary_file:
+        rows = list(csv.DictReader(summary_file))
+
+    assert len(rows) == 81  # 10 regions x 8 indicators + 1 HXL tag

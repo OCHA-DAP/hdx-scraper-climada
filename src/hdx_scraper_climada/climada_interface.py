@@ -2,6 +2,8 @@
 # encoding: utf-8
 import logging
 
+from typing import Any
+
 import geopandas
 import pandas as pd
 
@@ -156,16 +158,37 @@ def calculate_crop_production_for_admin1(
             admin1_indicator_gdf = admin1_indicator_gdf[
                 admin1_indicator_gdf["region_id"] == country_iso_numeric
             ]
-            # Geometry filter
             admin1_indicator_gdf = filter_dataframe_with_geometry(
                 admin1_indicator_gdf, admin1_shape, indicator_key
             )
+            if len(admin1_indicator_gdf) == 0:
+                # Calculate centroid of region
+                centroid = calculate_centroid(admin1_shape)
+
+                admin1_indicator_gdf = pd.DataFrame(
+                    [
+                        {
+                            "latitude": round(centroid[0].y, 2),
+                            "longitude": round(centroid[0].x, 2),
+                            "indicator": indicator_key,
+                            "value": 0.0,
+                        }
+                    ]
+                )
             crop_gdfs.append(admin1_indicator_gdf)
 
     admin1_indicator_gdf = pd.concat(crop_gdfs, axis=0, ignore_index=True)
-    # admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
 
     return admin1_indicator_gdf
+
+
+def calculate_centroid(admin1_shape: list[geopandas.geoseries.GeoSeries]) -> Any:
+    centroids = []
+    for shp in admin1_shape:
+        centroids.append(shp.centroid)
+    gdf = geopandas.GeoDataFrame({}, geometry=centroids)
+    centroid = gdf.dissolve().centroid
+    return centroid
 
 
 def calculate_litpop_alt_for_admin1(
@@ -185,7 +208,6 @@ def calculate_litpop_alt_for_admin1(
 
     admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
 
-    # Geometry filter
     admin1_indicator_gdf = filter_dataframe_with_geometry(
         admin1_indicator_gdf, admin1_shape, indicator
     )
@@ -227,6 +249,8 @@ def filter_dataframe_with_geometry(
         ["latitude", "longitude", "indicator", "value"]
     ]
 
+    if len(admin1_indicator_geo_gdf) == 0:
+        LOGGER.info("No rows inside geometry filter")
     return admin1_indicator_geo_gdf
 
 

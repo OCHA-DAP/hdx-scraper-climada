@@ -65,7 +65,7 @@ def export_indicator_data_to_csv(
     statuses.append(status)
 
     # Make summary file
-    summary_rows, n_lines = create_summary_data(country_dataframes, country, indicator)
+    summary_rows, n_lines = create_summary_data(country_dataframes)
     status = write_summary_data(summary_rows, output_summary_path)
     statuses.append(status)
 
@@ -135,28 +135,34 @@ def create_detail_dataframes(
 
 
 def create_summary_data(
-    country_dataframes: list[pd.DataFrame], country: str, indicator: str
+    country_dataframes: list[pd.DataFrame],
 ) -> (list[dict], int):
     summary_rows = []
     n_lines = 0
+    country = country_dataframes[0]["country_name"].unique()[0]
     for df in country_dataframes:
-        print(df.head(10), flush=True)
         if len(df) == 0:
             LOGGER.info("Dataframe length is zero")
             continue
-        print(df, flush=True)
-        n_lines += len(df)
-        row = HXL_TAGS.copy()
-        row["country_name"] = country
-        row["region_name"] = df["region_name"].to_list()[0]
-        row["latitude"] = round(df["latitude"].mean(), 4)
-        row["longitude"] = round(df["longitude"].mean(), 4)
-        row["aggregation"] = "sum"
-        row["indicator"] = indicator
-        row["value"] = df["value"].sum()
+        indicators = df["indicator"].unique()
+        for indicator in indicators:
+            filtered_df = df[df["indicator"] == indicator]
+            n_lines += len(filtered_df)
+            row = HXL_TAGS.copy()
+            row["country_name"] = country
+            row["region_name"] = filtered_df["region_name"].to_list()[0]
+            row["latitude"] = round(filtered_df["latitude"].mean(), 4)
+            row["longitude"] = round(filtered_df["longitude"].mean(), 4)
+            row["aggregation"] = "sum"
+            row["indicator"] = indicator
+            row["value"] = filtered_df["value"].sum()
 
-        LOGGER.info(f"{df['region_name'].to_list()[0]:<20}, {df['value'].sum():0.0f}")
-        summary_rows.append(row)
+            LOGGER.info(
+                f"{filtered_df['region_name'].to_list()[0]:<20}, "
+                f"{filtered_df['indicator'].to_list()[0]:<20}, "
+                f"{filtered_df['value'].sum():0.0f}"
+            )
+            summary_rows.append(row)
 
     return summary_rows, n_lines
 
