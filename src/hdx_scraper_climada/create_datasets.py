@@ -97,7 +97,7 @@ def create_datasets_in_hdx(
 
     dataset.add_update_resources(resource_list)
     if not dry_run:
-        LOGGER.info("Dry_run flag not set so no data written to HDX")
+        LOGGER.info("Dry_run flag not set so data is being written to HDX")
         dataset.create_in_hdx()
     else:
         LOGGER.info("Dry_run flag set so no data written to HDX")
@@ -131,6 +131,7 @@ def create_or_fetch_base_dataset(
 
         dataset = Dataset.load_from_json(dataset_template_filepath)
 
+        dataset["name"] = dataset_name
         for attribute in ["title", "notes", "methodology_other", "caveats"]:
             dataset[attribute] = dataset_attributes[attribute]
 
