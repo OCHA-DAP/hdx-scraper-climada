@@ -72,9 +72,16 @@ The country files have aggregation `none` and the summary files will have aggreg
 
 The summary file has a row per country per admin1 region per indicator whilst the country file has a row per underlying latitude / longitude grid point per indicator. 
 
+Where the `region_name` are `admin1` names as per the private UNOCHA dataset [unmap-international-boundaries-geojson]([unmap-international-boundaries-geojson](https://data.humdata.org/dataset/unmap-international-boundaries-geojson)).
 
-
-Where the `region_name` are `admin1` names as per the private UNOCHA dataset[unmap-international-boundaries-geojson]([unmap-international-boundaries-geojson](https://data.humdata.org/dataset/unmap-international-boundaries-geojson)).
+The dataset metadata are compiled in the file from the [CLIMADA data-type endpoint](https://climada.ethz.ch/data-types/):
+```
+\src\hdx_scraper_climada\metadata\2024-01-11-data-type-metadata.csv
+```
+But they are picked up by `create_datasets` from 
+```
+\src\hdx_scraper_climada\metadata\attributes.csv
+``` 
 
 ## Dataset updates
 
@@ -82,16 +89,11 @@ The data are generated using `make run`. Currently updates are manual since ther
 
 ### LitPop
 
-There is a nice explanation of the LitPop data at the beginning of the tutorial notebook:
-
-```
-[doc/tutorial/climada_entity_LitPop.ipynb](https://github.com/CLIMADA-project/climada_python/blob/main/doc/tutorial/climada_entity_LitPop.ipynb)
-```
-
 Runtime for Litpop is about 50 minutes and generates 58MB of CSV files.
 
 ### Crop production
 
+Runtime for crop-production is about 134 seconds and generates 3.54MB of CSV files. This is smaller than for Litpop because although it comprises 8 datasets they are intrinsically lower resolution and do not form a complete grid.
 
 ## Analysis
 

@@ -63,7 +63,7 @@ def calculate_indicator_for_admin1(
         admin1_indicator_gdf = calculate_litpop_for_admin1(admin1_shape, country, indicator)
     elif indicator == "litpop_alt":
         admin1_indicator_gdf = calculate_litpop_alt_for_admin1(admin1_shape, country, indicator)
-    elif indicator == "crop_production":
+    elif indicator == "crop-production":
         admin1_indicator_gdf = calculate_crop_production_for_admin1(
             admin1_shape, country, indicator
         )
@@ -73,6 +73,7 @@ def calculate_indicator_for_admin1(
         )
     else:
         LOGGER.info(f"Indicator {indicator} is not yet implemented")
+        raise NotImplementedError
 
     admin1_indicator_gdf["region_name"] = len(admin1_indicator_gdf) * [admin1_name]
     admin1_indicator_gdf["country_name"] = len(admin1_indicator_gdf) * [country]
@@ -148,10 +149,10 @@ def calculate_crop_production_for_admin1(
     crop_gdfs = []
     for crop in crops:
         for irrigation_status in irrigation_statuses:
-            indicator_key = f"crop_production.{crop}.{irrigation_status}.USD"
+            indicator_key = f"crop-production.{crop}.{irrigation_status}.USD"
             if indicator_key not in GLOBAL_INDICATOR_CACHE:
                 admin1_indicator_data = CLIENT.get_exposures(
-                    indicator,
+                    "crop_production",
                     properties={
                         "crop": crop,
                         "irrigation_status": irrigation_status,

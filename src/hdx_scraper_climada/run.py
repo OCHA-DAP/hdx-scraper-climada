@@ -57,34 +57,41 @@ def check_csv_files(indicator: str) -> set:
 
     countries_to_process = sorted(list(countries_to_process))
 
-    LOGGER.info("Countries already processed (detail):")
-    for country in sorted(detail_countries):
-        LOGGER.info(country)
+    if len(detail_countries) == 0:
+        LOGGER.info("No CSV data files have been produced for this indicator yet")
+    else:
+        LOGGER.info("Countries already processed (detail):")
+        for country in sorted(detail_countries):
+            LOGGER.info(country)
 
     return countries_to_process
 
 
-def process_list(countries_to_process: list[dict], indicator: str, dry_run: bool = True):
-    dataset_name = f"climada-{indicator}-dataset"
+def produce_csv_files(countries_to_process: list[dict], indicator: str):
     for country in countries_to_process:
         statuses = export_indicator_data_to_csv(country=country, indicator=indicator)
         for status in statuses:
             LOGGER.info(status)
-    create_datasets_in_hdx(dataset_name, dry_run=dry_run)
 
 
 if __name__ == "__main__":
-    INDICATOR = "crop_production"
+    INDICATOR = "crop-production"
     DRY_RUN = True
     T0 = time.time()
     print_banner_to_log(LOGGER, "Updating Climada Datasets")
 
     COUNTRIES_TO_PROCESS = check_csv_files(INDICATOR)
 
-    LOGGER.info("Countries to process:")
-    for COUNTRY in COUNTRIES_TO_PROCESS:
-        LOGGER.info(COUNTRY)
-    process_list(COUNTRIES_TO_PROCESS, INDICATOR, dry_run=DRY_RUN)
+    if len(COUNTRIES_TO_PROCESS) == 0:
+        LOGGER.info("CSV data files for all countries are already available")
+    else:
+        LOGGER.info("Countries to process:")
+        for COUNTRY in COUNTRIES_TO_PROCESS:
+            LOGGER.info(COUNTRY)
+        produce_csv_files(COUNTRIES_TO_PROCESS, INDICATOR)
 
     LOGGER.info(f"Processed all countries in {time.time()-T0:0.0f} seconds")
     LOGGER.info(f"Timestamp: {datetime.datetime.now().isoformat()}")
+
+    DATASET_NAME = f"climada-{INDICATOR}-dataset"
+    create_datasets_in_hdx(DATASET_NAME, dry_run=DRY_RUN)

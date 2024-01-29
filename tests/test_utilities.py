@@ -26,7 +26,7 @@ def test_read_attributes():
 
     assert len(dataset_attributes["resource"]) == 2
     assert dataset_attributes["skip_country"] == ["SYR"]
-    assert dataset_attributes["data_type_group"] == "hazard"
+    assert dataset_attributes["data_type_group"] == "exposure"
 
 
 def test_write_dictionary_to_local_file():

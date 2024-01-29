@@ -125,7 +125,7 @@ def test_make_detail_and_summary_file_paths():
 
 def test_export_indicator_data_to_csv():
     country = "Haiti"
-    indicator = "crop_production"
+    indicator = "crop-production"
     output_detail_path, output_summary_path = make_detail_and_summary_file_paths(
         country, indicator, export_directory=EXPORT_DIRECTORY
     )

@@ -131,7 +131,7 @@ def test_litpop_cross_check():
 
 
 def test_calculate_indicator_for_admin1_crop_production():
-    indicator = "crop_production"
+    indicator = "crop-production"
 
     admin1_indicator_gdf_list = []
     for i, admin1_shape in enumerate(ADMIN1_SHAPES):
@@ -153,7 +153,7 @@ def test_calculate_indicator_for_admin1_crop_production():
         "latitude": 19.25,
         "longitude": -71.75,
         "aggregation": "none",
-        "indicator": "crop_production.mai.noirr.USD",
+        "indicator": "crop-production.mai.noirr.USD",
         "value": 4550041.218882989,
     }
 

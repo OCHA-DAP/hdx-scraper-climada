@@ -59,7 +59,7 @@ def create_datasets_in_hdx(
         attributes = read_attributes(resource_name)
         if "{country}" in resource_name:
             for country in countries_data:
-                if country["iso3alpha_country_code"] in dataset_attributes["skip_country"]:
+                if country["iso3alpha_country_code"] in dataset_attributes.get("skip_country", []):
                     LOGGER.info("2024-01-10: Skipping Syria data whilst issue is addressed")
                     continue
                 country_str = country["country_name"].lower().replace(" ", "-")
