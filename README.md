@@ -60,6 +60,22 @@ We use `nbstripout` to remove output cells from Jupyter Notebooks prior, this ne
 nbstripout --install
 ```
 
+## Data format
+
+Each dataset will have a a "country" CSV format file for each country where data are available and a CSV format summary file. Both types of file include HXL tags on the second row of the dataset. Both files have the same columns:
+```
+country_name,region_name,latitude,longitude,aggregation,indicator,value
+#country,#adm1+name,#geo+lat,#geo+lon,,#indicator+name,#indicator+num
+```
+
+The country files have aggregation `none` and the summary files will have aggregation `sum`. The `indicator` column may be a compound value such as `crop_production.whe.noirr.USD` where an indicator calculation takes multiple values or it may be simple, such as `litpop`.
+
+The summary file has a row per country per admin1 region per indicator whilst the country file has a row per underlying latitude / longitude grid point per indicator. 
+
+
+
+Where the `region_name` are `admin1` names as per the private UNOCHA dataset[unmap-international-boundaries-geojson]([unmap-international-boundaries-geojson](https://data.humdata.org/dataset/unmap-international-boundaries-geojson)).
+
 ## Dataset updates
 
 The data are generated using `make run`. Currently updates are manual since there are unresolved challenges in running the process in a GitHub Action.
@@ -77,6 +93,10 @@ Runtime for Litpop is about 50 minutes and generates 58MB of CSV files.
 ### Crop production
 
 
+## Analysis
+
+
+The Jupyter Notebook `data_explorer_notebook.ipynb` is used to check datasets "manually". The Excel spreadsheet `2024-01-27-pivot-table-haiti-admin1-crop_production.xlsx` demonstrates the use of PivotTables to convert data from a "narrow" format where there is a single indicator column potentially containing multiple indicator values for different attribute selections in the same set (i.e. `crop_production.whe.noirr.USD` and `crop_production.soy.noirr.USD`)
 
 
 
