@@ -16,7 +16,7 @@ CLIENT = Client()
 setup_logging()
 LOGGER = logging.getLogger(__name__)
 
-CROP_PRODUCTION_CACHE = {}
+GLOBAL_INDICATOR_CACHE = {}
 
 
 def print_overview_information(data_type="litpop"):
@@ -128,37 +128,39 @@ def calculate_crop_production_for_admin1(
     country: str,
     indicator: str,
 ) -> pd.DataFrame:
-    global CROP_PRODUCTION_CACHE
+    # Global data is cached in a dictionary GLOBAL_INDICATOR_CACHE keyed by the indicator name
+    # the `global` keyword is not required because we mutate this dictionary rather than reassign.
 
     crops = ["mai", "whe", "soy", "ric"]
+    irrigation_statuses = ["noirr", "firr"]
     crop_gdfs = []
     for crop in crops:
-        irrigation_status = "noirr"
-        indicator_key = f"crop_production.{crop}.{irrigation_status}.USD"
-        if indicator_key not in CROP_PRODUCTION_CACHE:
-            admin1_indicator_data = CLIENT.get_exposures(
-                indicator,
-                properties={
-                    "crop": crop,
-                    "irrigation_status": irrigation_status,
-                    "unit": "USD",
-                    "spatial_coverage": "global",
-                },
-            )
-            CROP_PRODUCTION_CACHE[indicator_key] = admin1_indicator_data
-        else:
-            admin1_indicator_data = CROP_PRODUCTION_CACHE[indicator_key]
+        for irrigation_status in irrigation_statuses:
+            indicator_key = f"crop_production.{crop}.{irrigation_status}.USD"
+            if indicator_key not in GLOBAL_INDICATOR_CACHE:
+                admin1_indicator_data = CLIENT.get_exposures(
+                    indicator,
+                    properties={
+                        "crop": crop,
+                        "irrigation_status": irrigation_status,
+                        "unit": "USD",
+                        "spatial_coverage": "global",
+                    },
+                )
+                GLOBAL_INDICATOR_CACHE[indicator_key] = admin1_indicator_data
+            else:
+                admin1_indicator_data = GLOBAL_INDICATOR_CACHE[indicator_key]
 
-        admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
-        country_iso_numeric = u_coord.country_to_iso(country, "numeric")
-        admin1_indicator_gdf = admin1_indicator_gdf[
-            admin1_indicator_gdf["region_id"] == country_iso_numeric
-        ]
-        # Geometry filter
-        admin1_indicator_gdf = filter_dataframe_with_geometry(
-            admin1_indicator_gdf, admin1_shape, indicator_key
-        )
-        crop_gdfs.append(admin1_indicator_gdf)
+            admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
+            country_iso_numeric = u_coord.country_to_iso(country, "numeric")
+            admin1_indicator_gdf = admin1_indicator_gdf[
+                admin1_indicator_gdf["region_id"] == country_iso_numeric
+            ]
+            # Geometry filter
+            admin1_indicator_gdf = filter_dataframe_with_geometry(
+                admin1_indicator_gdf, admin1_shape, indicator_key
+            )
+            crop_gdfs.append(admin1_indicator_gdf)
 
     admin1_indicator_gdf = pd.concat(crop_gdfs, axis=0, ignore_index=True)
     # admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
