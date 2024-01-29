@@ -157,4 +157,4 @@ def test_calculate_indicator_for_admin1_crop_production():
         "value": 4550041.218882989,
     }
 
-    assert len(admin1_indicator_gdf) == 104
+    assert len(admin1_indicator_gdf) == 128

@@ -112,7 +112,7 @@ def calculate_relative_cropyield_for_admin1(
         },
     )
     admin1_indicator_gdf = admin1_indicator_data.gdf
-    country_iso_numeric = u_coord.country_to_iso(country, "numeric")
+    country_iso_numeric = get_country_iso_numeric(country)
 
     admin1_indicator_gdf = admin1_indicator_gdf[
         admin1_indicator_gdf["region_id"] == country_iso_numeric
@@ -123,6 +123,16 @@ def calculate_relative_cropyield_for_admin1(
     )
 
     return admin1_indicator_gdf
+
+
+def get_country_iso_numeric(country):
+    if country.lower() == "dr congo":
+        country_iso_numeric = 180
+    elif country.lower() == "state of palestine":
+        country_iso_numeric = 275
+    else:
+        country_iso_numeric = u_coord.country_to_iso(country, "numeric")
+    return country_iso_numeric
 
 
 def calculate_crop_production_for_admin1(
@@ -154,7 +164,7 @@ def calculate_crop_production_for_admin1(
                 admin1_indicator_data = GLOBAL_INDICATOR_CACHE[indicator_key]
 
             admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
-            country_iso_numeric = u_coord.country_to_iso(country, "numeric")
+            country_iso_numeric = get_country_iso_numeric(country)
             admin1_indicator_gdf = admin1_indicator_gdf[
                 admin1_indicator_gdf["region_id"] == country_iso_numeric
             ]
@@ -196,7 +206,7 @@ def calculate_litpop_alt_for_admin1(
     country: str,
     indicator: str,
 ) -> pd.DataFrame:
-    country_iso_numeric = u_coord.country_to_iso(country, "numeric")
+    country_iso_numeric = get_country_iso_numeric(country)
     admin1_indicator_data = CLIENT.get_exposures(
         "litpop",
         properties={

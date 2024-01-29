@@ -57,6 +57,10 @@ def check_csv_files(indicator: str) -> set:
 
     countries_to_process = sorted(list(countries_to_process))
 
+    LOGGER.info("Countries already processed (detail):")
+    for country in sorted(detail_countries):
+        LOGGER.info(country)
+
     return countries_to_process
 
 
@@ -70,14 +74,16 @@ def process_list(countries_to_process: list[dict], indicator: str, dry_run: bool
 
 
 if __name__ == "__main__":
-    INDICATOR = "litpop"
+    INDICATOR = "crop_production"
     DRY_RUN = True
     T0 = time.time()
     print_banner_to_log(LOGGER, "Updating Climada Datasets")
 
     COUNTRIES_TO_PROCESS = check_csv_files(INDICATOR)
 
-    LOGGER.info(COUNTRIES_TO_PROCESS)
+    LOGGER.info("Countries to process:")
+    for COUNTRY in COUNTRIES_TO_PROCESS:
+        LOGGER.info(COUNTRY)
     process_list(COUNTRIES_TO_PROCESS, INDICATOR, dry_run=DRY_RUN)
 
     LOGGER.info(f"Processed all countries in {time.time()-T0:0.0f} seconds")
