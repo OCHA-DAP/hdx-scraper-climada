@@ -10,17 +10,19 @@ authors = [
 ]
 
 dependencies = [
+    "climada==4.0.1",
     "pandas",
     "GDAL",
+    "geopandas",
     "hdx-python-api>=6.2.1",
     "hdx-python-country",
     "pytest",
     "pytest-cov",
     "plotly",
     "nbstripout",
-  "black==23.10.0",
-  "flake8>=6.1.0",
-  "pylint>=3.0.1"
+    "black==23.10.0",
+    "flake8>=6.1.0",
+    "pylint>=3.0.1"
 ]
 
 [build-system]
