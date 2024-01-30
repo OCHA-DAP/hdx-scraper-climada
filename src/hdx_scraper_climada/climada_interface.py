@@ -58,6 +58,7 @@ def calculate_indicator_for_admin1(
     country: str,
     indicator: str,
 ) -> pd.DataFrame:
+
     admin1_indicator_gdf = None
     if indicator == "litpop":
         admin1_indicator_gdf = calculate_litpop_for_admin1(admin1_shape, country, indicator)
