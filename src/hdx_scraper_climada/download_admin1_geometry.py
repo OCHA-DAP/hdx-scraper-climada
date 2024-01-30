@@ -92,15 +92,5 @@ def get_admin1_shapes_from_natural_earth(country_iso3a):
 
 
 if __name__ == "__main__":
-    COUNTRY_NAME = "HTI"
-    if len(sys.argv) == 2:
-        DATASET_NAME = sys.argv[1]
     RESOURCE_FILE_PATHS = download_hdx_admin1_boundaries()
-    LOGGER.info(f"{len(RESOURCE_FILE_PATHS)} resources downloaded/present with file paths:")
-    for RESOURCE_FILE_PATH in RESOURCE_FILE_PATHS:
-        LOGGER.info(RESOURCE_FILE_PATH)
-    ADMIN1_NAMES, ADMIN1_SHAPES = get_admin1_shapes_from_hdx("HTI")
-
-    LOGGER.info(f"Admin1 boundaries for {COUNTRY_NAME} contain {len(ADMIN1_NAMES)} areas named:")
-    for ADMIN1_NAME in ADMIN1_NAMES:
-        LOGGER.info(ADMIN1_NAME)
+    LOGGER.info(f"Downloaded admin1 boundary data to: {RESOURCE_FILE_PATHS}")
