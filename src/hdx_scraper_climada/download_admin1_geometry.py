@@ -24,6 +24,7 @@ try:
     Configuration.create(
         user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
         user_agent_lookup="hdx-scraper-climada",
+        hdx_site="stage",
     )
 except ConfigurationError:
     LOGGER.info(
