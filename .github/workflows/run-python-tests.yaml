@@ -22,7 +22,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         env:
-          HDX_KEY: ${{ secrets.HDX_KEY }}
+          HDX_KEY: ${{ secrets.HDX_BOT_SCRAPERS_API_TOKEN }}
           HDX_SITE: ${{ vars.HDX_SITE }}
           USER_AGENT: ${{ vars.USER_AGENT }}
           PREPREFIX: ${{ vars.PREPREFIX }}
