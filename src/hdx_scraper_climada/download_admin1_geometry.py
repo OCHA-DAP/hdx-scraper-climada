@@ -51,12 +51,12 @@ def download_hdx_admin1_boundaries():
 
 
 def get_admin1_shapes_from_hdx(country_iso3a):
-    boundary_dataset = Dataset.read_from_hdx(UNMAP_DATASET_NAME)
-    boundary_resources = boundary_dataset.get_resources()
-    admin1_file_path = None
-    for resource in boundary_resources:
-        if "polbnda_adm1" in resource["name"]:
-            admin1_file_path = os.path.join(ADMIN1_GEOMETRY_FOLDER, f"{resource['name']}")
+    admin1_file_path = os.path.join(ADMIN1_GEOMETRY_FOLDER, "polbnda_adm1_1m_ocha.geojson")
+
+    if not os.path.exists(admin1_file_path):
+        raise FileNotFoundError(
+            f"{admin1_file_path} was not found, run `download_admin1_geometry.py` to download"
+        )
 
     admin1_gpd = geopandas.read_file(admin1_file_path)
 

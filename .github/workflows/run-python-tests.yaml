@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         env:
           HDX_KEY: ${{ secrets.HDX_BOT_SCRAPERS_API_TOKEN }}
-          HDX_SITE: ${{ vars.HDX_SITE }}
+          HDX_SITE: prod
           USER_AGENT: ${{ vars.USER_AGENT }}
           PREPREFIX: ${{ vars.PREPREFIX }}
         run: |
