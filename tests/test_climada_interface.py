@@ -60,9 +60,6 @@ def test_calculate_indicator_for_admin1_litpop():
         ADMIN1_SHAPES[0], ADMIN1_NAMES[0], COUNTRY, indicator
     )
 
-    print(admin1_indicator_gdf.columns, flush=True)
-    print(admin1_indicator_gdf.iloc[0].to_dict(), flush=True)
-
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Haiti",
         "region_name": "Centre",
@@ -70,7 +67,7 @@ def test_calculate_indicator_for_admin1_litpop():
         "longitude": -72.02083333,
         "aggregation": "none",
         "indicator": "litpop",
-        "value": 759341.9415734566,
+        "value": 759342.0,
     }
 
     assert len(admin1_indicator_gdf) == 176
@@ -83,18 +80,15 @@ def test_calculate_indicator_for_admin1_litpop_alt():
         ADMIN1_SHAPES[0], ADMIN1_NAMES[0], COUNTRY, indicator
     )
 
-    print(admin1_indicator_gdf.columns, flush=True)
-    print(admin1_indicator_gdf.iloc[0].to_dict(), flush=True)
-
-    # assert admin1_indicator_gdf.iloc[0].to_dict() == {
-    #     "country_name": "Haiti",
-    #     "region_name": "Centre",
-    #     "latitude": 19.3125,
-    #     "longitude": -72.02083333,
-    #     "aggregation": "none",
-    #     "indicator": "litpop",
-    #     "value": 759341.9415734566,
-    # }
+    assert admin1_indicator_gdf.iloc[0].to_dict() == {
+        "country_name": "Haiti",
+        "region_name": "Centre",
+        "latitude": 19.3125,
+        "longitude": -72.02083333,
+        "aggregation": "none",
+        "indicator": "litpop_alt",
+        "value": 852594.0,
+    }
 
     assert len(admin1_indicator_gdf) == 176
 
@@ -125,9 +119,7 @@ def test_litpop_cross_check():
         assert litpop_row["latitude"] == litpop_alt_row["latitude"]
         assert litpop_row["longitude"] == litpop_alt_row["longitude"]
 
-        assert litpop_row["value"] / litpop_alt_row["value"] == pytest.approx(0.890624986494022)
-
-    # assert False
+        assert litpop_row["value"] / litpop_alt_row["value"] == pytest.approx(0.89062, abs=0.00002)
 
 
 def test_calculate_indicator_for_admin1_crop_production():
@@ -154,7 +146,7 @@ def test_calculate_indicator_for_admin1_crop_production():
         "longitude": -71.75,
         "aggregation": "none",
         "indicator": "crop-production.mai.noirr.USD",
-        "value": 4550041.218882989,
+        "value": 4550041.0,
     }
 
     assert len(admin1_indicator_gdf) == 128

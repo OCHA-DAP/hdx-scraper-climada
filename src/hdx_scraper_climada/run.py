@@ -20,7 +20,7 @@ setup_logging()
 LOGGER = logging.getLogger(__name__)
 
 
-def check_csv_files(indicator: str) -> set:
+def check_for_existing_csv_files(indicator: str) -> set:
     all_countries = {x["country_name"] for x in read_countries()}
     # Check which countries are in the summary
     _, summary_file_path = make_detail_and_summary_file_paths("Haiti", indicator)
@@ -76,11 +76,11 @@ def produce_csv_files(countries_to_process: list[dict], indicator: str):
 
 if __name__ == "__main__":
     INDICATOR = "crop-production"
-    DRY_RUN = True
+    DRY_RUN = False
     T0 = time.time()
     print_banner_to_log(LOGGER, "Updating Climada Datasets")
 
-    COUNTRIES_TO_PROCESS = check_csv_files(INDICATOR)
+    COUNTRIES_TO_PROCESS = check_for_existing_csv_files(INDICATOR)
 
     if len(COUNTRIES_TO_PROCESS) == 0:
         LOGGER.info("CSV data files for all countries are already available")
