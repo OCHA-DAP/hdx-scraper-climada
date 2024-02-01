@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 import logging
+import sys
 
 from typing import Any
 
@@ -64,13 +65,11 @@ def calculate_indicator_for_admin1(
     elif indicator == "litpop_alt":
         admin1_indicator_gdf = calculate_litpop_alt_for_admin1(admin1_shape, country, indicator)
     elif indicator == "crop-production":
-        admin1_indicator_gdf = calculate_crop_production_for_admin1(
-            admin1_shape, country, indicator
-        )
-    elif indicator == "relative_cropyield":
-        admin1_indicator_gdf = calculate_relative_cropyield_for_admin1(
-            admin1_shape, country, indicator
-        )
+        admin1_indicator_gdf = calculate_crop_production_for_admin1(admin1_shape, country)
+    elif indicator == "earthquake":
+        admin1_indicator_gdf = calculate_earthquake_for_admin1(admin1_shape, country)
+    elif indicator == "relative-cropyield":
+        admin1_indicator_gdf = calculate_relative_cropyield_for_admin1(admin1_shape, country)
     else:
         LOGGER.info(f"Indicator {indicator} is not yet implemented")
         raise NotImplementedError
@@ -95,53 +94,45 @@ def calculate_indicator_for_admin1(
     return admin1_indicator_gdf
 
 
-def calculate_relative_cropyield_for_admin1(
+def calculate_litpop_for_admin1(
     admin1_shape: list[geopandas.geoseries.GeoSeries],
     country: str,
     indicator: str,
 ) -> pd.DataFrame:
-    crop = "mai"
-    irrigation_status = "noirr"
-    indicator_key = f"{indicator}.{crop}.{irrigation_status}.USD"
-    admin1_indicator_data = CLIENT.get_hazard(
-        indicator,
+    admin1_indicator_data = LitPop.from_shape_and_countries(admin1_shape, country, res_arcsec=150)
+    admin1_indicator_gdf = admin1_indicator_data.gdf
+    admin1_indicator_gdf["indicator"] = len(admin1_indicator_gdf) * [indicator]
+    admin1_indicator_gdf = admin1_indicator_gdf[["latitude", "longitude", "indicator", "value"]]
+    return admin1_indicator_gdf
+
+
+def calculate_litpop_alt_for_admin1(
+    admin1_shape: list[geopandas.geoseries.GeoSeries],
+    country: str,
+    indicator: str,
+) -> pd.DataFrame:
+    country_iso_numeric = get_country_iso_numeric(country)
+    admin1_indicator_data = CLIENT.get_exposures(
+        "litpop",
         properties={
-            "climate_scenario": "historical",
-            "crop": crop,
-            "irrigation_status": irrigation_status,
-            "res_arcsec": "1800",
-            "spatial_coverage": "global",
-            "year_range": "1980_2012",
+            "country_iso3num": str(country_iso_numeric),
+            "exponents": "(1,1)",
+            "fin_mode": "pc",
         },
     )
-    admin1_indicator_gdf = admin1_indicator_data.gdf
-    country_iso_numeric = get_country_iso_numeric(country)
 
-    admin1_indicator_gdf = admin1_indicator_gdf[
-        admin1_indicator_gdf["region_id"] == country_iso_numeric
-    ]
+    admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
 
     admin1_indicator_gdf = filter_dataframe_with_geometry(
-        admin1_indicator_gdf, admin1_shape, indicator_key
+        admin1_indicator_gdf, admin1_shape, indicator
     )
 
     return admin1_indicator_gdf
 
 
-def get_country_iso_numeric(country):
-    if country.lower() == "dr congo":
-        country_iso_numeric = 180
-    elif country.lower() == "state of palestine":
-        country_iso_numeric = 275
-    else:
-        country_iso_numeric = u_coord.country_to_iso(country, "numeric")
-    return country_iso_numeric
-
-
 def calculate_crop_production_for_admin1(
     admin1_shape: list[geopandas.geoseries.GeoSeries],
     country: str,
-    indicator: str,
 ) -> pd.DataFrame:
     # Global data is cached in a dictionary GLOBAL_INDICATOR_CACHE keyed by the indicator name
     # the `global` keyword is not required because we mutate this dictionary rather than reassign.
@@ -195,6 +186,81 @@ def calculate_crop_production_for_admin1(
     return admin1_indicator_gdf
 
 
+def calculate_relative_cropyield_for_admin1(
+    admin1_shape: list[geopandas.geoseries.GeoSeries],
+    country: str,
+) -> pd.DataFrame:
+    # Global data is cached in a dictionary GLOBAL_INDICATOR_CACHE keyed by the indicator name
+    # the `global` keyword is not required because we mutate this dictionary rather than reassign.
+
+    crops = ["mai", "whe", "soy", "ric"]
+    irrigation_statuses = ["noirr", "firr"]
+    crop_gdfs = []
+    for crop in crops:
+        for irrigation_status in irrigation_statuses:
+            indicator_key = f"crop-production.{crop}.{irrigation_status}.USD"
+            if crop == "soy":
+                year_range = "1980_2012"
+            else:
+                year_range = "1971_2001"
+
+            if indicator_key not in GLOBAL_INDICATOR_CACHE:
+                admin1_indicator_data = CLIENT.get_hazard(
+                    "relative_cropyield",
+                    properties={
+                        "climate_scenario": "historical",
+                        "crop": crop,
+                        "irrigation_status": irrigation_status,
+                        "res_arcsec": "1800",
+                        "spatial_coverage": "global",
+                        "year_range": year_range,
+                    },
+                )
+                GLOBAL_INDICATOR_CACHE[indicator_key] = admin1_indicator_data
+            else:
+                admin1_indicator_data = GLOBAL_INDICATOR_CACHE[indicator_key]
+
+            return admin1_indicator_data
+
+            admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
+            country_iso_numeric = get_country_iso_numeric(country)
+            admin1_indicator_gdf = admin1_indicator_gdf[
+                admin1_indicator_gdf["region_id"] == country_iso_numeric
+            ]
+            admin1_indicator_gdf = filter_dataframe_with_geometry(
+                admin1_indicator_gdf, admin1_shape, indicator_key
+            )
+            if len(admin1_indicator_gdf) == 0:
+                # Calculate centroid of region
+                centroid = calculate_centroid(admin1_shape)
+
+                admin1_indicator_gdf = pd.DataFrame(
+                    [
+                        {
+                            "latitude": round(centroid[0].y, 2),
+                            "longitude": round(centroid[0].x, 2),
+                            "indicator": indicator_key,
+                            "value": 0.0,
+                        }
+                    ]
+                )
+            crop_gdfs.append(admin1_indicator_gdf)
+
+    admin1_indicator_gdf = pd.concat(crop_gdfs, axis=0, ignore_index=True)
+
+    return admin1_indicator_gdf
+
+
+def get_country_iso_numeric(country):
+    if country.lower() == "dr congo":
+        country_iso_numeric = 180
+    elif country.lower() == "state of palestine":
+        country_iso_numeric = 275
+    else:
+        country_iso_numeric = u_coord.country_to_iso(country, "numeric")
+    return country_iso_numeric
+
+
 def calculate_centroid(admin1_shape: list[geopandas.geoseries.GeoSeries]) -> Any:
     centroids = []
     for shp in admin1_shape:
@@ -202,42 +268,6 @@ def calculate_centroid(admin1_shape: list[geopandas.geoseries.GeoSeries]) -> Any
     gdf = geopandas.GeoDataFrame({}, geometry=centroids)
     centroid = gdf.dissolve().centroid
     return centroid
-
-
-def calculate_litpop_alt_for_admin1(
-    admin1_shape: list[geopandas.geoseries.GeoSeries],
-    country: str,
-    indicator: str,
-) -> pd.DataFrame:
-    country_iso_numeric = get_country_iso_numeric(country)
-    admin1_indicator_data = CLIENT.get_exposures(
-        "litpop",
-        properties={
-            "country_iso3num": str(country_iso_numeric),
-            "exponents": "(1,1)",
-            "fin_mode": "pc",
-        },
-    )
-
-    admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
-
-    admin1_indicator_gdf = filter_dataframe_with_geometry(
-        admin1_indicator_gdf, admin1_shape, indicator
-    )
-
-    return admin1_indicator_gdf
-
-
-def calculate_litpop_for_admin1(
-    admin1_shape: list[geopandas.geoseries.GeoSeries],
-    country: str,
-    indicator: str,
-) -> pd.DataFrame:
-    admin1_indicator_data = LitPop.from_shape_and_countries(admin1_shape, country, res_arcsec=150)
-    admin1_indicator_gdf = admin1_indicator_data.gdf
-    admin1_indicator_gdf["indicator"] = len(admin1_indicator_gdf) * [indicator]
-    admin1_indicator_gdf = admin1_indicator_gdf[["latitude", "longitude", "indicator", "value"]]
-    return admin1_indicator_gdf
 
 
 def filter_dataframe_with_geometry(
@@ -268,5 +298,7 @@ def filter_dataframe_with_geometry(
 
 
 if __name__ == "__main__":
-    DATA_TYPE = "crop_production"
+    DATA_TYPE = "litpop"
+    if len(sys.argv) == 2:
+        DATA_TYPE = sys.argv[1]
     print_overview_information(data_type=DATA_TYPE)
