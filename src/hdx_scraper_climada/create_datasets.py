@@ -50,6 +50,8 @@ def create_datasets_in_hdx(
     # iso_date = datetime.datetime.now().isoformat()[0:10]
     # dataset["dataset_date"] = f"[{iso_date} to {iso_date}]".replace("Z", "")
     dataset["groups"] = countries_group
+    dataset["maintainer"] = "76f545b9-6944-41c8-a999-eeb1bb70de7a"  # this is Emanuel
+    # dataset["maintainer"] = "972627a5-4f23-4922-8892-371ece6531b6"  # this is me
 
     LOGGER.info(f"Dataset date: {dataset['dataset_date']}")
 

@@ -45,7 +45,10 @@ to
 
 ~\climada\data\gpw-v4-population-count-rev11_2020_30_sec_tif\gpw_v4_population_count_rev11_2020_30_sec.tif
 
-This requires an account to be created for the download.
+This requires an account to be created for the download. An example script is provided to automate this download:
+
+https://urs.earthdata.nasa.gov/documentation/for_users/data_access/python
+
 
 To use the UNMAP boundaries the LitPop.from_shape_and_countries needs to be monkey patched. In a virtual environment this file needs to be
 changed at line 424 replacing `gdf = gdf.append(...` with `gdf = gdf._append(...`
@@ -94,6 +97,8 @@ Runtime for Litpop is about 50 minutes and generates 58MB of CSV files.
 ### Crop production
 
 Runtime for crop-production is about 134 seconds and generates 3.54MB of CSV files. This is smaller than for Litpop because although it comprises 8 datasets they are intrinsically lower resolution and do not form a complete grid.
+
+### Relative cropyield
 
 ## Analysis
 
