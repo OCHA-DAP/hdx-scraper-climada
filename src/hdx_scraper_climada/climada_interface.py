@@ -7,12 +7,14 @@ from typing import Any
 
 import geopandas
 import pandas as pd
+import numpy as np
 
 from hdx.utilities.easy_logging import setup_logging
 
 from climada.util.api_client import Client
 import climada.util.coordinates as u_coord
 from climada.entity import LitPop
+from hdx.location.country import Country
 
 CLIENT = Client()
 
@@ -89,7 +91,10 @@ def calculate_indicator_for_admin1(
         ]
     ]
     # Round all values - reconsider for each dataset.
-    admin1_indicator_gdf["value"] = admin1_indicator_gdf["value"].round(0)
+    if indicator == "earthquake":
+        admin1_indicator_gdf["value"] = admin1_indicator_gdf["value"].round(2)
+    else:
+        admin1_indicator_gdf["value"] = admin1_indicator_gdf["value"].round(0)
 
     return admin1_indicator_gdf
 
@@ -182,6 +187,34 @@ def calculate_crop_production_for_admin1(
             crop_gdfs.append(admin1_indicator_gdf)
 
     admin1_indicator_gdf = pd.concat(crop_gdfs, axis=0, ignore_index=True)
+
+    return admin1_indicator_gdf
+
+
+def calculate_earthquake_for_admin1(
+    admin1_shape: list[geopandas.geoseries.GeoSeries],
+    country: str,
+) -> pd.DataFrame:
+    indicator_key = "earthquake.max_intensity"
+    country_iso3alpha = Country.get_iso3_country_code(country)
+    admin1_indicator_data = CLIENT.get_hazard(
+        "earthquake",
+        properties={
+            "country_iso3alpha": country_iso3alpha,
+        },
+    )
+
+    latitudes = admin1_indicator_data.centroids.lat.round(5)
+    longitudes = admin1_indicator_data.centroids.lon.round(5)
+    max_intensity = np.max(admin1_indicator_data.intensity, axis=0).toarray().flatten()
+    admin1_indicator_gdf = pd.DataFrame(
+        {"latitude": latitudes, "longitude": longitudes, "value": max_intensity}
+    )
+    # admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
+
+    admin1_indicator_gdf = filter_dataframe_with_geometry(
+        admin1_indicator_gdf, admin1_shape, indicator_key
+    )
 
     return admin1_indicator_gdf
 

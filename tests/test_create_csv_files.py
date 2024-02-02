@@ -123,7 +123,7 @@ def test_make_detail_and_summary_file_paths():
     assert os.path.exists(os.path.join(EXPORT_DIRECTORY, f"{INDICATOR}"))
 
 
-def test_export_indicator_data_to_csv():
+def test_export_indicator_data_to_csv_crop_production():
     country = "Haiti"
     indicator = "crop-production"
     output_detail_path, output_summary_path = make_detail_and_summary_file_paths(
@@ -148,3 +148,30 @@ def test_export_indicator_data_to_csv():
         rows = list(csv.DictReader(summary_file))
 
     assert len(rows) == 81  # 10 regions x 8 indicators + 1 HXL tag
+
+
+def test_export_indicator_data_to_csv_earthquake():
+    country = "Haiti"
+    indicator = "earthquake"
+    output_detail_path, output_summary_path = make_detail_and_summary_file_paths(
+        country, indicator, export_directory=EXPORT_DIRECTORY
+    )
+    if os.path.exists(output_detail_path):
+        os.remove(output_detail_path)
+
+    if os.path.exists(output_summary_path):
+        os.remove(output_summary_path)
+
+    statuses = export_indicator_data_to_csv(country, indicator, export_directory=EXPORT_DIRECTORY)
+
+    for status in statuses:
+        print(status, flush=True)
+
+    assert len(statuses) == 3
+    assert os.path.exists(output_detail_path)
+    assert os.path.exists(output_summary_path)
+
+    with open(output_summary_path, encoding="utf-8") as summary_file:
+        rows = list(csv.DictReader(summary_file))
+
+    assert len(rows) == 11  # 10 regions + 1 HXL tag

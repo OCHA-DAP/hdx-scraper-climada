@@ -98,6 +98,15 @@ Runtime for Litpop is about 50 minutes and generates 58MB of CSV files.
 
 Runtime for crop-production is about 134 seconds and generates 3.54MB of CSV files. This is smaller than for Litpop because although it comprises 8 datasets they are intrinsically lower resolution and do not form a complete grid.
 
+### Earthquake
+
+Runtime for Earthquake is about 10 minutes and generates 57MB of CSV files.
+
+The underlying data is historic records of earthquakes between 1905 and 2017. There are a little over 41,000 records. For each earthquake there is a map of the world with the intensity of shaking produced by the earthquake above a threshold of 4.0 units on the MMI - this will only have non-zero values over a relatively small area. The CLIMADA API provides a special function for showing the maximum intensity over all the earthquakes which is the data we present. This means there is a single value for each value on the map grid and we summarise over admin1 areas by taking the maximum intensity over the grid points in that area. 
+
+Possible alternatives to the maximum intensity presentation would be a number of events which have a non-zero intensity at the gridded points, or the average of non-zero intensities.
+
+
 ### Relative cropyield
 
 ## Analysis

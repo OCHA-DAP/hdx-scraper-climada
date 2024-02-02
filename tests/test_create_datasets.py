@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import json
-
 from hdx_scraper_climada.create_datasets import create_or_fetch_base_dataset, create_datasets_in_hdx
 from hdx_scraper_climada.utilities import read_attributes
 

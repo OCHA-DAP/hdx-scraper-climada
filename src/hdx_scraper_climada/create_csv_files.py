@@ -153,15 +153,15 @@ def create_summary_data(
             row["region_name"] = filtered_df["region_name"].to_list()[0]
             row["latitude"] = round(filtered_df["latitude"].mean(), 4)
             row["longitude"] = round(filtered_df["longitude"].mean(), 4)
-            row["aggregation"] = "sum"
             row["indicator"] = indicator
-            row["value"] = filtered_df["value"].sum()
+            if indicator == "earthquake.max_intensity":
+                row["value"] = filtered_df["value"].max()
+                row["aggregation"] = "max"
+            else:
+                row["value"] = filtered_df["value"].sum()
+                row["aggregation"] = "sum"
 
-            LOGGER.info(
-                f"{filtered_df['region_name'].to_list()[0]:<20}, "
-                f"{filtered_df['indicator'].to_list()[0]:<20}, "
-                f"{filtered_df['value'].sum():0.0f}"
-            )
+            LOGGER.info(f"{row['region_name']:<20}, " f"{indicator:<20}, " f"{row['value']:0.0f}")
             summary_rows.append(row)
 
     return summary_rows, n_lines
