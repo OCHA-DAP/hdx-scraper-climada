@@ -12,6 +12,15 @@ https://climada.ethz.ch/datasets/
 
 The maintainer for this dataset is set in the `climada-litpop.json` file to `emanuel-schmid-3262` and the organisation to `eth-zurich-weather-and-climate-risks`
 
+## Publication
+
+Since these datasets are processed locally the following process is followed to publish to production:
+1. Set `INDICATOR` to correct value in `run.py`
+2. Set `DRY_RUN` to `False` in `run.py`
+3. Set the `HDX_SITE` to `prod` in `~/.hdx_configuration.yaml`
+
+This changes should be reverted after publication. The resources should have been generated prior to publication with publication itself taking 5-10 minutes
+
 ## Installation 
 Create a virtual environment (assuming Windows for the `activate` command):
 
