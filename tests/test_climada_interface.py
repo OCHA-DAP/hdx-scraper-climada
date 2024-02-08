@@ -16,8 +16,11 @@ from hdx_scraper_climada.download_admin1_geometry import get_admin1_shapes_from_
 from hdx_scraper_climada.climada_interface import (
     calculate_indicator_for_admin1,
     calculate_relative_cropyield_for_admin1,
+    calculate_earthquake_timeseries_admin1,
 )
 from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_paths
+
+from hdx_scraper_climada.utilities import write_dictionary
 
 COUNTRY_ISO3A = "HTI"
 COUNTRY = "Haiti"
@@ -183,3 +186,46 @@ def test_calculate_indicator_for_admin1_earthquake():
     }
 
     assert len(admin1_indicator_gdf) == 1300
+
+
+def test_calculate_indicator_for_admin1_flood():
+    indicator = "flood"
+
+    admin1_indicator_gdf_list = []
+    for i, admin1_shape in enumerate(ADMIN1_SHAPES):
+        admin1_indicator_gdf_list.append(
+            calculate_indicator_for_admin1(admin1_shape, ADMIN1_NAMES[i], COUNTRY, indicator)
+        )
+
+    admin1_indicator_gdf = pd.concat(admin1_indicator_gdf_list)
+
+    export_directory = os.path.join(os.path.dirname(__file__), "temp")
+    detail_file_path, _ = make_detail_and_summary_file_paths(
+        COUNTRY, indicator, export_directory=export_directory
+    )
+    admin1_indicator_gdf.to_csv(detail_file_path, index=False)
+
+    assert admin1_indicator_gdf.iloc[0].to_dict() == {
+        "country_name": "Haiti",
+        "region_name": "Centre",
+        "latitude": 19.29167,
+        "longitude": -72.20833,
+        "aggregation": "none",
+        "indicator": "flood.max_intensity",
+        "value": 6.67,
+    }
+
+    assert len(admin1_indicator_gdf) == 1300
+
+
+def test_calculate_earthquake_timeseries_admin1():
+    earthquakes = calculate_earthquake_timeseries_admin1("Haiti")
+
+    status = write_dictionary(
+        os.path.join(
+            os.path.dirname(__file__), "temp", "earthquake", "admin1-timeseries-summaries.csv"
+        ),
+        earthquakes,
+    )
+    print(status, flush=True)
+    assert False

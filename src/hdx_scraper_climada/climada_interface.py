@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
+import datetime
 import logging
 import sys
 
@@ -10,11 +11,16 @@ import pandas as pd
 import numpy as np
 
 from hdx.utilities.easy_logging import setup_logging
+from hdx.location.country import Country
 
 from climada.util.api_client import Client
 import climada.util.coordinates as u_coord
 from climada.entity import LitPop
-from hdx.location.country import Country
+
+from hdx_scraper_climada.download_admin1_geometry import (
+    get_admin1_shapes_from_hdx,
+)
+
 
 CLIENT = Client()
 
@@ -38,7 +44,10 @@ def print_overview_information(data_type="litpop"):
         print(f"Data_type: {dataset.data_type}", flush=True)
         print(f"Data_type_group: {dataset.data_type_group}", flush=True)
         print(f"Description:\n {dataset.description} \n", flush=True)
-        print(f"Key reference: {dataset.key_reference[0]['key_reference']}", flush=True)
+        if len(dataset.key_reference) != 0:
+            print(f"Key reference: {dataset.key_reference[0]['key_reference']}", flush=True)
+        else:
+            print("Key reference:", flush=True)
         print("\nProperties:", flush=True)
         for i, property_ in enumerate(dataset.properties, start=1):
             print(f"{i}. {property_['property']}: {property_['description']}", flush=True)
@@ -70,6 +79,8 @@ def calculate_indicator_for_admin1(
         admin1_indicator_gdf = calculate_crop_production_for_admin1(admin1_shape, country)
     elif indicator == "earthquake":
         admin1_indicator_gdf = calculate_earthquake_for_admin1(admin1_shape, country)
+    elif indicator == "flood":
+        admin1_indicator_gdf = calculate_flood_for_admin1(admin1_shape, country)
     elif indicator == "relative-cropyield":
         admin1_indicator_gdf = calculate_relative_cropyield_for_admin1(admin1_shape, country)
     else:
@@ -199,6 +210,87 @@ def calculate_earthquake_for_admin1(
     country_iso3alpha = Country.get_iso3_country_code(country)
     admin1_indicator_data = CLIENT.get_hazard(
         "earthquake",
+        properties={
+            "country_iso3alpha": country_iso3alpha,
+        },
+    )
+
+    latitudes = admin1_indicator_data.centroids.lat.round(5)
+    longitudes = admin1_indicator_data.centroids.lon.round(5)
+    max_intensity = np.max(admin1_indicator_data.intensity, axis=0).toarray().flatten()
+    admin1_indicator_gdf = pd.DataFrame(
+        {"latitude": latitudes, "longitude": longitudes, "value": max_intensity}
+    )
+    # admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
+
+    admin1_indicator_gdf = filter_dataframe_with_geometry(
+        admin1_indicator_gdf, admin1_shape, indicator_key
+    )
+
+    return admin1_indicator_gdf
+
+
+def calculate_earthquake_timeseries_admin1(
+    country: str,
+):
+    country_iso3alpha = Country.get_iso3_country_code(country)
+    admin1_names, admin1_shapes = get_admin1_shapes_from_hdx(country_iso3alpha)
+    indicator_key = "earthquake.max_intensity"
+
+    earthquake = CLIENT.get_hazard(
+        "earthquake",
+        properties={
+            "country_iso3alpha": country_iso3alpha,
+        },
+    )
+    latitudes = earthquake.centroids.lat
+    longitudes = earthquake.centroids.lon
+    earthquakes = []
+    for i, event_intensity in enumerate(earthquake.intensity):
+        values = event_intensity.toarray().flatten()
+        if sum(values) == 0.0:
+            continue
+        country_data = pd.DataFrame(
+            {
+                "latitude": latitudes,
+                "longitude": longitudes,
+                "value": values,
+            }
+        )
+
+        for j, admin1_shape in enumerate(admin1_shapes):
+            admin1_indicator_gdf = filter_dataframe_with_geometry(
+                country_data, admin1_shape, indicator_key
+            )
+
+            max_intensity = max(admin1_indicator_gdf["value"])
+            if max_intensity > 0.0:
+                event_date = datetime.datetime.fromordinal(earthquake.date[i]).isoformat()[0:10]
+                print(country, admin1_names[j], event_date, max_intensity, flush=True)
+                earthquakes.append(
+                    {
+                        "country_name": country,
+                        "region_name": admin1_names[j],
+                        "latitude": round(admin1_indicator_gdf["latitude"].mean(), 4),
+                        "longitude": round(admin1_indicator_gdf["longitude"].mean(), 4),
+                        "aggregation": "max",
+                        "indicator": "earthquake.date.max_intensity",
+                        "event_date": event_date,
+                        "value": max_intensity,
+                    }
+                )
+
+    return earthquakes
+
+
+def calculate_flood_for_admin1(
+    admin1_shape: list[geopandas.geoseries.GeoSeries],
+    country: str,
+) -> pd.DataFrame:
+    indicator_key = "flood.max_intensity"
+    country_iso3alpha = Country.get_iso3_country_code(country)
+    admin1_indicator_data = CLIENT.get_hazard(
+        "flood",
         properties={
             "country_iso3alpha": country_iso3alpha,
         },
