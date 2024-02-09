@@ -16,7 +16,7 @@ from hdx_scraper_climada.download_admin1_geometry import get_admin1_shapes_from_
 from hdx_scraper_climada.climada_interface import (
     calculate_indicator_for_admin1,
     calculate_relative_cropyield_for_admin1,
-    calculate_earthquake_timeseries_admin1,
+    calculate_earthquake_timeseries_admin2,
 )
 from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_paths
 
@@ -218,8 +218,8 @@ def test_calculate_indicator_for_admin1_flood():
     assert len(admin1_indicator_gdf) == 1300
 
 
-def test_calculate_earthquake_timeseries_admin1():
-    earthquakes = calculate_earthquake_timeseries_admin1("Haiti")
+def test_calculate_earthquake_timeseries_admin2():
+    earthquakes = calculate_earthquake_timeseries_admin2("Haiti")
 
     status = write_dictionary(
         os.path.join(

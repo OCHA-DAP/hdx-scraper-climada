@@ -75,6 +75,32 @@ def get_admin1_shapes_from_hdx(country_iso3a):
     return admin1_names, admin1_shapes
 
 
+def get_admin2_shapes_from_hdx(country_iso3a: str) -> (list, list, list[geopandas.GeoDataFrame]):
+    admin2_file_path = os.path.join(ADMIN1_GEOMETRY_FOLDER, "polbnda_adm2_1m_ocha.geojson")
+
+    if not os.path.exists(admin2_file_path):
+        raise FileNotFoundError(
+            f"{admin2_file_path} was not found, run `download_admin1_geometry.py` to download"
+        )
+
+    admin2_gpd = geopandas.read_file(admin2_file_path)
+
+    admin2_for_country = admin2_gpd[admin2_gpd["alpha_3"] == country_iso3a.upper()]
+
+    admin1_names = admin2_for_country["ADM1_REF"].to_list()
+    admin2_names = admin2_for_country["ADM2_REF"].to_list()
+
+    admin2_shapes = []
+    for admin2_name in admin2_names:
+        admin2_shape_geoseries = admin2_for_country[admin2_for_country["ADM2_REF"] == admin2_name][
+            "geometry"
+        ]
+        admin2_shapes.append(admin2_shape_geoseries)
+
+    assert len(admin2_names) == len(admin2_shapes)
+    return admin1_names, admin2_names, admin2_shapes
+
+
 def get_admin1_shapes_from_natural_earth(country_iso3a):
     try:
         admin1_info, admin1_shapes = u_coord.get_admin1_info(country_iso3a)

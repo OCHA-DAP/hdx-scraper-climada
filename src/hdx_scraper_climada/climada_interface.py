@@ -18,7 +18,7 @@ import climada.util.coordinates as u_coord
 from climada.entity import LitPop
 
 from hdx_scraper_climada.download_admin1_geometry import (
-    get_admin1_shapes_from_hdx,
+    get_admin2_shapes_from_hdx,
 )
 
 
@@ -230,11 +230,11 @@ def calculate_earthquake_for_admin1(
     return admin1_indicator_gdf
 
 
-def calculate_earthquake_timeseries_admin1(
+def calculate_earthquake_timeseries_admin2(
     country: str,
 ):
     country_iso3alpha = Country.get_iso3_country_code(country)
-    admin1_names, admin1_shapes = get_admin1_shapes_from_hdx(country_iso3alpha)
+    admin1_names, admin2_names, admin2_shapes = get_admin2_shapes_from_hdx(country_iso3alpha)
     indicator_key = "earthquake.max_intensity"
 
     earthquake = CLIENT.get_hazard(
@@ -258,25 +258,31 @@ def calculate_earthquake_timeseries_admin1(
             }
         )
 
-        for j, admin1_shape in enumerate(admin1_shapes):
-            admin1_indicator_gdf = filter_dataframe_with_geometry(
-                country_data, admin1_shape, indicator_key
+        for j, admin2_shape in enumerate(admin2_shapes):
+            admin2_indicator_gdf = filter_dataframe_with_geometry(
+                country_data, admin2_shape, indicator_key
             )
 
-            max_intensity = max(admin1_indicator_gdf["value"])
+            if len(admin2_indicator_gdf["value"]) != 0:
+                max_intensity = max(admin2_indicator_gdf["value"])
+            else:
+                max_intensity = 0.0
             if max_intensity > 0.0:
                 event_date = datetime.datetime.fromordinal(earthquake.date[i]).isoformat()[0:10]
-                print(country, admin1_names[j], event_date, max_intensity, flush=True)
+                print(
+                    country, admin1_names[j], admin2_names[j], event_date, max_intensity, flush=True
+                )
                 earthquakes.append(
                     {
                         "country_name": country,
-                        "region_name": admin1_names[j],
-                        "latitude": round(admin1_indicator_gdf["latitude"].mean(), 4),
-                        "longitude": round(admin1_indicator_gdf["longitude"].mean(), 4),
+                        "admin1_name": admin1_names[j],
+                        "admin2_name": admin2_names[j],
+                        "latitude": round(admin2_indicator_gdf["latitude"].mean(), 4),
+                        "longitude": round(admin2_indicator_gdf["longitude"].mean(), 4),
                         "aggregation": "max",
                         "indicator": "earthquake.date.max_intensity",
                         "event_date": event_date,
-                        "value": max_intensity,
+                        "value": round(max_intensity, 2),
                     }
                 )
 
