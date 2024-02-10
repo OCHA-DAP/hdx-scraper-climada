@@ -20,7 +20,10 @@ from hdx_scraper_climada.download_admin1_geometry import (
     get_admin1_shapes_from_natural_earth,
 )
 
-from hdx_scraper_climada.climada_interface import calculate_indicator_for_admin1
+from hdx_scraper_climada.climada_interface import (
+    calculate_indicator_for_admin1,
+    calculate_earthquake_timeseries_admin2,
+)
 
 setup_logging()
 LOGGER = logging.getLogger(__name__)
@@ -34,6 +37,20 @@ HXL_TAGS = OrderedDict(
         ("longitude", "#geo+lon"),
         ("aggregation", ""),
         ("indicator", "#indicator+name"),
+        ("value", "#indicator+num"),
+    ]
+)
+
+TIMESERIES_HXL_TAGS = OrderedDict(
+    [
+        ("country_name", "#country"),
+        ("admin1_name", "#adm1+name"),
+        ("admin2_name", "#adm2+name"),
+        ("latitude", "#geo+lat"),
+        ("longitude", "#geo+lon"),
+        ("aggregation", ""),
+        ("indicator", "#indicator+name"),
+        ("event_date", "#date"),
         ("value", "#indicator+num"),
     ]
 )
@@ -59,19 +76,35 @@ def export_indicator_data_to_csv(
         )
         return statuses
 
-    # Make detail files
-    country_dataframes = create_detail_dataframes(country, indicator, use_hdx_admin1=use_hdx_admin1)
-    status = write_detail_data(country_dataframes, output_detail_path)
-    statuses.append(status)
+    # # Make detail files
+    # country_dataframes = create_detail_dataframes(country, indicator, use_hdx_admin1=use_hdx_admin1)
+    # status = write_detail_data(country_dataframes, output_detail_path)
+    # statuses.append(status)
 
-    # Make summary file
-    summary_rows, n_lines = create_summary_data(country_dataframes)
-    status = write_summary_data(summary_rows, output_summary_path)
-    statuses.append(status)
+    # # Make summary file
+    # summary_rows, n_lines = create_summary_data(country_dataframes)
+    # status = write_summary_data(summary_rows, output_summary_path)
+    # statuses.append(status)
+
+    n_lines_timeseries = 0
+    n_lines = 0
+    # Make timeseries summary file
+    if indicator in ["earthquake"]:
+        timeseries_summary_path = os.path.join(
+            os.path.dirname(output_summary_path), f"admin1-timeseries-summaries-{indicator}.csv"
+        )
+        timeseries_summary_rows = calculate_earthquake_timeseries_admin2(country)
+        if len(timeseries_summary_rows) != 0:
+            n_lines_timeseries = len(timeseries_summary_rows)
+            status = write_summary_data(
+                timeseries_summary_rows, timeseries_summary_path, hxl_tags=TIMESERIES_HXL_TAGS
+            )
+            statuses.append(status)
 
     statuses.append(
         f"Processing for {country} took {time.time()-t0:0.0f} seconds "
-        f"and generated {n_lines} lines of output",
+        f"and generated {n_lines} lines of summary output and "
+        f"{n_lines_timeseries} lines of time series summary output"
     )
 
     return statuses
@@ -167,12 +200,14 @@ def create_summary_data(
     return summary_rows, n_lines
 
 
-def write_summary_data(summary_rows: list, output_summary_path: str) -> str:
+def write_summary_data(summary_rows: list, output_summary_path: str, hxl_tags: dict = None) -> str:
+    if hxl_tags is None:
+        hxl_tags = HXL_TAGS
     if not os.path.exists(output_summary_path):
         # This is slightly convoluted, but efficient
         # https://www.geeksforgeeks.org/python-perform-append-at-beginning-of-list/
         summary_rows = deque(summary_rows)
-        summary_rows.appendleft(HXL_TAGS)
+        summary_rows.appendleft(hxl_tags)
         summary_rows = list(summary_rows)
 
     status = write_dictionary(

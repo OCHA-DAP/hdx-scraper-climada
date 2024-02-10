@@ -14,6 +14,9 @@ ATTRIBUTES_FILEPATH = os.path.join(os.path.dirname(__file__), "metadata", "attri
 def write_dictionary(
     output_filepath: str, output_rows: list[dict[str, Any]], append: bool = True
 ) -> str:
+    if len(output_rows) == 0:
+        status = "No data provided to write_dictionary"
+        return status
     keys = list(output_rows[0].keys())
     newfile = not os.path.isfile(output_filepath)
 

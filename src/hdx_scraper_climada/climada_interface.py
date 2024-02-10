@@ -18,6 +18,7 @@ import climada.util.coordinates as u_coord
 from climada.entity import LitPop
 
 from hdx_scraper_climada.download_admin1_geometry import (
+    get_admin1_shapes_from_hdx,
     get_admin2_shapes_from_hdx,
 )
 
@@ -233,8 +234,17 @@ def calculate_earthquake_for_admin1(
 def calculate_earthquake_timeseries_admin2(
     country: str,
 ):
+    LOGGER.info(f"Creating timeseries summary for earthquakes in {country}")
     country_iso3alpha = Country.get_iso3_country_code(country)
-    admin1_names, admin2_names, admin2_shapes = get_admin2_shapes_from_hdx(country_iso3alpha)
+    admin_level = "2"
+    admin1_names, admin2_names, admin_shapes = get_admin2_shapes_from_hdx(country_iso3alpha)
+    if len(admin2_names) == 0:
+        LOGGER.info(f"No admin2 level shape data available for {country}")
+        admin1_names, admin_shapes = get_admin1_shapes_from_hdx(country_iso3alpha)
+        admin_level = "1"
+        admin2_names = len(admin1_names) * [""]
+
+    LOGGER.info(f"Found {len(admin2_names)} admin{admin_level} for {country}")
     indicator_key = "earthquake.max_intensity"
 
     earthquake = CLIENT.get_hazard(
@@ -258,17 +268,18 @@ def calculate_earthquake_timeseries_admin2(
             }
         )
 
-        for j, admin2_shape in enumerate(admin2_shapes):
-            admin2_indicator_gdf = filter_dataframe_with_geometry(
-                country_data, admin2_shape, indicator_key
+        for j, admin_shape in enumerate(admin_shapes):
+            admin_indicator_gdf = filter_dataframe_with_geometry(
+                country_data, admin_shape, indicator_key
             )
 
-            if len(admin2_indicator_gdf["value"]) != 0:
-                max_intensity = max(admin2_indicator_gdf["value"])
+            if len(admin_indicator_gdf["value"]) != 0:
+                max_intensity = max(admin_indicator_gdf["value"])
             else:
                 max_intensity = 0.0
             if max_intensity > 0.0:
                 event_date = datetime.datetime.fromordinal(earthquake.date[i]).isoformat()[0:10]
+                LOGGER.info(f"Events found for {event_date} in {admin1_names[j]}-{admin2_names[j]}")
                 print(
                     country, admin1_names[j], admin2_names[j], event_date, max_intensity, flush=True
                 )
@@ -277,8 +288,8 @@ def calculate_earthquake_timeseries_admin2(
                         "country_name": country,
                         "admin1_name": admin1_names[j],
                         "admin2_name": admin2_names[j],
-                        "latitude": round(admin2_indicator_gdf["latitude"].mean(), 4),
-                        "longitude": round(admin2_indicator_gdf["longitude"].mean(), 4),
+                        "latitude": round(admin_indicator_gdf["latitude"].mean(), 4),
+                        "longitude": round(admin_indicator_gdf["longitude"].mean(), 4),
                         "aggregation": "max",
                         "indicator": "earthquake.date.max_intensity",
                         "event_date": event_date,
