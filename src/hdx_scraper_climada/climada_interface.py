@@ -29,6 +29,9 @@ setup_logging()
 LOGGER = logging.getLogger(__name__)
 
 GLOBAL_INDICATOR_CACHE = {}
+SPATIAL_FILTER_CACHE = {}
+CACHE_HIT = 0
+CACHE_MISS = 0
 
 
 def print_overview_information(data_type="litpop"):
@@ -231,7 +234,7 @@ def calculate_earthquake_for_admin1(
     return admin1_indicator_gdf
 
 
-def calculate_earthquake_timeseries_admin2(
+def calculate_earthquake_timeseries_admin(
     country: str,
 ):
     LOGGER.info(f"Creating timeseries summary for earthquakes in {country}")
@@ -269,8 +272,9 @@ def calculate_earthquake_timeseries_admin2(
         )
 
         for j, admin_shape in enumerate(admin_shapes):
+            cache_key = f"{admin1_names[j]}-{admin2_names[j]}"
             admin_indicator_gdf = filter_dataframe_with_geometry(
-                country_data, admin_shape, indicator_key
+                country_data, admin_shape, indicator_key, cache_key=cache_key
             )
 
             if len(admin_indicator_gdf["value"]) != 0:
@@ -278,10 +282,10 @@ def calculate_earthquake_timeseries_admin2(
             else:
                 max_intensity = 0.0
             if max_intensity > 0.0:
-                event_date = datetime.datetime.fromordinal(earthquake.date[i]).isoformat()[0:10]
-                LOGGER.info(f"Events found for {event_date} in {admin1_names[j]}-{admin2_names[j]}")
-                print(
-                    country, admin1_names[j], admin2_names[j], event_date, max_intensity, flush=True
+                event_date = datetime.datetime.fromordinal(earthquake.date[i]).isoformat()
+                LOGGER.info(
+                    f"Event on {event_date[0:10]} in {country_iso3alpha}-{cache_key} "
+                    f"MaxInt:{max_intensity:0.2f}"
                 )
                 earthquakes.append(
                     {
@@ -297,6 +301,8 @@ def calculate_earthquake_timeseries_admin2(
                     }
                 )
 
+    print(f"CACHE_HIT: {CACHE_HIT}", flush=True)
+    print(f"CACHE_MISS: {CACHE_MISS}", flush=True)
     return earthquakes
 
 
@@ -416,7 +422,9 @@ def filter_dataframe_with_geometry(
     admin1_indicator_gdf: pd.DataFrame,
     admin1_shape: list[geopandas.geoseries.GeoSeries],
     indicator_key: str,
+    cache_key: str = None,
 ) -> pd.DataFrame:
+    global CACHE_HIT, CACHE_MISS
     admin1_indicator_geo_gdf = geopandas.GeoDataFrame(
         admin1_indicator_gdf,
         geometry=geopandas.points_from_xy(
@@ -424,9 +432,15 @@ def filter_dataframe_with_geometry(
         ),
     )
 
-    indices_within = pd.Series(False, index=admin1_indicator_geo_gdf.index)
-    for shp in admin1_shape:
-        indices_within = indices_within | admin1_indicator_geo_gdf.geometry.within(shp)
+    if cache_key is not None and cache_key in SPATIAL_FILTER_CACHE:
+        indices_within = SPATIAL_FILTER_CACHE[cache_key]
+        CACHE_HIT += 1
+    else:
+        indices_within = pd.Series(False, index=admin1_indicator_geo_gdf.index)
+        for shp in admin1_shape:
+            indices_within = indices_within | admin1_indicator_geo_gdf.geometry.within(shp)
+        SPATIAL_FILTER_CACHE[cache_key] = indices_within
+        CACHE_MISS += 1
 
     admin1_indicator_geo_gdf = admin1_indicator_geo_gdf.loc[indices_within]
 
