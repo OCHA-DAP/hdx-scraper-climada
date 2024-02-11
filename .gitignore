@@ -24,3 +24,7 @@ src/hdx_scraper_climada/temp.csv
 cov.xml
 
 *.xlsx
+
+src/hdx_scraper_climada/analysis/admin1-timeseries-summaries.csv
+
+src/hdx_scraper_climada/analysis/admin1-timeseries-summaries-earthquake.csv
