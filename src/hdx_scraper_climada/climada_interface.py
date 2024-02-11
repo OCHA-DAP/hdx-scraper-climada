@@ -424,10 +424,11 @@ def filter_dataframe_with_geometry(
         ),
     )
 
-    temp_gdf = []
+    indices_within = pd.Series(False, index=admin1_indicator_geo_gdf.index)
     for shp in admin1_shape:
-        temp_gdf.append(admin1_indicator_geo_gdf.loc[admin1_indicator_geo_gdf.geometry.within(shp)])
-    admin1_indicator_geo_gdf = pd.concat(temp_gdf)
+        indices_within = indices_within | admin1_indicator_geo_gdf.geometry.within(shp)
+
+    admin1_indicator_geo_gdf = admin1_indicator_geo_gdf.loc[indices_within]
 
     admin1_indicator_geo_gdf["indicator"] = len(admin1_indicator_geo_gdf) * [indicator_key]
     admin1_indicator_geo_gdf = admin1_indicator_geo_gdf[
