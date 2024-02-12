@@ -234,9 +234,7 @@ def calculate_earthquake_for_admin1(
     return admin1_indicator_gdf
 
 
-def calculate_earthquake_timeseries_admin(
-    country: str,
-):
+def calculate_earthquake_timeseries_admin(country: str, test_run: bool = False) -> list[dict]:
     LOGGER.info(f"Creating timeseries summary for earthquakes in {country}")
     country_iso3alpha = Country.get_iso3_country_code(country)
     admin_level = "2"
@@ -300,6 +298,8 @@ def calculate_earthquake_timeseries_admin(
                         "value": round(max_intensity, 2),
                     }
                 )
+        if test_run:
+            break
 
     print(f"CACHE_HIT: {CACHE_HIT}", flush=True)
     print(f"CACHE_MISS: {CACHE_MISS}", flush=True)

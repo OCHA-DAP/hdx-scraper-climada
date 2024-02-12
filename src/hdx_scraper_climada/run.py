@@ -23,10 +23,10 @@ LOGGER = logging.getLogger(__name__)
 def check_for_existing_csv_files(indicator: str) -> set:
     all_countries = {x["country_name"] for x in read_countries()}
     # Check which countries are in the summary
-    _, summary_file_path = make_detail_and_summary_file_paths("Haiti", indicator)
+    output_paths = make_detail_and_summary_file_paths("Haiti", indicator)
 
-    if os.path.exists(summary_file_path):
-        with open(summary_file_path, encoding="utf-8") as summary_file:
+    if os.path.exists(output_paths["summary_file_path"]):
+        with open(output_paths["summary_file_path"], encoding="utf-8") as summary_file:
             rows = csv.DictReader(summary_file)
             summary_countries = {x["country_name"] for x in rows if x["country_name"] != "#country"}
     else:
@@ -35,9 +35,9 @@ def check_for_existing_csv_files(indicator: str) -> set:
     detail_countries = set()
     # check which detail files exist
     for country in all_countries:
-        detail_file_path, _ = make_detail_and_summary_file_paths(country, indicator)
+        output_paths = make_detail_and_summary_file_paths(country, indicator)
 
-        if os.path.exists(detail_file_path):
+        if os.path.exists(output_paths["detail_file_path"]):
             detail_countries.update([country])
 
     missing_detail_countries = all_countries.difference(detail_countries)

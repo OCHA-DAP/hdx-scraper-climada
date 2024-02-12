@@ -7,16 +7,21 @@ Ian Hopkinson 2024-01-16
 """
 
 import os
+import time
 import pandas as pd
 import pytest
 
 
 from climada.entity import LitPop
-from hdx_scraper_climada.download_admin1_geometry import get_admin1_shapes_from_hdx
+from climada.util.api_client import Client
+from hdx_scraper_climada.download_admin1_geometry import (
+    get_admin1_shapes_from_hdx,
+    get_admin2_shapes_from_hdx,
+)
 from hdx_scraper_climada.climada_interface import (
     calculate_indicator_for_admin1,
-    calculate_relative_cropyield_for_admin1,
-    calculate_earthquake_timeseries_admin2,
+    calculate_earthquake_timeseries_admin,
+    filter_dataframe_with_geometry,
 )
 from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_paths
 
@@ -140,10 +145,10 @@ def test_calculate_indicator_for_admin1_crop_production():
     admin1_indicator_gdf = pd.concat(admin1_indicator_gdf_list)
 
     export_directory = os.path.join(os.path.dirname(__file__), "temp")
-    detail_file_path, _ = make_detail_and_summary_file_paths(
+    output_paths = make_detail_and_summary_file_paths(
         COUNTRY, indicator, export_directory=export_directory
     )
-    admin1_indicator_gdf.to_csv(detail_file_path, index=False)
+    admin1_indicator_gdf.to_csv(output_paths["output_detail_path"], index=False)
 
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Haiti",
@@ -170,10 +175,10 @@ def test_calculate_indicator_for_admin1_earthquake():
     admin1_indicator_gdf = pd.concat(admin1_indicator_gdf_list)
 
     export_directory = os.path.join(os.path.dirname(__file__), "temp")
-    detail_file_path, _ = make_detail_and_summary_file_paths(
+    output_paths = make_detail_and_summary_file_paths(
         COUNTRY, indicator, export_directory=export_directory
     )
-    admin1_indicator_gdf.to_csv(detail_file_path, index=False)
+    admin1_indicator_gdf.to_csv(output_paths["output_detail_path"], index=False)
 
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Haiti",
@@ -188,6 +193,80 @@ def test_calculate_indicator_for_admin1_earthquake():
     assert len(admin1_indicator_gdf) == 1300
 
 
+def test_calculate_earthquake_timeseries_admin():
+    country = "Haiti"
+    earthquakes = calculate_earthquake_timeseries_admin(country, test_run=True)
+
+    assert len(earthquakes) == 35
+    assert earthquakes[0] == {
+        "country_name": "Haiti",
+        "admin1_name": "South",
+        "admin2_name": "Les Cayes",
+        "latitude": 18.2625,
+        "longitude": -73.7667,
+        "aggregation": "max",
+        "indicator": "earthquake.date.max_intensity",
+        "event_date": "1907-01-14T00:00:00",
+        "value": 4.22,
+    }
+
+
+@pytest.mark.skip(reason="Flood data not yet complete")
+def test_filter_dataframe_with_geometry():
+    # admin1_indicator_gdf: pd.DataFrame,
+    # admin1_shape: list[geopandas.geoseries.GeoSeries],
+    # indicator_key: str,
+
+    t0 = time.time()
+    admin1_names, admin2_names, admin_shapes = get_admin2_shapes_from_hdx(COUNTRY_ISO3A)
+    print(f"{time.time() - t0} seconds to load admin2 shapes")
+
+    t0 = time.time()
+    client = Client()
+    print(f"{time.time() - t0} seconds to create API client")
+
+    t0 = time.time()
+    earthquake = client.get_hazard(
+        "earthquake",
+        properties={
+            "country_iso3alpha": "HTI",
+        },
+    )
+    print(f"{time.time() - t0} seconds to get earthquake data")
+    indicator_key = "test"
+    latitudes = earthquake.centroids.lat
+    longitudes = earthquake.centroids.lon
+
+    non_zero_intensity = earthquake.intensity[107]
+    values = non_zero_intensity.toarray().flatten()
+
+    country_data = pd.DataFrame(
+        {
+            "latitude": latitudes,
+            "longitude": longitudes,
+            "value": values,
+        }
+    )
+
+    t0 = time.time()
+    for j, admin_shape in enumerate(admin_shapes):
+        admin_indicator_gdf = filter_dataframe_with_geometry(
+            country_data, admin_shape, indicator_key
+        )
+    print(f"{time.time() - t0} seconds to on filter {len(admin_shapes)} shape")
+
+    t0 = time.time()
+    for j, admin_shape in enumerate(admin_shapes):
+        cache_key = f"{admin1_names[j]}-{admin2_names[j]}"
+        admin_indicator_gdf = filter_dataframe_with_geometry(
+            country_data, admin_shape, indicator_key, cache_key=cache_key
+        )
+    print(f"{time.time() - t0} seconds to on filter {len(admin_shapes)} shape with caching")
+
+    assert False
+
+
+@pytest.mark.skip(reason="Flood data not yet complete")
 def test_calculate_indicator_for_admin1_flood():
     indicator = "flood"
 
@@ -200,10 +279,10 @@ def test_calculate_indicator_for_admin1_flood():
     admin1_indicator_gdf = pd.concat(admin1_indicator_gdf_list)
 
     export_directory = os.path.join(os.path.dirname(__file__), "temp")
-    detail_file_path, _ = make_detail_and_summary_file_paths(
+    output_paths = make_detail_and_summary_file_paths(
         COUNTRY, indicator, export_directory=export_directory
     )
-    admin1_indicator_gdf.to_csv(detail_file_path, index=False)
+    admin1_indicator_gdf.to_csv(output_paths["detail_file_path"], index=False)
 
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Haiti",
@@ -216,16 +295,3 @@ def test_calculate_indicator_for_admin1_flood():
     }
 
     assert len(admin1_indicator_gdf) == 1300
-
-
-def test_calculate_earthquake_timeseries_admin2():
-    earthquakes = calculate_earthquake_timeseries_admin2("Haiti")
-
-    status = write_dictionary(
-        os.path.join(
-            os.path.dirname(__file__), "temp", "earthquake", "admin1-timeseries-summaries.csv"
-        ),
-        earthquakes,
-    )
-    print(status, flush=True)
-    assert False

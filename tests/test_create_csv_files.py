@@ -57,18 +57,18 @@ def test_create_summary(haiti_detail_dataframes):
 
 
 def test_write_detail_data(haiti_detail_dataframes):
-    output_detail_path, _ = make_detail_and_summary_file_paths(
+    output_paths = make_detail_and_summary_file_paths(
         COUNTRY, INDICATOR, export_directory=EXPORT_DIRECTORY
     )
 
-    if os.path.exists(output_detail_path):
-        os.remove(output_detail_path)
+    if os.path.exists(output_paths["output_detail_path"]):
+        os.remove(output_paths["output_detail_path"])
 
-    _ = write_detail_data(haiti_detail_dataframes, output_detail_path)
+    _ = write_detail_data(haiti_detail_dataframes, output_paths["output_detail_path"])
 
-    assert os.path.exists(output_detail_path)
+    assert os.path.exists(output_paths["output_detail_path"])
 
-    with open(output_detail_path, encoding="utf-8") as summary_file:
+    with open(output_paths["output_detail_path"], encoding="utf-8") as summary_file:
         rows = list(csv.DictReader(summary_file))
 
     assert len(rows) == 1313
@@ -77,28 +77,26 @@ def test_write_detail_data(haiti_detail_dataframes):
 
     assert set(list(rows[0].values())) == set(EXPECTED_HXL_TAGS)
 
-    # We do this because the trailing digits are unstable - they are in the +10 sig figs
-    # so no practical concern. Probably a result of floating point errors
-    rows[1]["value"] = rows[1]["value"][0:11]
+    # The underlying litpop data has many decimal places, we round to an integer
     assert set(list(rows[1].values())) == set(
-        ["Haiti", "Centre", "19.3125", "-72.02083333", "none", "litpop", "759341.9415"]
+        ["Haiti", "Centre", "19.3125", "-72.02083333", "none", "litpop", "759342.0"]
     )
 
 
 def test_write_summary_data(haiti_detail_dataframes):
-    _, output_summary_path = make_detail_and_summary_file_paths(
+    output_paths = make_detail_and_summary_file_paths(
         COUNTRY, INDICATOR, export_directory=EXPORT_DIRECTORY
     )
 
-    if os.path.exists(output_summary_path):
-        os.remove(output_summary_path)
+    if os.path.exists(output_paths["output_summary_path"]):
+        os.remove(output_paths["output_summary_path"])
 
     summary_rows, _ = create_summary_data(haiti_detail_dataframes)
-    _ = write_summary_data(summary_rows, output_summary_path)
+    _ = write_summary_data(summary_rows, output_paths["output_summary_path"])
 
-    assert os.path.exists(output_summary_path)
+    assert os.path.exists(output_paths["output_summary_path"])
 
-    with open(output_summary_path, encoding="utf-8") as summary_file:
+    with open(output_paths["output_summary_path"], encoding="utf-8") as summary_file:
         rows = list(csv.DictReader(summary_file))
 
     assert len(rows) == 11
@@ -108,32 +106,34 @@ def test_write_summary_data(haiti_detail_dataframes):
     assert set(list(rows[0].values())) == set(EXPECTED_HXL_TAGS)
 
     assert set(list(rows[1].values())) == set(
-        ["Haiti", "Centre", "19.0069", "-71.9886", "sum", "litpop", "175640026.24312034"]
+        ["Haiti", "Centre", "19.0069", "-71.9886", "sum", "litpop", "175640022.0"]
     )
 
 
 def test_make_detail_and_summary_file_paths():
-    output_detail_path, output_summary_path = make_detail_and_summary_file_paths(
+    output_paths = make_detail_and_summary_file_paths(
         COUNTRY, INDICATOR, export_directory=EXPORT_DIRECTORY
     )
 
-    assert "haiti-admin1-litpop.csv" in output_detail_path
-    assert "admin1-summaries-litpop.csv" in output_summary_path
+    assert "haiti-admin1-litpop.csv" in output_paths["output_detail_path"]
+    assert "admin1-summaries-litpop.csv" in output_paths["output_summary_path"]
+    assert "admin1-timeseries-summaries-litpop.csv" in output_paths["output_timeseries_path"]
 
-    assert os.path.exists(os.path.join(EXPORT_DIRECTORY, f"{INDICATOR}"))
+    for _, file_path in output_paths.items():
+        assert os.path.dirname(file_path) == os.path.join(EXPORT_DIRECTORY, f"{INDICATOR}")
 
 
 def test_export_indicator_data_to_csv_crop_production():
     country = "Haiti"
     indicator = "crop-production"
-    output_detail_path, output_summary_path = make_detail_and_summary_file_paths(
+    output_paths = make_detail_and_summary_file_paths(
         country, indicator, export_directory=EXPORT_DIRECTORY
     )
-    if os.path.exists(output_detail_path):
-        os.remove(output_detail_path)
+    if os.path.exists(output_paths["output_detail_path"]):
+        os.remove(output_paths["output_detail_path"])
 
-    if os.path.exists(output_summary_path):
-        os.remove(output_summary_path)
+    if os.path.exists(output_paths["output_summary_path"]):
+        os.remove(output_paths["output_summary_path"])
 
     statuses = export_indicator_data_to_csv(country, indicator, export_directory=EXPORT_DIRECTORY)
 
@@ -141,10 +141,10 @@ def test_export_indicator_data_to_csv_crop_production():
         print(status, flush=True)
 
     assert len(statuses) == 3
-    assert os.path.exists(output_detail_path)
-    assert os.path.exists(output_summary_path)
+    assert os.path.exists(output_paths["output_detail_path"])
+    assert os.path.exists(output_paths["output_summary_path"])
 
-    with open(output_summary_path, encoding="utf-8") as summary_file:
+    with open(output_paths["output_summary_path"], encoding="utf-8") as summary_file:
         rows = list(csv.DictReader(summary_file))
 
     assert len(rows) == 81  # 10 regions x 8 indicators + 1 HXL tag
@@ -153,25 +153,29 @@ def test_export_indicator_data_to_csv_crop_production():
 def test_export_indicator_data_to_csv_earthquake():
     country = "Haiti"
     indicator = "earthquake"
-    output_detail_path, output_summary_path = make_detail_and_summary_file_paths(
+    output_paths = make_detail_and_summary_file_paths(
         country, indicator, export_directory=EXPORT_DIRECTORY
     )
-    if os.path.exists(output_detail_path):
-        os.remove(output_detail_path)
+    if os.path.exists(output_paths["output_detail_path"]):
+        os.remove(output_paths["output_detail_path"])
 
-    if os.path.exists(output_summary_path):
-        os.remove(output_summary_path)
+    if os.path.exists(output_paths["output_summary_path"]):
+        os.remove(output_paths["output_summary_path"])
+
+    if os.path.exists(output_paths["output_timeseries_path"]):
+        os.remove(output_paths["output_timeseries_path"])
 
     statuses = export_indicator_data_to_csv(country, indicator, export_directory=EXPORT_DIRECTORY)
 
     for status in statuses:
         print(status, flush=True)
 
-    assert len(statuses) == 3
-    assert os.path.exists(output_detail_path)
-    assert os.path.exists(output_summary_path)
+    assert len(statuses) == 4
+    assert os.path.exists(output_paths["output_summary_path"])
+    assert os.path.exists(output_paths["output_detail_path"])
+    assert os.path.exists(output_paths["output_timeseries_path"])
 
-    with open(output_summary_path, encoding="utf-8") as summary_file:
+    with open(output_paths["output_summary_path"], encoding="utf-8") as summary_file:
         rows = list(csv.DictReader(summary_file))
 
     assert len(rows) == 11  # 10 regions + 1 HXL tag

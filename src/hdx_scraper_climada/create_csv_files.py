@@ -22,7 +22,7 @@ from hdx_scraper_climada.download_admin1_geometry import (
 
 from hdx_scraper_climada.climada_interface import (
     calculate_indicator_for_admin1,
-    calculate_earthquake_timeseries_admin2,
+    calculate_earthquake_timeseries_admin,
 )
 
 setup_logging()
@@ -66,38 +66,34 @@ def export_indicator_data_to_csv(
     t0 = time.time()
     LOGGER.info(f"\nProcessing {country}")
     # Construct file paths
-    output_detail_path, output_summary_path = make_detail_and_summary_file_paths(
-        country, indicator, export_directory
-    )
+    output_paths = make_detail_and_summary_file_paths(country, indicator, export_directory)
 
-    if os.path.exists(output_detail_path):
+    if os.path.exists(output_paths["output_detail_path"]):
         statuses.append(
-            f"Output file {output_detail_path} already exists, continuing to next country"
+            f"Output file {output_paths['output_detail_path']} already exists, continuing to next country"
         )
         return statuses
 
-    # # Make detail files
-    # country_dataframes = create_detail_dataframes(country, indicator, use_hdx_admin1=use_hdx_admin1)
-    # status = write_detail_data(country_dataframes, output_detail_path)
-    # statuses.append(status)
+    # Make detail files
+    country_dataframes = create_detail_dataframes(country, indicator, use_hdx_admin1=use_hdx_admin1)
+    status = write_detail_data(country_dataframes, output_paths["output_detail_path"])
+    statuses.append(status)
 
-    # # Make summary file
-    # summary_rows, n_lines = create_summary_data(country_dataframes)
-    # status = write_summary_data(summary_rows, output_summary_path)
-    # statuses.append(status)
+    # Make summary file
+    summary_rows, n_lines = create_summary_data(country_dataframes)
+    status = write_summary_data(summary_rows, output_paths["output_summary_path"])
+    statuses.append(status)
 
     n_lines_timeseries = 0
-    n_lines = 0
     # Make timeseries summary file
     if indicator in ["earthquake"]:
-        timeseries_summary_path = os.path.join(
-            os.path.dirname(output_summary_path), f"admin1-timeseries-summaries-{indicator}.csv"
-        )
-        timeseries_summary_rows = calculate_earthquake_timeseries_admin2(country)
+        timeseries_summary_rows = calculate_earthquake_timeseries_admin(country)
         if len(timeseries_summary_rows) != 0:
             n_lines_timeseries = len(timeseries_summary_rows)
             status = write_summary_data(
-                timeseries_summary_rows, timeseries_summary_path, hxl_tags=TIMESERIES_HXL_TAGS
+                timeseries_summary_rows,
+                output_paths["output_timeseries_path"],
+                hxl_tags=TIMESERIES_HXL_TAGS,
             )
             statuses.append(status)
 
@@ -112,24 +108,30 @@ def export_indicator_data_to_csv(
 
 def make_detail_and_summary_file_paths(
     country: str, indicator: str, export_directory: str = None
-) -> (str, str):
+) -> dict:
     if export_directory is None:
         export_directory = os.path.join(os.path.dirname(__file__), "output")
+
+    file_path_dict = {}
     country_str = country.lower().replace(" ", "-")
-    output_detail_path = os.path.join(
+    file_path_dict["output_detail_path"] = os.path.join(
         export_directory, f"{indicator}", f"{country_str}-admin1-{indicator}.csv"
     )
 
-    output_summary_path = os.path.join(
+    file_path_dict["output_summary_path"] = os.path.join(
         export_directory, f"{indicator}", f"admin1-summaries-{indicator}.csv"
     )
 
-    indicator_directory = os.path.dirname(output_summary_path)
-    if not os.path.exists(indicator_directory):
-        LOGGER.info(f"Creating {os.path.dirname(output_summary_path)}")
-        os.makedirs(os.path.dirname(output_summary_path), exist_ok=True)
+    file_path_dict["output_timeseries_path"] = os.path.join(
+        export_directory, f"{indicator}", f"admin1-timeseries-summaries-{indicator}.csv"
+    )
 
-    return output_detail_path, output_summary_path
+    indicator_directory = os.path.dirname(file_path_dict["output_summary_path"])
+    if not os.path.exists(indicator_directory):
+        LOGGER.info(f"Creating {os.path.dirname(file_path_dict['output_summary_path'])}")
+        os.makedirs(os.path.dirname(file_path_dict["output_summary_path"]), exist_ok=True)
+
+    return file_path_dict
 
 
 def create_detail_dataframes(
