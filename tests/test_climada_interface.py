@@ -211,19 +211,14 @@ def test_calculate_earthquake_timeseries_admin():
     }
 
 
-@pytest.mark.skip(reason="Flood data not yet complete")
 def test_filter_dataframe_with_geometry():
-    # admin1_indicator_gdf: pd.DataFrame,
-    # admin1_shape: list[geopandas.geoseries.GeoSeries],
-    # indicator_key: str,
-
     t0 = time.time()
     admin1_names, admin2_names, admin_shapes = get_admin2_shapes_from_hdx(COUNTRY_ISO3A)
-    print(f"{time.time() - t0} seconds to load admin2 shapes")
+    print(f"{time.time() - t0:0.2f} seconds to load admin2 shapes")
 
     t0 = time.time()
     client = Client()
-    print(f"{time.time() - t0} seconds to create API client")
+    print(f"{time.time() - t0:0.2f} seconds to create API client")
 
     t0 = time.time()
     earthquake = client.get_hazard(
@@ -232,7 +227,7 @@ def test_filter_dataframe_with_geometry():
             "country_iso3alpha": "HTI",
         },
     )
-    print(f"{time.time() - t0} seconds to get earthquake data")
+    print(f"{time.time() - t0:0.2f} seconds to get earthquake data")
     indicator_key = "test"
     latitudes = earthquake.centroids.lat
     longitudes = earthquake.centroids.lon
@@ -249,21 +244,29 @@ def test_filter_dataframe_with_geometry():
     )
 
     t0 = time.time()
+    # This run populates the cache - we prepend "test" to the cache key to make sure we haven't
+    # accidently warmed the cache
     for j, admin_shape in enumerate(admin_shapes):
-        admin_indicator_gdf = filter_dataframe_with_geometry(
-            country_data, admin_shape, indicator_key
-        )
-    print(f"{time.time() - t0} seconds to on filter {len(admin_shapes)} shape")
-
-    t0 = time.time()
-    for j, admin_shape in enumerate(admin_shapes):
-        cache_key = f"{admin1_names[j]}-{admin2_names[j]}"
-        admin_indicator_gdf = filter_dataframe_with_geometry(
+        cache_key = f"test-{admin1_names[j]}-{admin2_names[j]}"
+        admin_indicator_uncached_gdf = filter_dataframe_with_geometry(
             country_data, admin_shape, indicator_key, cache_key=cache_key
         )
-    print(f"{time.time() - t0} seconds to on filter {len(admin_shapes)} shape with caching")
 
-    assert False
+    uncached_time = time.time() - t0
+    print(f"{time.time() - t0:0.2f} seconds to on filter {len(admin_shapes)} shape")
+
+    t0 = time.time()
+    # This run uses the cache
+    for j, admin_shape in enumerate(admin_shapes):
+        cache_key = f"test-{admin1_names[j]}-{admin2_names[j]}"
+        admin_indicator_cached_gdf = filter_dataframe_with_geometry(
+            country_data, admin_shape, indicator_key, cache_key=cache_key
+        )
+    cached_time = time.time() - t0
+    print(f"{time.time() - t0:0.2f} seconds to on filter {len(admin_shapes)} shape with caching")
+
+    assert cached_time / uncached_time < 0.90
+    assert admin_indicator_uncached_gdf["value"].equals(admin_indicator_cached_gdf["value"])
 
 
 @pytest.mark.skip(reason="Flood data not yet complete")
