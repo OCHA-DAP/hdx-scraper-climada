@@ -14,7 +14,7 @@ from hdx_scraper_climada.create_csv_files import (
     make_detail_and_summary_file_paths,
 )
 from hdx_scraper_climada.create_datasets import create_datasets_in_hdx
-from hdx_scraper_climada.utilities import read_countries, print_banner_to_log, has_timeseries
+from hdx_scraper_climada.utilities import read_countries, print_banner_to_log, HAS_TIMESERIES
 
 setup_logging()
 LOGGER = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ def check_for_existing_csv_files(indicator: str) -> set:
         summary_countries = set()
 
     # check timeseries for relevant indicators
-    if has_timeseries(indicator):
+    if indicator in HAS_TIMESERIES:
         LOGGER.info(f"'{indicator}' data includes a timeseries summary")
         if os.path.exists(output_paths["output_timeseries_path"]):
             with open(output_paths["output_timeseries_path"], encoding="utf-8") as summary_file:

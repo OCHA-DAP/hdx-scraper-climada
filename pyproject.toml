@@ -21,6 +21,7 @@ dependencies = [
     "plotly",
     "nbstripout",
     "black==23.10.0",
+    "black[jupyter]",
     "flake8>=6.1.0",
     "pylint>=3.0.1"
 ]

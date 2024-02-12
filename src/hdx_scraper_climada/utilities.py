@@ -9,6 +9,8 @@ import os
 from typing import Any
 
 ATTRIBUTES_FILEPATH = os.path.join(os.path.dirname(__file__), "metadata", "attributes.csv")
+INDICATOR_LIST = ["litpop", "crop-production", "earthquake"]
+HAS_TIMESERIES = ["earthquake"]
 
 
 def write_dictionary(

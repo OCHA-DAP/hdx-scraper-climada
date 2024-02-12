@@ -14,7 +14,7 @@ from hdx.location.country import Country
 from hdx.utilities.easy_logging import setup_logging
 
 
-from hdx_scraper_climada.utilities import write_dictionary, has_timeseries
+from hdx_scraper_climada.utilities import write_dictionary, HAS_TIMESERIES
 from hdx_scraper_climada.download_admin1_geometry import (
     get_admin1_shapes_from_hdx,
     get_admin1_shapes_from_natural_earth,
@@ -87,7 +87,7 @@ def export_indicator_data_to_csv(
 
     n_lines_timeseries = 0
     # Make timeseries summary file
-    if has_timeseries(indicator):
+    if indicator in HAS_TIMESERIES:
         timeseries_summary_rows = calculate_earthquake_timeseries_admin(country)
         if len(timeseries_summary_rows) != 0:
             n_lines_timeseries = len(timeseries_summary_rows)
