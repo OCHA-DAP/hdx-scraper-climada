@@ -70,7 +70,8 @@ def export_indicator_data_to_csv(
 
     if os.path.exists(output_paths["output_detail_path"]):
         statuses.append(
-            f"Output file {output_paths['output_detail_path']} already exists, continuing to next country"
+            f"Output file {output_paths['output_detail_path']} already exists, "
+            "continuing to next country"
         )
         return statuses
 
