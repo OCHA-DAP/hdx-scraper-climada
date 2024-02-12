@@ -78,6 +78,14 @@ def read_countries():
     return rows
 
 
+def has_timeseries(indicator: str) -> bool:
+    flag = False
+    if indicator in ["earthquake"]:
+        flag = True
+
+    return flag
+
+
 def print_banner_to_log(logger: logging.Logger, name: str):
     title = f"Climada - {name}"
     timestamp = f"Invoked at: {datetime.datetime.now().isoformat()}"
