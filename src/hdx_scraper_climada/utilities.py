@@ -14,7 +14,16 @@ HAS_TIMESERIES = ["earthquake", "flood"]
 NO_DATA = {}
 NO_DATA["earthquake"] = set(["Burkina Faso", "Chad", "Niger", "Nigeria"])
 NO_DATA["flood"] = set(
-    ["Burkina Faso", "Cameroon", "Colombia", "South Sudan", "State of Palestine", "Nigeria"]
+    [
+        "Burkina Faso",
+        "Cameroon",
+        "Colombia",  # time series missing
+        "South Sudan",
+        "Sudan",  # time series missing
+        "State of Palestine",
+        "Nigeria",  # time series missing
+        "Venezuela",  # time series missing
+    ]
 )
 
 

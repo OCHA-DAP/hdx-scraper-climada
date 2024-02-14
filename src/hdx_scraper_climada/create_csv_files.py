@@ -93,7 +93,7 @@ def export_indicator_data_to_csv(
         output_paths["output_summary_path"], indicator
     ):
         LOGGER.info(f"Making detail file for {country}-{indicator}")
-        if len(country_dataframes) == 0:
+        if not country_dataframes:
             LOGGER.info(
                 f"No country_dataframes available to make summary file for {country}-{indicator}"
             )
@@ -205,14 +205,15 @@ def create_detail_dataframes(
 
 def create_summary_data(
     country_dataframes: list[pd.DataFrame],
-) -> (list[dict], int):
+) -> tuple[list[dict], int]:
     summary_rows = []
     n_lines = 0
-    country = country_dataframes[0]["country_name"].unique()[0]
+
     for df in country_dataframes:
         if len(df) == 0:
             LOGGER.info("Dataframe length is zero")
             continue
+        country = df["country_name"].unique()[0]
         indicators = df["indicator"].unique()
         for indicator in indicators:
             filtered_df = df[df["indicator"] == indicator]
