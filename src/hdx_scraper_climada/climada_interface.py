@@ -234,8 +234,11 @@ def calculate_earthquake_for_admin1(
     return admin1_indicator_gdf
 
 
-def calculate_earthquake_timeseries_admin(country: str, test_run: bool = False) -> list[dict]:
-    LOGGER.info(f"Creating timeseries summary for earthquakes in {country}")
+def calculate_indicator_timeseries_admin(
+    country: str, indicator: str = "earthquake", test_run: bool = False
+) -> list[dict]:
+    global SPATIAL_FILTER_CACHE
+    LOGGER.info(f"Creating timeseries summary for {indicator} in {country}")
     country_iso3alpha = Country.get_iso3_country_code(country)
     admin_level = "2"
     admin1_names, admin2_names, admin_shapes = get_admin2_shapes_from_hdx(country_iso3alpha)
@@ -246,18 +249,21 @@ def calculate_earthquake_timeseries_admin(country: str, test_run: bool = False) 
         admin2_names = len(admin1_names) * [""]
 
     LOGGER.info(f"Found {len(admin2_names)} admin{admin_level} for {country}")
-    indicator_key = "earthquake.max_intensity"
+    if indicator == "earthquake":
+        indicator_key = f"{indicator}.date.max_intensity"
+    elif indicator == "flood":
+        indicator_key = f"{indicator}.date"
 
-    earthquake = CLIENT.get_hazard(
-        "earthquake",
+    indicator_data = CLIENT.get_hazard(
+        indicator,
         properties={
             "country_iso3alpha": country_iso3alpha,
         },
     )
-    latitudes = earthquake.centroids.lat
-    longitudes = earthquake.centroids.lon
-    earthquakes = []
-    for i, event_intensity in enumerate(earthquake.intensity):
+    latitudes = indicator_data.centroids.lat
+    longitudes = indicator_data.centroids.lon
+    events = []
+    for i, event_intensity in enumerate(indicator_data.intensity):
         values = event_intensity.toarray().flatten()
         if sum(values) == 0.0:
             continue
@@ -269,33 +275,49 @@ def calculate_earthquake_timeseries_admin(country: str, test_run: bool = False) 
             }
         )
 
+        # It would be nice to do this but it messes up caching
+        if indicator == "flood":
+            country_data = country_data[country_data["value"] != 0]
+
         for j, admin_shape in enumerate(admin_shapes):
-            cache_key = f"{admin1_names[j]}-{admin2_names[j]}"
+            # Switch off caching for flood because the filter above stops it working
+            if indicator == "flood":
+                cache_key = None
+            else:
+                cache_key = f"{admin1_names[j]}-{admin2_names[j]}"
             admin_indicator_gdf = filter_dataframe_with_geometry(
                 country_data, admin_shape, indicator_key, cache_key=cache_key
             )
 
-            if len(admin_indicator_gdf["value"]) != 0:
-                max_intensity = max(admin_indicator_gdf["value"])
+            if indicator == "earthquake":
+                aggregation = "max"
+                if len(admin_indicator_gdf["value"]) != 0:
+                    aggregate = round(max(admin_indicator_gdf["value"]), 2)
+                else:
+                    aggregate = 0.0
             else:
-                max_intensity = 0.0
-            if max_intensity > 0.0:
-                event_date = datetime.datetime.fromordinal(earthquake.date[i]).isoformat()
+                aggregation = "sum"
+                if len(admin_indicator_gdf["value"]) != 0:
+                    aggregate = round(sum(admin_indicator_gdf["value"]), 0)
+                else:
+                    aggregate = 0.0
+            if aggregate > 0.0:
+                event_date = datetime.datetime.fromordinal(indicator_data.date[i]).isoformat()
                 LOGGER.info(
                     f"Event on {event_date[0:10]} in {country_iso3alpha}-{cache_key} "
-                    f"MaxInt:{max_intensity:0.2f}"
+                    f"MaxInt:{aggregate:0.2f}"
                 )
-                earthquakes.append(
+                events.append(
                     {
                         "country_name": country,
                         "admin1_name": admin1_names[j],
                         "admin2_name": admin2_names[j],
                         "latitude": round(admin_indicator_gdf["latitude"].mean(), 4),
                         "longitude": round(admin_indicator_gdf["longitude"].mean(), 4),
-                        "aggregation": "max",
-                        "indicator": "earthquake.date.max_intensity",
+                        "aggregation": aggregation,
+                        "indicator": indicator_key,
                         "event_date": event_date,
-                        "value": round(max_intensity, 2),
+                        "value": aggregate,
                     }
                 )
         if test_run:
@@ -303,14 +325,14 @@ def calculate_earthquake_timeseries_admin(country: str, test_run: bool = False) 
 
     print(f"CACHE_HIT: {CACHE_HIT}", flush=True)
     print(f"CACHE_MISS: {CACHE_MISS}", flush=True)
-    return earthquakes
+    return events
 
 
 def calculate_flood_for_admin1(
     admin1_shape: list[geopandas.geoseries.GeoSeries],
     country: str,
 ) -> pd.DataFrame:
-    indicator_key = "flood.max_intensity"
+    indicator_key = "flood"
     country_iso3alpha = Country.get_iso3_country_code(country)
     admin1_indicator_data = CLIENT.get_hazard(
         "flood",
@@ -325,7 +347,9 @@ def calculate_flood_for_admin1(
     admin1_indicator_gdf = pd.DataFrame(
         {"latitude": latitudes, "longitude": longitudes, "value": max_intensity}
     )
-    # admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
+
+    # Filter out zero entries to reduce the file size
+    admin1_indicator_gdf = admin1_indicator_gdf[admin1_indicator_gdf["value"] != 0.0]
 
     admin1_indicator_gdf = filter_dataframe_with_geometry(
         admin1_indicator_gdf, admin1_shape, indicator_key

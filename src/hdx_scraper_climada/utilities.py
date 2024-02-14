@@ -9,8 +9,24 @@ import os
 from typing import Any
 
 ATTRIBUTES_FILEPATH = os.path.join(os.path.dirname(__file__), "metadata", "attributes.csv")
-INDICATOR_LIST = ["litpop", "crop-production", "earthquake"]
-HAS_TIMESERIES = ["earthquake"]
+INDICATOR_LIST = ["litpop", "crop-production", "earthquake", "flood"]
+HAS_TIMESERIES = ["earthquake", "flood"]
+NO_DATA = {}
+NO_DATA["earthquake"] = set(["Burkina Faso", "Chad", "Niger", "Nigeria"])
+NO_DATA["flood"] = set(
+    ["Burkina Faso", "Cameroon", "Colombia", "South Sudan", "State of Palestine", "Nigeria"]
+)
+
+
+def get_set_of_countries_in_summary_file(summary_file_path: str, indicator: str) -> set:
+    summary_countries = set()
+    if os.path.exists(summary_file_path):
+        with open(summary_file_path, encoding="utf-8") as summary_file:
+            rows = csv.DictReader(summary_file)
+            summary_countries = {x["country_name"] for x in rows if x["country_name"] != "#country"}
+            summary_countries = summary_countries.union(NO_DATA.get(indicator, set()))
+
+    return summary_countries
 
 
 def write_dictionary(
@@ -78,14 +94,6 @@ def read_countries():
         rows = list(csv.DictReader(countries_file))
 
     return rows
-
-
-def has_timeseries(indicator: str) -> bool:
-    flag = False
-    if indicator in ["earthquake"]:
-        flag = True
-
-    return flag
 
 
 def print_banner_to_log(logger: logging.Logger, name: str):

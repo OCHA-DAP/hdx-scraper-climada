@@ -14,13 +14,16 @@ from hdx_scraper_climada.create_csv_files import (
     make_detail_and_summary_file_paths,
 )
 from hdx_scraper_climada.create_datasets import create_datasets_in_hdx
-from hdx_scraper_climada.utilities import read_countries, print_banner_to_log, HAS_TIMESERIES
+from hdx_scraper_climada.utilities import (
+    read_countries,
+    print_banner_to_log,
+    HAS_TIMESERIES,
+    NO_DATA,
+    get_set_of_countries_in_summary_file,
+)
 
 setup_logging()
 LOGGER = logging.getLogger(__name__)
-
-NO_DATA = {}
-NO_DATA["earthquake"] = set(["Burkina Faso", "Chad", "Niger", "Nigeria"])
 
 
 def check_for_existing_csv_files(indicator: str) -> set:
@@ -28,26 +31,16 @@ def check_for_existing_csv_files(indicator: str) -> set:
     output_paths = make_detail_and_summary_file_paths("Haiti", indicator)
 
     # Check which countries are in the summary
-    if os.path.exists(output_paths["output_summary_path"]):
-        with open(output_paths["output_summary_path"], encoding="utf-8") as summary_file:
-            rows = csv.DictReader(summary_file)
-            summary_countries = {x["country_name"] for x in rows if x["country_name"] != "#country"}
-            summary_countries = summary_countries.union(NO_DATA.get(indicator, set()))
-    else:
-        summary_countries = set()
+    summary_countries = get_set_of_countries_in_summary_file(
+        output_paths["output_summary_path"], indicator
+    )
 
     # check timeseries for relevant indicators
     if indicator in HAS_TIMESERIES:
         LOGGER.info(f"'{indicator}' data includes a timeseries summary")
-        if os.path.exists(output_paths["output_timeseries_path"]):
-            with open(output_paths["output_timeseries_path"], encoding="utf-8") as summary_file:
-                rows = csv.DictReader(summary_file)
-                timeseries_countries = {
-                    x["country_name"] for x in rows if x["country_name"] != "#country"
-                }
-                timeseries_countries = timeseries_countries.union(NO_DATA.get(indicator, set()))
-        else:
-            timeseries_countries = set()
+        timeseries_countries = get_set_of_countries_in_summary_file(
+            output_paths["output_timeseries_path"], indicator
+        )
     else:
         timeseries_countries = all_countries
 
@@ -58,6 +51,8 @@ def check_for_existing_csv_files(indicator: str) -> set:
 
         if os.path.exists(output_paths["output_detail_path"]):
             detail_countries.update([country])
+
+    detail_countries = detail_countries.union(NO_DATA.get(indicator, set()))
 
     missing_detail_countries = all_countries.difference(detail_countries)
     missing_summary_countries = all_countries.difference(summary_countries)
@@ -87,8 +82,8 @@ def produce_csv_files(countries_to_process: list[dict], indicator: str):
 
 
 if __name__ == "__main__":
-    INDICATOR = "earthquake"
-    DRY_RUN = False
+    INDICATOR = "flood"
+    DRY_RUN = True
     T0 = time.time()
     print_banner_to_log(LOGGER, "Updating Climada Datasets")
 

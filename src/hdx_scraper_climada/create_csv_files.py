@@ -14,7 +14,12 @@ from hdx.location.country import Country
 from hdx.utilities.easy_logging import setup_logging
 
 
-from hdx_scraper_climada.utilities import write_dictionary, HAS_TIMESERIES
+from hdx_scraper_climada.utilities import (
+    write_dictionary,
+    HAS_TIMESERIES,
+    get_set_of_countries_in_summary_file,
+    NO_DATA,
+)
 from hdx_scraper_climada.download_admin1_geometry import (
     get_admin1_shapes_from_hdx,
     get_admin1_shapes_from_natural_earth,
@@ -22,7 +27,7 @@ from hdx_scraper_climada.download_admin1_geometry import (
 
 from hdx_scraper_climada.climada_interface import (
     calculate_indicator_for_admin1,
-    calculate_earthquake_timeseries_admin,
+    calculate_indicator_timeseries_admin,
 )
 
 setup_logging()
@@ -68,35 +73,63 @@ def export_indicator_data_to_csv(
     # Construct file paths
     output_paths = make_detail_and_summary_file_paths(country, indicator, export_directory)
 
-    if os.path.exists(output_paths["output_detail_path"]):
-        statuses.append(
-            f"Output file {output_paths['output_detail_path']} already exists, "
-            "continuing to next country"
-        )
+    if country in NO_DATA[indicator]:
+        statuses.append(f"There is no CLIMADA data for {country}-{indicator}")
         return statuses
-
-    # Make detail files
-    country_dataframes = create_detail_dataframes(country, indicator, use_hdx_admin1=use_hdx_admin1)
-    status = write_detail_data(country_dataframes, output_paths["output_detail_path"])
-    statuses.append(status)
+    if os.path.exists(output_paths["output_detail_path"]):
+        LOGGER.info(f"Detail file for {country}-{indicator} already exists")
+        statuses.append(f"Output file {output_paths['output_detail_path']} already exists")
+    else:
+        # Make detail files
+        LOGGER.info(f"Making detail file for {country}-{indicator}")
+        country_dataframes = create_detail_dataframes(
+            country, indicator, use_hdx_admin1=use_hdx_admin1
+        )
+        status = write_detail_data(country_dataframes, output_paths["output_detail_path"])
+        statuses.append(status)
 
     # Make summary file
-    summary_rows, n_lines = create_summary_data(country_dataframes)
-    status = write_summary_data(summary_rows, output_paths["output_summary_path"])
-    statuses.append(status)
+    if country not in get_set_of_countries_in_summary_file(
+        output_paths["output_summary_path"], indicator
+    ):
+        LOGGER.info(f"Making detail file for {country}-{indicator}")
+        if len(country_dataframes) == 0:
+            LOGGER.info(
+                f"No country_dataframes available to make summary file for {country}-{indicator}"
+            )
+            raise NotImplementedError(
+                "Can't make summary data entries for {country}-{indicator} "
+                "without country_dataframes"
+            )
+
+        summary_rows, n_lines = create_summary_data(country_dataframes)
+        status = write_summary_data(summary_rows, output_paths["output_summary_path"])
+        statuses.append(status)
+    else:
+        LOGGER.info(f"Summary data for {country}-{indicator} already exists")
+        statuses.append(f"Output file {output_paths['output_detail_path']} already exists")
 
     n_lines_timeseries = 0
     # Make timeseries summary file
     if indicator in HAS_TIMESERIES:
-        timeseries_summary_rows = calculate_earthquake_timeseries_admin(country)
-        if len(timeseries_summary_rows) != 0:
-            n_lines_timeseries = len(timeseries_summary_rows)
-            status = write_summary_data(
-                timeseries_summary_rows,
-                output_paths["output_timeseries_path"],
-                hxl_tags=TIMESERIES_HXL_TAGS,
+        if country not in get_set_of_countries_in_summary_file(
+            output_paths["output_timeseries_path"], indicator
+        ):
+            LOGGER.info(f"Making timeseries summary file for {country}-{indicator}")
+            timeseries_summary_rows = []
+            timeseries_summary_rows = calculate_indicator_timeseries_admin(
+                country, indicator=indicator
             )
-            statuses.append(status)
+            if len(timeseries_summary_rows) != 0:
+                n_lines_timeseries = len(timeseries_summary_rows)
+                status = write_summary_data(
+                    timeseries_summary_rows,
+                    output_paths["output_timeseries_path"],
+                    hxl_tags=TIMESERIES_HXL_TAGS,
+                )
+                statuses.append(status)
+        else:
+            LOGGER.info(f"Timeseries summary data for {country}-{indicator} already exists")
 
     statuses.append(
         f"Processing for {country} took {time.time()-t0:0.0f} seconds "

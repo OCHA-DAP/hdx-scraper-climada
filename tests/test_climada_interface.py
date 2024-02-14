@@ -20,7 +20,7 @@ from hdx_scraper_climada.download_admin1_geometry import (
 )
 from hdx_scraper_climada.climada_interface import (
     calculate_indicator_for_admin1,
-    calculate_earthquake_timeseries_admin,
+    calculate_indicator_timeseries_admin,
     filter_dataframe_with_geometry,
 )
 from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_paths
@@ -193,9 +193,9 @@ def test_calculate_indicator_for_admin1_earthquake():
     assert len(admin1_indicator_gdf) == 1300
 
 
-def test_calculate_earthquake_timeseries_admin():
+def test_calculate_indicator_timeseries_admin():
     country = "Haiti"
-    earthquakes = calculate_earthquake_timeseries_admin(country, test_run=True)
+    earthquakes = calculate_indicator_timeseries_admin(country, test_run=True)
 
     assert len(earthquakes) == 35
     assert earthquakes[0] == {
