@@ -17,12 +17,12 @@ NO_DATA["flood"] = set(
     [
         "Burkina Faso",
         "Cameroon",
-        "Colombia",  # time series missing
+        # "Colombia",  # time series missing
         "South Sudan",
-        "Sudan",  # time series missing
+        # "Sudan",  # time series missing
         "State of Palestine",
-        "Nigeria",  # time series missing
-        "Venezuela",  # time series missing
+        # "Nigeria",  # time series missing
+        # "Venezuela",  # time series missing
     ]
 )
 

@@ -70,32 +70,38 @@ def create_datasets_in_hdx(
                     dataset_attributes["output_subdirectory"],
                     attributes["filename_template"].format(country=country_str),
                 )
-                resource = Resource(
-                    {
-                        "name": os.path.basename(resource_file_path),
-                        "description": attributes["description"].format(
-                            country=country["country_name"]
-                        ),
-                        "format": attributes["file_format"],
-                    }
-                )
-                resource.set_file_to_upload(resource_file_path)
-                resource_list.append(resource)
+                if os.path.exists(resource_file_path):
+                    resource = Resource(
+                        {
+                            "name": os.path.basename(resource_file_path),
+                            "description": attributes["description"].format(
+                                country=country["country_name"]
+                            ),
+                            "format": attributes["file_format"],
+                        }
+                    )
+                    resource.set_file_to_upload(resource_file_path)
+                    resource_list.append(resource)
+                else:
+                    LOGGER.info(f"Detail file for {country['country_name']} does not exist")
         else:
             resource_file_path = os.path.join(
                 INDICATOR_DIRECTORY,
                 dataset_attributes["output_subdirectory"],
                 attributes["filename_template"],
             )
-            resource = Resource(
-                {
-                    "name": os.path.basename(resource_file_path),
-                    "description": attributes["description"],
-                    "format": attributes["file_format"],
-                }
-            )
-            resource.set_file_to_upload(resource_file_path)
-            resource_list.append(resource)
+            if os.path.exists(resource_file_path):
+                resource = Resource(
+                    {
+                        "name": os.path.basename(resource_file_path),
+                        "description": attributes["description"],
+                        "format": attributes["file_format"],
+                    }
+                )
+                resource.set_file_to_upload(resource_file_path)
+                resource_list.append(resource)
+            else:
+                LOGGER.info(f"Detail file for {country['country_name']} does not exist")
 
     dataset.add_update_resources(resource_list)
     if not dry_run:

@@ -10,6 +10,8 @@ from collections import OrderedDict, deque
 
 import pandas as pd
 
+from climada.util.api_client import Client
+
 from hdx.location.country import Country
 from hdx.utilities.easy_logging import setup_logging
 
@@ -69,23 +71,29 @@ def export_indicator_data_to_csv(
 ) -> list[str]:
     statuses = []
     t0 = time.time()
+    n_lines = 0
+    n_lines_timeseries = 0
     LOGGER.info(f"\nProcessing {country}")
     # Construct file paths
     output_paths = make_detail_and_summary_file_paths(country, indicator, export_directory)
 
-    if country in NO_DATA[indicator]:
-        statuses.append(f"There is no CLIMADA data for {country}-{indicator}")
-        return statuses
+    # if country in NO_DATA[indicator]:
+    #     statuses.append(f"There is no CLIMADA data for {country}-{indicator}")
+    #     return statuses
     if os.path.exists(output_paths["output_detail_path"]):
         LOGGER.info(f"Detail file for {country}-{indicator} already exists")
         statuses.append(f"Output file {output_paths['output_detail_path']} already exists")
     else:
         # Make detail files
         LOGGER.info(f"Making detail file for {country}-{indicator}")
-        country_dataframes = create_detail_dataframes(
-            country, indicator, use_hdx_admin1=use_hdx_admin1
-        )
-        status = write_detail_data(country_dataframes, output_paths["output_detail_path"])
+        try:
+            country_dataframes = create_detail_dataframes(
+                country, indicator, use_hdx_admin1=use_hdx_admin1
+            )
+            status = write_detail_data(country_dataframes, output_paths["output_detail_path"])
+        except (Client.NoResult, AttributeError):
+            country_dataframes = None
+            status = f"There is no CLIMADA data for {country}-{indicator}"
         statuses.append(status)
 
     # Make summary file
@@ -93,23 +101,22 @@ def export_indicator_data_to_csv(
         output_paths["output_summary_path"], indicator
     ):
         LOGGER.info(f"Making detail file for {country}-{indicator}")
-        if not country_dataframes:
+        if country_dataframes is None:
             LOGGER.info(
                 f"No country_dataframes available to make summary file for {country}-{indicator}"
             )
-            raise NotImplementedError(
-                "Can't make summary data entries for {country}-{indicator} "
-                "without country_dataframes"
-            )
-
-        summary_rows, n_lines = create_summary_data(country_dataframes)
-        status = write_summary_data(summary_rows, output_paths["output_summary_path"])
-        statuses.append(status)
+            # raise NotImplementedError(
+            #     "Can't make summary data entries for {country}-{indicator} "
+            #     "without country_dataframes"
+            # )
+        else:
+            summary_rows, n_lines = create_summary_data(country_dataframes)
+            status = write_summary_data(summary_rows, output_paths["output_summary_path"])
+            statuses.append(status)
     else:
         LOGGER.info(f"Summary data for {country}-{indicator} already exists")
         statuses.append(f"Output file {output_paths['output_detail_path']} already exists")
 
-    n_lines_timeseries = 0
     # Make timeseries summary file
     if indicator in HAS_TIMESERIES:
         if country not in get_set_of_countries_in_summary_file(
@@ -117,9 +124,19 @@ def export_indicator_data_to_csv(
         ):
             LOGGER.info(f"Making timeseries summary file for {country}-{indicator}")
             timeseries_summary_rows = []
-            timeseries_summary_rows = calculate_indicator_timeseries_admin(
-                country, indicator=indicator
-            )
+            try:
+                timeseries_summary_rows = calculate_indicator_timeseries_admin(
+                    country, indicator=indicator
+                )
+            except TypeError:
+                LOGGER.info(
+                    f".date attribute for {country}-{indicator} is malformed, "
+                    "cannot make timeseries summary"
+                )
+            # For some reason Cameroon Flood throws AttributeError rather than Client.NoResult
+            except (Client.NoResult, AttributeError):
+                LOGGER.info(f"There is no CLIMADA data for {country}-{indicator}")
+
             if len(timeseries_summary_rows) != 0:
                 n_lines_timeseries = len(timeseries_summary_rows)
                 status = write_summary_data(
