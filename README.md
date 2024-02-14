@@ -109,12 +109,20 @@ Runtime for crop-production is about 134 seconds and generates 3.54MB of CSV fil
 
 ### Earthquake
 
-Runtime for Earthquake is about 10 minutes and generates 57MB of CSV files.
+Runtime for Earthquake is about 10 minutes and generates 57MB of CSV files. Adding the time series summary increasing the time to generate data to about 3 hours.
 
 The underlying data is historic records of earthquakes between 1905 and 2017. There are a little over 41,000 records. For each earthquake there is a map of the world with the intensity of shaking produced by the earthquake above a threshold of 4.0 units on the MMI - this will only have non-zero values over a relatively small area. The CLIMADA API provides a special function for showing the maximum intensity over all the earthquakes which is the data we present. This means there is a single value for each value on the map grid and we summarise over admin1 areas by taking the maximum intensity over the grid points in that area. 
 
-Possible alternatives to the maximum intensity presentation would be a number of events which have a non-zero intensity at the gridded points, or the average of non-zero intensities.
+Also included is a time series summary which shows the maximum intensity for each earthquake in each
+admin1 area or admin2 if it is available.
 
+## Flood
+
+Runtime for Flood is about 12 hours and generates 239MB of data.
+
+The underlying data is a binary mask (values either 0 or 1.) on a 200mx200m grid for each flood event. For the detail view this is sparse grid is stripped of non-zero values reducing the grid size from approximately 1 million points to O(10000). For the summary views the number of non-zero grid points is summed to provide an aggregate value per admin1 or admin2 area (where available).
+
+Admin2 geometries are only available for Ethiopia, Haiti and Somalia
 
 ### Relative cropyield
 
