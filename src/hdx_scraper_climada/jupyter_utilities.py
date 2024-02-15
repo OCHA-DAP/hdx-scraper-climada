@@ -89,16 +89,34 @@ def plot_histogram(country: str, indicator: str):
 def plot_timeseries_histogram(country: str, indicator: str):
     if indicator not in HAS_TIMESERIES:
         print(f"Indicator '{indicator}' does not have time series data")
+        return
     output_paths = make_detail_and_summary_file_paths(country, indicator)
-
     timeseries_data = pandas.read_csv(output_paths["output_timeseries_path"])
+    timeseries_data.drop(timeseries_data.head(1).index, inplace=True)
+    timeseries_data = timeseries_data[timeseries_data["country_name"] == country]
+    timeseries_data["value"] = timeseries_data["value"].astype(float)
+    timeseries_data["event_date"] = pandas.to_datetime(timeseries_data["event_date"])
 
-    fig = px.bar(timeseries_data, x="event_date")
+    date_set = sorted(timeseries_data["event_date"].unique())
+
+    for i, date_ in enumerate(date_set):
+        print(f"{i}. {date_}", flush=True)
+
+    resampled_intensity = (
+        timeseries_data.reset_index().resample("Y", on="event_date").max()["value"]
+    )
+
+    display_data = pandas.DataFrame()
+    display_data["event_date"] = resampled_intensity.index
+    display_data["value"] = resampled_intensity.to_list()
+
+    fig = px.bar(
+        display_data,
+        x="event_date",
+        y="value",
+        title=f"{indicator} maximum intensity resampled to yearly",
+    )
     fig.show()
-    # with open("admin1-timeseries-summaries.csv", encoding="utf-8") as summary_file:
-    #     summary_data = list(csv.DictReader(summary_file))
-
-    # date_set = set(x["event_date"] for x in summary_data)
 
 
 def plot_admin_boundaries(country: str):
