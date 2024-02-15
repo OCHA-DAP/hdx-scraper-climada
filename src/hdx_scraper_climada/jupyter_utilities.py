@@ -1,16 +1,22 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import csv
 import math
+import geopandas
 import pandas
 import plotly.express as px
 
+from hdx.location.country import Country
+
 from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_paths
 from hdx_scraper_climada.utilities import HAS_TIMESERIES
+from hdx_scraper_climada.download_admin1_geometry import (
+    get_admin1_shapes_from_hdx,
+    get_admin2_shapes_from_hdx,
+)
 
 
-def calc_zoom(df: pandas.DataFrame) -> tuple[float, float]:
+def calc_zoom(df: pandas.DataFrame, total_bounds: None | list = None) -> tuple[float, float]:
     """This function generates a zoom level to fit a supplied dataframe for display, cribbed from
     this stackoverflow answer:
     https://stackoverflow.com/questions/46891914/control-mapbox-extent-in-plotly-python-api
@@ -21,8 +27,19 @@ def calc_zoom(df: pandas.DataFrame) -> tuple[float, float]:
     Returns:
         tuple[float, float] -- zoom for y, zoom for x
     """
-    width_y = max(df["latitude"]) - min(df["latitude"])
-    width_x = max(df["longitude"]) - min(df["longitude"])
+    if total_bounds is not None:
+        min_latitude = total_bounds[1]
+        max_latitude = total_bounds[3]
+        min_longitude = total_bounds[0]
+        max_longitude = total_bounds[2]
+    else:
+        min_latitude = min(df["latitude"])
+        max_latitude = max(df["latitude"])
+        min_longitude = min(df["longitude"])
+        max_longitude = max(df["longitude"])
+
+    width_y = max_latitude - min_latitude
+    width_x = max_longitude - min_longitude
     zoom_y = -1.446 * math.log(width_y) + 7.2753
     zoom_x = -1.415 * math.log(width_x) + 8.7068
     return min(round(zoom_y, 2), round(zoom_x, 2))
@@ -82,6 +99,43 @@ def plot_timeseries_histogram(country: str, indicator: str):
     #     summary_data = list(csv.DictReader(summary_file))
 
     # date_set = set(x["event_date"] for x in summary_data)
+
+
+def plot_admin_boundaries(country: str):
+    country_iso3alpha = Country.get_iso3_country_code(country)
+    admin1_names, admin2_names, admin_shapes = get_admin2_shapes_from_hdx(country_iso3alpha)
+    admin_name_column = "admin2_names"
+    if len(admin2_names) == 0:
+        admin1_names, admin_shapes = get_admin1_shapes_from_hdx(country_iso3alpha)
+        admin2_names = len(admin1_names) * [""]
+        admin_name_column = "admin1_names"
+        print(f"Admin2 data not available for {country} so using admin1", flush=True)
+    else:
+        print(f"Admin2 data available for {country}", flush=True)
+    all_shapes = geopandas.GeoDataFrame(pandas.concat(admin_shapes, ignore_index=True))
+    all_shapes["admin1_names"] = admin1_names
+    all_shapes["admin2_names"] = admin2_names
+
+    total_bounds = all_shapes.total_bounds
+    center_lat = total_bounds[1] + (total_bounds[3] - total_bounds[1]) / 2.0
+    center_lon = total_bounds[0] + (total_bounds[2] - total_bounds[0]) / 2.0
+    zoom = calc_zoom(None, total_bounds=total_bounds)
+    # all_shapes.plot(column=admin_name_column, categorical=True, cmap="Spectral")
+    fig = px.choropleth_mapbox(
+        all_shapes,
+        geojson=all_shapes.geometry,
+        locations=all_shapes.index,
+        center={"lat": center_lat, "lon": center_lon},
+        zoom=zoom,
+        color=admin_name_column,
+        mapbox_style="carto-darkmatter",
+        opacity=0.75,
+        width=1200,
+        height=800,
+    )
+    # fig.update_geos(fitbounds="locations", visible=False)
+
+    fig.show()
 
 
 def plot_timeseries_chloropleth(country: str, indicator: str):
