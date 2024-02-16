@@ -13,9 +13,9 @@ from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_pa
 from hdx_scraper_climada.utilities import HAS_TIMESERIES
 from hdx_scraper_climada.download_admin1_geometry import (
     get_best_admin_shapes,
-    get_admin1_shapes_from_hdx,
-    get_admin2_shapes_from_hdx,
 )
+
+INDICATOR_UNITS = {"earthquake": "Maximum MMI", "flood": "extent", "litpop": "USD"}
 
 
 def calc_zoom(df: pandas.DataFrame, total_bounds: None | list = None) -> tuple[float, float]:
@@ -63,7 +63,6 @@ def plot_detail_file_map(country: str, indicator: str):
         country_data = country_data[country_data["value"] != 0]
         print(f"Size of flood data after scaling: {len(country_data)}", flush=True)
     zoom = calc_zoom(country_data)
-    print(f"Calculated zoom: {zoom}", flush=True)
     fig = px.scatter_mapbox(
         country_data,
         lat="latitude",
@@ -71,7 +70,9 @@ def plot_detail_file_map(country: str, indicator: str):
         color="region_name",
         size="scaled_value",
         hover_data="value",
-        title=f"{indicator} data for {country}",
+        title=(
+            f"Gridded {indicator.title()} data for {country}, " "sized by value, coloured by admin1"
+        ),
         size_max=20,
         zoom=zoom,
         opacity=0.75,
@@ -84,18 +85,33 @@ def plot_detail_file_map(country: str, indicator: str):
 
 def plot_histogram(country: str, indicator: str):
     country_data = get_data_from_csv(country, indicator)
-    fig = px.histogram(country_data, x="value", title=f"{indicator} histogram for {country}")
+    if country_data is None:
+        print(f"No {indicator} data for {country}", flush=True)
+        return None
+    fig = px.histogram(
+        country_data,
+        x="value",
+        title=(
+            f"{indicator.title()} {INDICATOR_UNITS[indicator]} "
+            f"histogram for {country} from detail data"
+        ),
+    )
+    fig.update_layout(xaxis_title_text=f"{INDICATOR_UNITS[indicator]}", yaxis_title_text="Count")
     fig.show()
 
 
 def plot_timeseries_histogram(country: str, indicator: str):
     if indicator not in HAS_TIMESERIES:
-        print(f"Indicator '{indicator}' does not have time series data")
-        return
+        print(f"plot_timeseries_histogram: Indicator '{indicator}' does not have time series data")
+        return None
     output_paths = make_detail_and_summary_file_paths(country, indicator)
     timeseries_data = pandas.read_csv(output_paths["output_timeseries_path"])
+
     timeseries_data.drop(timeseries_data.head(1).index, inplace=True)
     timeseries_data = timeseries_data[timeseries_data["country_name"] == country]
+    if len(timeseries_data) == 0:
+        print(f"No {indicator} timeseries data for {country}", flush=True)
+        return None
     timeseries_data["value"] = timeseries_data["value"].astype(float)
     timeseries_data["event_date"] = pandas.to_datetime(timeseries_data["event_date"])
 
@@ -116,15 +132,19 @@ def plot_timeseries_histogram(country: str, indicator: str):
         display_data,
         x="event_date",
         y="value",
-        title=f"{indicator} maximum intensity resampled to yearly",
+        title=f"{indicator.title()} {INDICATOR_UNITS[indicator]} for {country} resampled to yearly",
     )
+    # fig.update_layout(
+    #     xaxis_title_text="Year",
+    #     yaxis_title_text=f"{INDICATOR_UNITS[indicator]}",
+    #     xaxis={"tickmode": "linear", "tick0": 5, "dtick": 1},
+    # )
     fig.show()
 
 
 def plot_admin_boundaries(country: str):
     country_iso3alpha = Country.get_iso3_country_code(country)
     admin1_names, admin2_names, admin_shapes, admin_level = get_best_admin_shapes(country_iso3alpha)
-    print(f"Found {len(admin2_names)} admin{admin_level} for {country}", flush=True)
 
     admin_name_column = f"admin{admin_level}_names"
 
@@ -144,6 +164,8 @@ def plot_admin_boundaries(country: str):
         center={"lat": center_lat, "lon": center_lon},
         zoom=zoom,
         color=admin_name_column,
+        title=f"{len(admin2_names)} admin{admin_level} boundaries for {country}",
+        hover_data=["admin1_names", "admin2_names"],
         mapbox_style="carto-darkmatter",
         opacity=0.75,
         width=1200,
@@ -154,10 +176,14 @@ def plot_admin_boundaries(country: str):
     fig.show()
 
 
-def plot_timeseries_chloropleth(country: str, indicator: str, event_idx: int = -1):
+def plot_timeseries_chloropleth(country: str, indicator: str, event_idx: None | int = None):
+    if indicator not in HAS_TIMESERIES:
+        print(
+            f"plot_timeseries_chloropleth: Indicator '{indicator}' does not have time series data"
+        )
+        return None
     country_iso3alpha = Country.get_iso3_country_code(country)
     admin1_names, admin2_names, admin_shapes, admin_level = get_best_admin_shapes(country_iso3alpha)
-    print(f"Found {len(admin2_names)} admin{admin_level} for {country}", flush=True)
     admin_column_name = f"admin{admin_level}_name"
     output_paths = make_detail_and_summary_file_paths(country, indicator)
     with open(output_paths["output_timeseries_path"], encoding="utf-8") as timeseries_file:
@@ -165,10 +191,22 @@ def plot_timeseries_chloropleth(country: str, indicator: str, event_idx: int = -
 
     timeseries_data = timeseries_data[1:]
     timeseries_data = [x for x in timeseries_data if x["country_name"] == country]
+
+    if len(timeseries_data) == 0:
+        print(f"No {indicator} timeseries data for {country}", flush=True)
+        return None
+
     date_set = set(x["event_date"] for x in timeseries_data)
     date_list = sorted(list(date_set))
+    if event_idx is None:
+        maximum_intensity_record = max(timeseries_data, key=lambda x: x["value"])
+        event_date = maximum_intensity_record["event_date"]
 
-    event_date = date_list[event_idx]
+    else:
+        try:
+            event_date = date_list[event_idx]
+        except IndexError:
+            event_date = date_list[0]
 
     print(f"Selected date {event_date} from a list of length {len(date_list)}", flush=True)
 
@@ -194,7 +232,10 @@ def plot_timeseries_chloropleth(country: str, indicator: str, event_idx: int = -
         geojson=all_shapes.geometry,
         locations=all_shapes.index,
         center={"lat": center_lat, "lon": center_lon},
-        title=f"{indicator} data for {country} for an event on {event_date}",
+        title=(
+            f"{indicator.title()} {INDICATOR_UNITS[indicator]} data for {country} "
+            f"for an event at {event_date}"
+        ),
         zoom=zoom,
         color="value",
         color_continuous_scale=px.colors.sequential.Jet,
