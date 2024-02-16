@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+import csv
 import math
 import geopandas
 import pandas
@@ -153,15 +154,59 @@ def plot_admin_boundaries(country: str):
     fig.show()
 
 
-def plot_timeseries_chloropleth(country: str, indicator: str):
-    print(date_set, flush=True)
-    values = {x["admin2_name"]: x["value"] for x in summary_data if x["event_date"] == "2010-01-13"}
-    value_column = [float(values.get(x, 0.0)) for x in admin2_names]
-    all_shapes = geopandas.GeoDataFrame(pandas.concat(admin2_shapes, ignore_index=True))
-    all_shapes["admin1_names"] = admin1_names
-    all_shapes["admin2_names"] = admin2_names
+def plot_timeseries_chloropleth(country: str, indicator: str, event_idx: int = -1):
+    country_iso3alpha = Country.get_iso3_country_code(country)
+    admin1_names, admin2_names, admin_shapes, admin_level = get_best_admin_shapes(country_iso3alpha)
+    print(f"Found {len(admin2_names)} admin{admin_level} for {country}", flush=True)
+    admin_column_name = f"admin{admin_level}_name"
+    output_paths = make_detail_and_summary_file_paths(country, indicator)
+    with open(output_paths["output_timeseries_path"], encoding="utf-8") as timeseries_file:
+        timeseries_data = list(csv.DictReader(timeseries_file))
+
+    timeseries_data = timeseries_data[1:]
+    timeseries_data = [x for x in timeseries_data if x["country_name"] == country]
+    date_set = set(x["event_date"] for x in timeseries_data)
+    date_list = sorted(list(date_set))
+
+    event_date = date_list[event_idx]
+
+    print(f"Selected date {event_date} from a list of length {len(date_list)}", flush=True)
+
+    values = {
+        x[admin_column_name]: x["value"] for x in timeseries_data if x["event_date"] == event_date
+    }
+
+    all_shapes = geopandas.GeoDataFrame(pandas.concat(admin_shapes, ignore_index=True))
+    all_shapes["admin1_name"] = admin1_names
+    all_shapes["admin2_name"] = admin2_names
+    value_column = [float(values.get(x, 0.0)) for x in all_shapes[admin_column_name]]
     all_shapes["value"] = value_column
-    all_shapes.plot(column="value", cmap="Spectral", legend=True)
+
+    # all_shapes.plot(column="value", cmap="Spectral", legend=True)
+
+    total_bounds = all_shapes.total_bounds
+    center_lat = total_bounds[1] + (total_bounds[3] - total_bounds[1]) / 2.0
+    center_lon = total_bounds[0] + (total_bounds[2] - total_bounds[0]) / 2.0
+    zoom = calc_zoom(None, total_bounds=total_bounds)
+    # all_shapes.plot(column=admin_name_column, categorical=True, cmap="Spectral")
+    fig = px.choropleth_mapbox(
+        all_shapes,
+        geojson=all_shapes.geometry,
+        locations=all_shapes.index,
+        center={"lat": center_lat, "lon": center_lon},
+        title=f"{indicator} data for {country} for an event on {event_date}",
+        zoom=zoom,
+        color="value",
+        color_continuous_scale=px.colors.sequential.Jet,
+        hover_data=["value", admin_column_name],
+        mapbox_style="carto-darkmatter",
+        opacity=0.75,
+        width=1200,
+        height=800,
+    )
+    # fig.update_geos(fitbounds="locations", visible=False)
+
+    fig.show()
 
 
 def get_data_from_csv(country: str, indicator: str) -> pandas.DataFrame | None:
