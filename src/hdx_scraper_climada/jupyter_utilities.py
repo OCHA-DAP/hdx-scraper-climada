@@ -134,11 +134,11 @@ def plot_timeseries_histogram(country: str, indicator: str):
         y="value",
         title=f"{indicator.title()} {INDICATOR_UNITS[indicator]} for {country} resampled to yearly",
     )
-    # fig.update_layout(
-    #     xaxis_title_text="Year",
-    #     yaxis_title_text=f"{INDICATOR_UNITS[indicator]}",
-    #     xaxis={"tickmode": "linear", "tick0": 5, "dtick": 1},
-    # )
+    fig.update_layout(
+        xaxis_title_text="Year",
+        yaxis_title_text=f"{INDICATOR_UNITS[indicator]}",
+        xaxis={"tickmode": "linear", "tick0": "2000-06-30", "dtick": "M60", "tickformat": "%Y"},
+    )
     fig.show()
 
 
