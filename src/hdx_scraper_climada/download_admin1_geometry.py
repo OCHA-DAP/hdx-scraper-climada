@@ -75,7 +75,9 @@ def get_admin1_shapes_from_hdx(country_iso3a):
     return admin1_names, admin1_shapes
 
 
-def get_admin2_shapes_from_hdx(country_iso3a: str) -> (list, list, list[geopandas.GeoDataFrame]):
+def get_admin2_shapes_from_hdx(
+    country_iso3a: str,
+) -> tuple[list, list, list[geopandas.GeoDataFrame]]:
     admin2_file_path = os.path.join(ADMIN1_GEOMETRY_FOLDER, "polbnda_adm2_1m_ocha.geojson")
 
     if not os.path.exists(admin2_file_path):
@@ -114,6 +116,19 @@ def get_admin1_shapes_from_natural_earth(country_iso3a):
         admin1_shapes = []
 
     return admin1_names, admin1_shapes
+
+
+def get_best_admin_shapes(
+    country_iso3alpha: str,
+) -> tuple[list, list, list[geopandas.GeoDataFrame], str]:
+    admin_level = "2"
+    admin1_names, admin2_names, admin_shapes = get_admin2_shapes_from_hdx(country_iso3alpha)
+    if len(admin2_names) == 0:
+        admin1_names, admin_shapes = get_admin1_shapes_from_hdx(country_iso3alpha)
+        admin_level = "1"
+        admin2_names = len(admin1_names) * [""]
+
+    return admin1_names, admin2_names, admin_shapes, admin_level
 
 
 if __name__ == "__main__":

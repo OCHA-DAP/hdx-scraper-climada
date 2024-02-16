@@ -195,7 +195,9 @@ def test_calculate_indicator_for_admin1_earthquake():
 
 def test_calculate_indicator_timeseries_admin():
     country = "Haiti"
-    earthquakes = calculate_indicator_timeseries_admin(country, test_run=True)
+    earthquakes = calculate_indicator_timeseries_admin(
+        country, indicator="earthquake", test_run=True
+    )
 
     assert len(earthquakes) == 35
     assert earthquakes[0] == {

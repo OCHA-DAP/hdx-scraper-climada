@@ -11,6 +11,7 @@ from hdx.location.country import Country
 from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_paths
 from hdx_scraper_climada.utilities import HAS_TIMESERIES
 from hdx_scraper_climada.download_admin1_geometry import (
+    get_best_admin_shapes,
     get_admin1_shapes_from_hdx,
     get_admin2_shapes_from_hdx,
 )
@@ -121,15 +122,11 @@ def plot_timeseries_histogram(country: str, indicator: str):
 
 def plot_admin_boundaries(country: str):
     country_iso3alpha = Country.get_iso3_country_code(country)
-    admin1_names, admin2_names, admin_shapes = get_admin2_shapes_from_hdx(country_iso3alpha)
-    admin_name_column = "admin2_names"
-    if len(admin2_names) == 0:
-        admin1_names, admin_shapes = get_admin1_shapes_from_hdx(country_iso3alpha)
-        admin2_names = len(admin1_names) * [""]
-        admin_name_column = "admin1_names"
-        print(f"Admin2 data not available for {country} so using admin1", flush=True)
-    else:
-        print(f"Admin2 data available for {country}", flush=True)
+    admin1_names, admin2_names, admin_shapes, admin_level = get_best_admin_shapes(country_iso3alpha)
+    print(f"Found {len(admin2_names)} admin{admin_level} for {country}", flush=True)
+
+    admin_name_column = f"admin{admin_level}_names"
+
     all_shapes = geopandas.GeoDataFrame(pandas.concat(admin_shapes, ignore_index=True))
     all_shapes["admin1_names"] = admin1_names
     all_shapes["admin2_names"] = admin2_names

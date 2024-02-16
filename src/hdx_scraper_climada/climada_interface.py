@@ -18,6 +18,7 @@ import climada.util.coordinates as u_coord
 from climada.entity import LitPop
 
 from hdx_scraper_climada.download_admin1_geometry import (
+    get_best_admin_shapes,
     get_admin1_shapes_from_hdx,
     get_admin2_shapes_from_hdx,
 )
@@ -240,13 +241,8 @@ def calculate_indicator_timeseries_admin(
     global SPATIAL_FILTER_CACHE
     LOGGER.info(f"Creating timeseries summary for {indicator} in {country}")
     country_iso3alpha = Country.get_iso3_country_code(country)
-    admin_level = "2"
-    admin1_names, admin2_names, admin_shapes = get_admin2_shapes_from_hdx(country_iso3alpha)
-    if len(admin2_names) == 0:
-        LOGGER.info(f"No admin2 level shape data available for {country}")
-        admin1_names, admin_shapes = get_admin1_shapes_from_hdx(country_iso3alpha)
-        admin_level = "1"
-        admin2_names = len(admin1_names) * [""]
+
+    admin1_names, admin2_names, admin_shapes, admin_level = get_best_admin_shapes(country_iso3alpha)
 
     LOGGER.info(f"Found {len(admin2_names)} admin{admin_level} for {country}")
     if indicator == "earthquake":
