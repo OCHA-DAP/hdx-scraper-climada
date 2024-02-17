@@ -6,11 +6,13 @@ import math
 import geopandas
 import pandas
 import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 from hdx.location.country import Country
 
 from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_paths
-from hdx_scraper_climada.utilities import HAS_TIMESERIES
+from hdx_scraper_climada.utilities import HAS_TIMESERIES, read_countries
 from hdx_scraper_climada.download_admin1_geometry import (
     get_best_admin_shapes,
 )
@@ -47,8 +49,58 @@ def calc_zoom(df: pandas.DataFrame, total_bounds: None | list = None) -> tuple[f
     return min(round(zoom_y, 2), round(zoom_x, 2))
 
 
+def plot_summary_barcharts(country: str, indicator: str):
+    display_data = get_summary_data_from_csv(country, indicator)
+
+    if country is not None:
+        country_data = display_data[display_data["country_name"] == country]
+
+        fig = px.bar(
+            country_data,
+            x="region_name",
+            y="value",
+            title=f"Summary {indicator} data for {country}",
+        )
+        fig.update_layout(
+            xaxis_title_text="Admin1 name", yaxis_title_text=f"{INDICATOR_UNITS[indicator]}"
+        )
+        fig.show()
+    else:
+        countries = read_countries()
+        countries_ = [x["country_name"] for x in countries]
+        fig = make_subplots(
+            rows=5,
+            cols=5,
+            specs=[[{"type": "bar"}] * 5] * 5,
+            subplot_titles=countries_,
+            vertical_spacing=0.1,
+        )
+        n_cols = 5
+
+        figlets = []
+        for country_ in countries_:
+            country_data = display_data[display_data["country_name"] == country_]
+            figlets.append(go.Bar(x=country_data["region_name"], y=country_data["value"]))
+
+        for i, figlet in enumerate(figlets, start=1):
+            row = int((i - 1) / n_cols) + 1
+            col = int((i - 1) % n_cols) + 1
+            fig.add_trace(figlet, row=row, col=col)
+
+        fig.update_layout(
+            height=1800,
+            width=1200,
+            showlegend=False,
+            title=(
+                f"Summary {indicator} data ({INDICATOR_UNITS[indicator]}) by admin1 "
+                f"for all HRP countries"
+            ),
+        )
+        fig.show()
+
+
 def plot_detail_file_map(country: str, indicator: str):
-    country_data = get_data_from_csv(country, indicator)
+    country_data = get_detail_data_from_csv(country, indicator)
     if country_data is None:
         return None
     if indicator == "litpop":
@@ -84,7 +136,7 @@ def plot_detail_file_map(country: str, indicator: str):
 
 
 def plot_histogram(country: str, indicator: str):
-    country_data = get_data_from_csv(country, indicator)
+    country_data = get_detail_data_from_csv(country, indicator)
     if country_data is None:
         print(f"No {indicator} data for {country}", flush=True)
         return None
@@ -114,11 +166,6 @@ def plot_timeseries_histogram(country: str, indicator: str):
         return None
     timeseries_data["value"] = timeseries_data["value"].astype(float)
     timeseries_data["event_date"] = pandas.to_datetime(timeseries_data["event_date"])
-
-    date_set = sorted(timeseries_data["event_date"].unique())
-
-    for i, date_ in enumerate(date_set):
-        print(f"{i}. {date_}", flush=True)
 
     resampled_intensity = (
         timeseries_data.reset_index().resample("Y", on="event_date").max()["value"]
@@ -208,8 +255,6 @@ def plot_timeseries_chloropleth(country: str, indicator: str, event_idx: None | 
         except IndexError:
             event_date = date_list[0]
 
-    print(f"Selected date {event_date} from a list of length {len(date_list)}", flush=True)
-
     values = {
         x[admin_column_name]: x["value"] for x in timeseries_data if x["event_date"] == event_date
     }
@@ -250,13 +295,26 @@ def plot_timeseries_chloropleth(country: str, indicator: str, event_idx: None | 
     fig.show()
 
 
-def get_data_from_csv(country: str, indicator: str) -> pandas.DataFrame | None:
+def get_detail_data_from_csv(country: str, indicator: str) -> pandas.DataFrame | None:
     output_paths = make_detail_and_summary_file_paths(country, indicator)
     country_data = pandas.read_csv(output_paths["output_detail_path"])
 
     if country == "Syrian Arab Republic" and indicator == "litpop":
         print("No 'litpop' data for Syrian Arab Republic", flush=True)
         return None
+
+    country_data.drop(country_data.head(1).index, inplace=True)
+    country_data["latitude"] = country_data["latitude"].astype(float)
+    country_data["longitude"] = country_data["longitude"].astype(float)
+    country_data["value"] = country_data["value"].astype(float)
+    return country_data
+
+
+def get_summary_data_from_csv(country: str, indicator: str) -> pandas.DataFrame | None:
+    if country is None:
+        country = "Haiti"
+    output_paths = make_detail_and_summary_file_paths(country, indicator)
+    country_data = pandas.read_csv(output_paths["output_summary_path"])
 
     country_data.drop(country_data.head(1).index, inplace=True)
     country_data["latitude"] = country_data["latitude"].astype(float)
