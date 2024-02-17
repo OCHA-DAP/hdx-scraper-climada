@@ -148,7 +148,9 @@ def plot_histogram(country: str, indicator: str):
             f"histogram for {country} from detail data"
         ),
     )
-    fig.update_layout(xaxis_title_text=f"{INDICATOR_UNITS[indicator]}", yaxis_title_text="Count")
+    fig.update_layout(
+        xaxis_title_text=f"{INDICATOR_UNITS[indicator]}", yaxis_title_text="Count", width=1200
+    )
     fig.show()
 
 
@@ -185,6 +187,7 @@ def plot_timeseries_histogram(country: str, indicator: str):
         xaxis_title_text="Year",
         yaxis_title_text=f"{INDICATOR_UNITS[indicator]}",
         xaxis={"tickmode": "linear", "tick0": "2000-06-30", "dtick": "M60", "tickformat": "%Y"},
+        width=1200,
     )
     fig.show()
 
