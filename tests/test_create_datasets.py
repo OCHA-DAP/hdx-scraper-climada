@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-from hdx_scraper_climada.create_datasets import create_or_fetch_base_dataset, create_datasets_in_hdx
-from hdx_scraper_climada.utilities import read_attributes
+from hdx_scraper_climada.create_datasets import (
+    create_or_fetch_base_dataset,
+    create_datasets_in_hdx,
+    compile_resource_list,
+)
+from hdx_scraper_climada.utilities import read_attributes, read_countries
 
 
 def test_create_or_fetch_base_dataset():
@@ -30,3 +34,13 @@ def test_create_datasets_in_hdx():
     )
 
     assert dataset["name"] == "climada-litpop-dataset"
+
+
+def test_compile_resource_list():
+    dataset_name = "climada-litpop-dataset"
+    dataset_attributes = read_attributes(dataset_name)
+    countries_data = read_countries()
+
+    resource_list = compile_resource_list(dataset_attributes, countries_data)
+
+    assert len(resource_list) == 23

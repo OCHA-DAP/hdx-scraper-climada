@@ -38,14 +38,13 @@ def create_datasets_in_hdx(
     LOGGER.info(f"Dataset name: {dataset_name}")
     t0 = time.time()
     dataset_attributes = read_attributes(dataset_name)
+    countries_data = read_countries()
 
     dataset, _ = create_or_fetch_base_dataset(dataset_name, dataset_attributes)
 
-    countries_data = read_countries()
     countries_group = [{"name": x["iso3alpha_country_code"].lower()} for x in countries_data]
 
     LOGGER.info(f"Dataset title: {dataset['title']}")
-    resource_names = dataset_attributes["resource"]
 
     # iso_date = datetime.datetime.now().isoformat()[0:10]
     # dataset["dataset_date"] = f"[{iso_date} to {iso_date}]".replace("Z", "")
@@ -55,8 +54,26 @@ def create_datasets_in_hdx(
 
     LOGGER.info(f"Dataset date: {dataset['dataset_date']}")
 
-    resource_list = []
+    # Compile resources
+    resource_list = compile_resource_list(dataset_attributes, countries_data)
 
+    # Compile showcases
+
+    dataset.add_update_resources(resource_list)
+    if not dry_run:
+        LOGGER.info("Dry_run flag not set so data is being written to HDX")
+        dataset.create_in_hdx()
+    else:
+        LOGGER.info("Dry_run flag set so no data written to HDX")
+    LOGGER.info(f"Processing finished at {datetime.datetime.now().isoformat()}")
+    LOGGER.info(f"Elapsed time: {time.time() - t0: 0.2f} seconds")
+
+    return dataset
+
+
+def compile_resource_list(dataset_attributes, countries_data):
+    resource_names = dataset_attributes["resource"]
+    resource_list = []
     for resource_name in resource_names:
         attributes = read_attributes(resource_name)
         if "{country}" in resource_name:
@@ -103,21 +120,12 @@ def create_datasets_in_hdx(
             else:
                 LOGGER.info(f"Detail file for {country['country_name']} does not exist")
 
-    dataset.add_update_resources(resource_list)
-    if not dry_run:
-        LOGGER.info("Dry_run flag not set so data is being written to HDX")
-        dataset.create_in_hdx()
-    else:
-        LOGGER.info("Dry_run flag set so no data written to HDX")
-    LOGGER.info(f"Processing finished at {datetime.datetime.now().isoformat()}")
-    LOGGER.info(f"Elapsed time: {time.time() - t0: 0.2f} seconds")
-
-    return dataset
+    return resource_list
 
 
 def create_or_fetch_base_dataset(
     dataset_name: str, dataset_attributes: dict, force_create: bool = False
-) -> (Dataset, bool):
+) -> tuple[Dataset, bool]:
     dataset = Dataset.read_from_hdx(dataset_name)
     is_new = True
     if dataset is not None and not force_create:
