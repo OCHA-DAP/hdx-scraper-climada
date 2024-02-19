@@ -5,6 +5,7 @@ from hdx_scraper_climada.create_datasets import (
     create_or_fetch_base_dataset,
     create_datasets_in_hdx,
     compile_resource_list,
+    compile_showcase_list,
 )
 from hdx_scraper_climada.utilities import read_attributes, read_countries
 
@@ -44,3 +45,13 @@ def test_compile_resource_list():
     resource_list = compile_resource_list(dataset_attributes, countries_data)
 
     assert len(resource_list) == 23
+
+
+def test_compile_showcase_list():
+    dataset_name = "climada-flood-dataset"
+    dataset_attributes = read_attributes(dataset_name)
+
+    showcase_list = compile_showcase_list(dataset_attributes)
+
+    assert len(showcase_list) == 1
+    assert showcase_list[0]["name"] == "climada-flood-showcase"

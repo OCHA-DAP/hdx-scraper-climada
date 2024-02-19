@@ -10,6 +10,7 @@ from hdx.utilities.easy_logging import setup_logging
 from hdx.api.configuration import Configuration, ConfigurationError
 from hdx.data.dataset import Dataset
 from hdx.data.resource import Resource
+from hdx.data.showcase import Showcase
 
 from hdx_scraper_climada.utilities import read_attributes, read_countries
 
@@ -29,7 +30,7 @@ INDICATOR_DIRECTORY = os.path.join(os.path.dirname(__file__), "output")
 
 def create_datasets_in_hdx(
     dataset_name: str,
-    dry_run: bool = False,
+    dry_run: bool = True,
 ):
     LOGGER.info("*********************************************")
     LOGGER.info("* Climada - Create dataset   *")
@@ -44,8 +45,6 @@ def create_datasets_in_hdx(
 
     countries_group = [{"name": x["iso3alpha_country_code"].lower()} for x in countries_data]
 
-    LOGGER.info(f"Dataset title: {dataset['title']}")
-
     # iso_date = datetime.datetime.now().isoformat()[0:10]
     # dataset["dataset_date"] = f"[{iso_date} to {iso_date}]".replace("Z", "")
     dataset["groups"] = countries_group
@@ -56,13 +55,19 @@ def create_datasets_in_hdx(
 
     # Compile resources
     resource_list = compile_resource_list(dataset_attributes, countries_data)
+    dataset.add_update_resources(resource_list)
 
     # Compile showcases
+    showcase_list = compile_showcase_list(dataset_attributes)
 
-    dataset.add_update_resources(resource_list)
+    LOGGER.info(f"Dataset title: {dataset['title']}")
+    LOGGER.info(f"{len(resource_list)} resources and {len(showcase_list)} showcases")
     if not dry_run:
         LOGGER.info("Dry_run flag not set so data is being written to HDX")
         dataset.create_in_hdx()
+        for showcase in showcase_list:
+            showcase.create_in_hdx()
+            showcase.add_dataset(dataset)
     else:
         LOGGER.info("Dry_run flag set so no data written to HDX")
     LOGGER.info(f"Processing finished at {datetime.datetime.now().isoformat()}")
@@ -71,7 +76,7 @@ def create_datasets_in_hdx(
     return dataset
 
 
-def compile_resource_list(dataset_attributes, countries_data):
+def compile_resource_list(dataset_attributes: dict, countries_data: list[dict]) -> list[dict]:
     resource_names = dataset_attributes["resource"]
     resource_list = []
     for resource_name in resource_names:
@@ -123,6 +128,31 @@ def compile_resource_list(dataset_attributes, countries_data):
     return resource_list
 
 
+def compile_showcase_list(dataset_attributes: dict):
+    showcase_list = []
+
+    showcase_names = dataset_attributes.get("showcase", [])
+
+    for showcase_name in showcase_names:
+        showcase_attributes = read_attributes(showcase_name)
+        showcase = Showcase(
+            {
+                "name": showcase_attributes["name"],
+                "title": showcase_attributes["title"],
+                "notes": showcase_attributes["notes"],
+                "url": showcase_attributes["url"],
+                "image_url": showcase_attributes["image_url"],
+            }
+        )
+        added_tags, unadded_tags = showcase.add_tags(showcase_attributes["tags"])
+        LOGGER.info(f"{len(added_tags)} of {len(showcase_attributes['tags'])} showcase tags added")
+        if len(unadded_tags) != 0:
+            LOGGER.info(f"Rejected showcase tags: {unadded_tags}")
+        showcase_list.append(showcase)
+
+    return showcase_list
+
+
 def create_or_fetch_base_dataset(
     dataset_name: str, dataset_attributes: dict, force_create: bool = False
 ) -> tuple[Dataset, bool]:
@@ -155,5 +185,6 @@ def create_or_fetch_base_dataset(
 
 
 if __name__ == "__main__":
-    DATASET_NAME = "climada-litpop-dataset"
-    create_datasets_in_hdx(DATASET_NAME)
+    DATASET_NAME = "climada-flood-dataset"
+    DRY_RUN = False
+    create_datasets_in_hdx(DATASET_NAME, dry_run=DRY_RUN)

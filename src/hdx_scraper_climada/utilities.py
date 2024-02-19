@@ -85,7 +85,7 @@ def read_attributes(dataset_name: str) -> dict:
         for row in attribute_rows:
             if row["dataset_name"] != dataset_name:
                 continue
-            if row["attribute"] in ["resource", "skip_country"]:
+            if row["attribute"] in ["resource", "skip_country", "showcase", "tags"]:
                 if row["attribute"] not in attributes:
                     attributes[row["attribute"]] = [row["value"]]
                 else:
