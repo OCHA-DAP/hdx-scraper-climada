@@ -20,7 +20,7 @@
                     "explainedFiltersMap": {},
                     "pieChart": false,
                     "title": "Unique Values in region_name by country_name",
-                    "dataTitle": "region_name"
+                    "dataTitle": "Count of admin1 region"
                 },
                 "uiProperties": {
                     "swapAxis": true,
@@ -45,7 +45,7 @@
                 "ingredient": {
                     "aggregateColumn": null,
                     "valueColumn": "#indicator+num",
-                    "aggregateFunction": "distinct-count",
+                    "aggregateFunction": "count",
                     "dateColumn": null,
                     "comparisonValueColumn": null,
                     "comparisonOperator": null,
@@ -67,7 +67,7 @@
                         "#f2645a",
                         "#9C27B0"
                     ],
-                    "title": "New title 2"
+                    "title": "Number of summary rows"
                 },
                 "dataProperties": {},
                 "displayCategory": "Key Figures",
@@ -76,9 +76,9 @@
             {
                 "tempShowSaveCancelButtons": false,
                 "ingredient": {
-                    "aggregateColumn": "#adm1+name",
-                    "valueColumn": "#count",
-                    "aggregateFunction": "count",
+                    "aggregateColumn": "#country",
+                    "valueColumn": "#indicator+num",
+                    "aggregateFunction": "sum",
                     "dateColumn": null,
                     "comparisonValueColumn": null,
                     "comparisonOperator": null,
@@ -91,7 +91,7 @@
                     "explainedFiltersMap": {},
                     "pieChart": false,
                     "title": "Row Count by region_name",
-                    "dataTitle": "#count"
+                    "dataTitle": "Total flood extent"
                 },
                 "uiProperties": {
                     "swapAxis": true,
@@ -106,7 +106,7 @@
                         "#9C27B0"
                     ],
                     "limit": 100,
-                    "title": "New title 3"
+                    "title": "Total maximum flood extent by country"
                 },
                 "dataProperties": {},
                 "displayCategory": "Charts",
