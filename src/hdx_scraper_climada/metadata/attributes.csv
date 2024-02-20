@@ -71,6 +71,8 @@ climada-flood-dataset,2024-02-13T11:29:54.564411,notes,"Flood footprint of histo
 climada-flood-dataset,2024-02-13T11:29:54.564411,methodology_other,"Created from the Climada API",
 climada-flood-dataset,2024-02-13T11:29:54.564411,caveats,"2024-02-14: No data from CLIMADA for Burkina Faso, Cameroon, South Sudan and the State of Palestine. No time series data for Colombia, Nigeria, Venezuela and Sudan",
 climada-flood-dataset,2024-02-13T11:29:54.564411,output_subdirectory,"flood",
+climada-flood-dataset,2024-02-20T09:46:07.269878,quickchart_json_file_path,"quickcharts/quickchart-flood.json",
+climada-flood-dataset,2024-02-20T09:46:07.269878,quickchart_resource_name,"admin1-summaries-flood.csv",
 climada-flood-summary,2024-02-13T11:29:54.564411,entity_type,"resource",
 climada-flood-summary,2024-02-13T11:29:54.564411,description,"Flood extent over the period 2002-2018 at admin1 level for the HRP countries",
 climada-flood-summary,2024-02-13T11:29:54.564411,filename_template,"admin1-summaries-flood.csv",

@@ -2,9 +2,11 @@
 # encoding: utf-8
 
 import datetime
+import json
 import logging
 import os
 import time
+import yaml
 
 from hdx.utilities.easy_logging import setup_logging
 from hdx.api.configuration import Configuration, ConfigurationError
@@ -60,8 +62,12 @@ def create_datasets_in_hdx(
     # Compile showcases
     showcase_list = compile_showcase_list(dataset_attributes)
 
+    # Add in a quickchart
+    dataset, quickchart_status = add_quickchart(dataset, dataset_attributes)
+
     LOGGER.info(f"Dataset title: {dataset['title']}")
     LOGGER.info(f"{len(resource_list)} resources and {len(showcase_list)} showcases")
+    LOGGER.info(f"{quickchart_status}")
     if not dry_run:
         LOGGER.info("Dry_run flag not set so data is being written to HDX")
         dataset.create_in_hdx()
@@ -182,6 +188,49 @@ def create_or_fetch_base_dataset(
             dataset[attribute] = dataset_attributes[attribute]
 
     return dataset, is_new
+
+
+def add_quickchart(dataset: Dataset, dataset_attributes: dict) -> tuple[str, Dataset]:
+    status = ""
+
+    resource_name = dataset_attributes.get("quickchart_resource_name", None)
+    hdx_hxl_preview_file_path = dataset_attributes.get("quickchart_json_file_path", None)
+
+    if resource_name is None or hdx_hxl_preview_file_path is None:
+        status = "No information provided for a Quick Chart"
+        return status
+
+    with open(hdx_hxl_preview_file_path, "r", encoding="utf-8") as json_file:
+        recipe = json.load(json_file)
+    # extract appropriate keys
+    processed_recipe = {
+        "description": "",
+        "title": "Quick Charts",
+        "view_type": "hdx_hxl_preview",
+        "hxl_preview_config": "",
+    }
+
+    # convert the configuration to a string
+    stringified_config = json.dumps(
+        recipe["hxl_preview_config"], indent=None, separators=(",", ":")
+    )
+    processed_recipe["hxl_preview_config"] = stringified_config
+    # write out yaml to a temp file
+    temp_yaml_path = f"{hdx_hxl_preview_file_path}.temp.yaml"
+    with open(temp_yaml_path, "w", encoding="utf-8") as yaml_file:
+        yaml.dump(processed_recipe, yaml_file)
+
+    dataset.generate_quickcharts(resource=resource_name, path=temp_yaml_path)
+
+    # delete the temp file
+    if os.path.exists(temp_yaml_path):
+        os.remove(temp_yaml_path)
+
+    status = (
+        f"Added Quick Chart defined in '{hdx_hxl_preview_file_path}' "
+        f"to dataset '{dataset['name']}', resource '{resource_name}'"
+    )
+    return dataset, status
 
 
 if __name__ == "__main__":
