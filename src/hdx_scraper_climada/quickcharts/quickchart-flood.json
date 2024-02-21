@@ -5,47 +5,9 @@
             {
                 "tempShowSaveCancelButtons": false,
                 "ingredient": {
-                    "aggregateColumn": "#country",
-                    "valueColumn": "#adm1+name",
-                    "aggregateFunction": "distinct-count",
-                    "dateColumn": null,
-                    "comparisonValueColumn": null,
-                    "comparisonOperator": null,
-                    "filters": {},
-                    "description": ""
-                },
-                "type": "chart",
-                "errorMsg": null,
-                "computedProperties": {
-                    "explainedFiltersMap": {},
-                    "pieChart": false,
-                    "title": "Unique Values in region_name by country_name",
-                    "dataTitle": "Count of admin1 region"
-                },
-                "uiProperties": {
-                    "swapAxis": true,
-                    "showGrid": false,
-                    "color": "#1ebfb3",
-                    "sortingByValue1": "DESC",
-                    "sortingByCategory1": null,
-                    "internalColorPattern": [
-                        "#1ebfb3",
-                        "#0077ce",
-                        "#f2645a",
-                        "#9C27B0"
-                    ],
-                    "title": "Number of admin1 regions by country"
-                },
-                "dataProperties": {},
-                "displayCategory": "Charts",
-                "hashCode": 940226173
-            },
-            {
-                "tempShowSaveCancelButtons": false,
-                "ingredient": {
                     "aggregateColumn": null,
                     "valueColumn": "#indicator+num",
-                    "aggregateFunction": "count",
+                    "aggregateFunction": "sum",
                     "dateColumn": null,
                     "comparisonValueColumn": null,
                     "comparisonOperator": null,
@@ -67,11 +29,49 @@
                         "#f2645a",
                         "#9C27B0"
                     ],
-                    "title": "Number of summary rows"
+                    "title": "Total flood extent globally"
                 },
                 "dataProperties": {},
                 "displayCategory": "Key Figures",
                 "hashCode": 276800972
+            },
+            {
+                "tempShowSaveCancelButtons": false,
+                "ingredient": {
+                    "aggregateColumn": "#adm1+name",
+                    "valueColumn": "#indicator+num",
+                    "aggregateFunction": "sum",
+                    "dateColumn": null,
+                    "comparisonValueColumn": null,
+                    "comparisonOperator": null,
+                    "filters": {},
+                    "description": ""
+                },
+                "type": "chart",
+                "errorMsg": null,
+                "computedProperties": {
+                    "explainedFiltersMap": {},
+                    "pieChart": false,
+                    "title": "Unique Values in region_name by country_name",
+                    "dataTitle": "Flood extent"
+                },
+                "uiProperties": {
+                    "swapAxis": true,
+                    "showGrid": false,
+                    "color": "#1ebfb3",
+                    "sortingByValue1": "DESC",
+                    "sortingByCategory1": null,
+                    "internalColorPattern": [
+                        "#1ebfb3",
+                        "#0077ce",
+                        "#f2645a",
+                        "#9C27B0"
+                    ],
+                    "title": "Flood extent by admin1 name"
+                },
+                "dataProperties": {},
+                "displayCategory": "Charts",
+                "hashCode": 940226173
             },
             {
                 "tempShowSaveCancelButtons": false,
