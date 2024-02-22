@@ -89,6 +89,9 @@ if __name__ == "__main__":
 
     COUNTRIES_TO_PROCESS = check_for_existing_csv_files(INDICATOR)
 
+    # Temporary addition for applying the timeseries shim
+    COUNTRIES_TO_PROCESS = ["Colombia", "Nigeria", "Sudan", "Venezuela"]
+
     if len(COUNTRIES_TO_PROCESS) == 0:
         LOGGER.info("CSV data files for all countries are already available")
     else:

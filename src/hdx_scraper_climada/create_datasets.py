@@ -196,6 +196,11 @@ def add_quickchart(dataset: Dataset, dataset_attributes: dict) -> tuple[str, Dat
     resource_name = dataset_attributes.get("quickchart_resource_name", None)
     hdx_hxl_preview_file_path = dataset_attributes.get("quickchart_json_file_path", None)
 
+    if hdx_hxl_preview_file_path is not None:
+        hdx_hxl_preview_file_path = os.path.join(
+            os.path.dirname(__file__), hdx_hxl_preview_file_path
+        )
+
     if resource_name is None or hdx_hxl_preview_file_path is None:
         status = "No information provided for a Quick Chart"
         return status
