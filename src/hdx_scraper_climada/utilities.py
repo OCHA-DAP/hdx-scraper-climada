@@ -78,6 +78,15 @@ def _make_write_dictionary_status(append: bool, filepath: str, newfile: bool) ->
 
 
 def read_attributes(dataset_name: str) -> dict:
+    """A function for reading attributes from a standard attributes.csv file with columns:
+    dataset_name,timestamp,attribute,value,secondary_value
+
+    Arguments:
+        dataset_name {str} -- the name of the dataset for which attributes are required
+
+    Returns:
+        dict -- a dictionary containing the attributes
+    """
     with open(ATTRIBUTES_FILEPATH, "r", encoding="UTF-8") as attributes_filehandle:
         attribute_rows = csv.DictReader(attributes_filehandle)
 
