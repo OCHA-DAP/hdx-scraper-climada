@@ -67,9 +67,12 @@ def print_overview_information(data_type="litpop"):
     dataset_infos = CLIENT.list_dataset_infos(data_type=data_type)
     dataset_default = CLIENT.get_property_values(dataset_infos)
 
+    print("\nAvailable property values")
     for item in dataset_default.items():
-        print(item[0], item[1], flush=True)
-    print(dataset_default, flush=True)
+        if len(item[1]) > 10:
+            print(f"{item[0]}: {item[1][0:10]}\b... {len(item[1])} entries", flush=True)
+        else:
+            print(f"{item[0]}: {item[1]}", flush=True)
 
     # print(f"Available for {len(dataset_default['country_iso3alpha'])} countries", flush=True)
 
@@ -292,6 +295,7 @@ def calculate_indicator_timeseries_admin(
             admin_indicator_gdf = filter_dataframe_with_geometry(
                 country_data, admin_shape, indicator_key, cache_key=cache_key
             )
+            LOGGER.info(f"Processing {country_iso3alpha}-{admin1_names[j]}-{admin2_names[j]}")
 
             if indicator == "earthquake":
                 aggregation = "max"
@@ -307,10 +311,7 @@ def calculate_indicator_timeseries_admin(
                     aggregate = 0.0
             if aggregate > 0.0:
                 event_date = datetime.datetime.fromordinal(indicator_data.date[i]).isoformat()
-                LOGGER.info(
-                    f"Event on {event_date[0:10]} in {country_iso3alpha}-{cache_key} "
-                    f"MaxInt:{aggregate:0.2f}"
-                )
+                LOGGER.info(f"Event on {event_date[0:10]}  MaxInt:{aggregate:0.2f}")
                 events.append(
                     {
                         "country_name": country,
