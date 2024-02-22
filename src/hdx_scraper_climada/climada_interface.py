@@ -1,17 +1,22 @@
 #!/usr/bin/env python
 # encoding: utf-8
+
+import csv
 import datetime
 import logging
+import os
 import sys
 
 from typing import Any
 
+import climada
 import geopandas
 import pandas as pd
 import numpy as np
 
 from hdx.utilities.easy_logging import setup_logging
 from hdx.location.country import Country
+
 
 from climada.util.api_client import Client
 import climada.util.coordinates as u_coord
@@ -256,6 +261,9 @@ def calculate_indicator_timeseries_admin(
             "country_iso3alpha": country_iso3alpha,
         },
     )
+
+    if indicator == "flood" and country in ["Colombia", "Nigeria", "Sudan", "Venezuela"]:
+        indicator_data = flood_timeseries_data_shim(indicator_data)
     latitudes = indicator_data.centroids.lat
     longitudes = indicator_data.centroids.lon
     events = []
@@ -472,6 +480,35 @@ def filter_dataframe_with_geometry(
     if len(admin1_indicator_geo_gdf) == 0:
         LOGGER.info("No rows inside geometry filter")
     return admin1_indicator_geo_gdf
+
+
+def flood_timeseries_data_shim(
+    flood_data: climada.hazard.base.Hazard,
+) -> climada.hazard.base.Hazard:
+    # This shim takes event date information from a file and puts it into a Hazard object to
+    # replace malformed event date. Described in this issue on the CLIMADA repo
+    # https://github.com/CLIMADA-project/climada_python/issues/850
+    # The countries effected are Colombia, Nigeria, Sudan and Venezuela
+    # The lookup is from a dfo event number to an ordinal date
+    shim_file_path = os.path.join(
+        os.path.dirname(__file__), "metadata", "2024-02-21-flood_metainfo-ex-em.csv"
+    )
+
+    date_lookup = {}
+    with open(shim_file_path, "r", encoding="utf-8") as shim_file:
+        rows = csv.DictReader(shim_file)
+
+        for row in rows:
+            date_lookup[f"DFO_{row['id']}"] = row["date"]
+
+    new_date_list = []
+
+    for event_id in flood_data.event_name:
+        new_date_list.append(int(date_lookup[event_id]))
+
+    flood_data.date = new_date_list
+
+    return flood_data
 
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@ Ian Hopkinson 2024-01-16
 """
 
 import os
+import numpy
 import time
 import pandas as pd
 import pytest
@@ -22,6 +23,7 @@ from hdx_scraper_climada.climada_interface import (
     calculate_indicator_for_admin1,
     calculate_indicator_timeseries_admin,
     filter_dataframe_with_geometry,
+    flood_timeseries_data_shim,
 )
 from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_paths
 
@@ -300,3 +302,49 @@ def test_calculate_indicator_for_admin1_flood():
     }
 
     assert len(admin1_indicator_gdf) == 1300
+
+
+def test_flood_shim():
+    # This shim takes event date information from a file and puts it into a Hazard object to
+    # replace malformed event date. Described in this issue on the CLIMADA repo
+    # https://github.com/CLIMADA-project/climada_python/issues/850
+    # The countries effected are Colombia, Nigeria, Sudan and Venezuela
+    # The lookup is from a dfo event number to an ordinal date
+    client = Client()
+    flood_data = client.get_hazard(
+        "flood",
+        properties={
+            "country_name": "Colombia",
+        },
+    )
+
+    flood_data = flood_timeseries_data_shim(flood_data)
+
+    assert flood_data.date == [
+        731988,
+        735649,
+        731905,
+        736545,
+        734624,
+        735982,
+        731740,
+        732671,
+        732392,
+        733071,
+        732815,
+        733076,
+        733389,
+        733189,
+        734872,
+        734450,
+        735375,
+        732950,
+        733450,
+        734091,
+        734101,
+        732204,
+        732336,
+        734563,
+        732358,
+        731036,
+    ]
