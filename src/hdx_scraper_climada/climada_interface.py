@@ -94,6 +94,8 @@ def calculate_indicator_for_admin1(
         admin1_indicator_gdf = calculate_earthquake_for_admin1(admin1_shape, country)
     elif indicator == "flood":
         admin1_indicator_gdf = calculate_flood_for_admin1(admin1_shape, country)
+    elif indicator == "wildfire":
+        admin1_indicator_gdf = calculate_wildfire_for_admin1(admin1_shape, country)
     elif indicator == "relative-cropyield":
         admin1_indicator_gdf = calculate_relative_cropyield_for_admin1(admin1_shape, country)
     else:
@@ -234,7 +236,66 @@ def calculate_earthquake_for_admin1(
     admin1_indicator_gdf = pd.DataFrame(
         {"latitude": latitudes, "longitude": longitudes, "value": max_intensity}
     )
-    # admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
+
+    admin1_indicator_gdf = filter_dataframe_with_geometry(
+        admin1_indicator_gdf, admin1_shape, indicator_key
+    )
+
+    return admin1_indicator_gdf
+
+
+def calculate_flood_for_admin1(
+    admin1_shape: list[geopandas.geoseries.GeoSeries],
+    country: str,
+) -> pd.DataFrame:
+    indicator_key = "flood"
+    country_iso3alpha = Country.get_iso3_country_code(country)
+    admin1_indicator_data = CLIENT.get_hazard(
+        "flood",
+        properties={
+            "country_iso3alpha": country_iso3alpha,
+        },
+    )
+
+    latitudes = admin1_indicator_data.centroids.lat.round(5)
+    longitudes = admin1_indicator_data.centroids.lon.round(5)
+    max_intensity = np.max(admin1_indicator_data.intensity, axis=0).toarray().flatten()
+    admin1_indicator_gdf = pd.DataFrame(
+        {"latitude": latitudes, "longitude": longitudes, "value": max_intensity}
+    )
+
+    # Filter out zero entries to reduce the file size
+    admin1_indicator_gdf = admin1_indicator_gdf[admin1_indicator_gdf["value"] != 0.0]
+
+    admin1_indicator_gdf = filter_dataframe_with_geometry(
+        admin1_indicator_gdf, admin1_shape, indicator_key
+    )
+
+    return admin1_indicator_gdf
+
+
+def calculate_wildfire_for_admin1(
+    admin1_shape: list[geopandas.geoseries.GeoSeries],
+    country: str,
+) -> pd.DataFrame:
+    indicator_key = "wildfire"
+    country_iso3alpha = Country.get_iso3_country_code(country)
+    admin1_indicator_data = CLIENT.get_hazard(
+        "wildfire",
+        properties={
+            "country_iso3alpha": country_iso3alpha,
+        },
+    )
+
+    latitudes = admin1_indicator_data.centroids.lat.round(5)
+    longitudes = admin1_indicator_data.centroids.lon.round(5)
+    max_intensity = np.max(admin1_indicator_data.intensity, axis=0).toarray().flatten()
+    admin1_indicator_gdf = pd.DataFrame(
+        {"latitude": latitudes, "longitude": longitudes, "value": max_intensity}
+    )
+
+    # Filter out zero entries to reduce the file size
+    admin1_indicator_gdf = admin1_indicator_gdf[admin1_indicator_gdf["value"] != 0.0]
 
     admin1_indicator_gdf = filter_dataframe_with_geometry(
         admin1_indicator_gdf, admin1_shape, indicator_key
@@ -256,6 +317,8 @@ def calculate_indicator_timeseries_admin(
     if indicator == "earthquake":
         indicator_key = f"{indicator}.date.max_intensity"
     elif indicator == "flood":
+        indicator_key = f"{indicator}.date"
+    elif indicator == "wildfire":
         indicator_key = f"{indicator}.date"
 
     indicator_data = CLIENT.get_hazard(
@@ -295,9 +358,9 @@ def calculate_indicator_timeseries_admin(
             admin_indicator_gdf = filter_dataframe_with_geometry(
                 country_data, admin_shape, indicator_key, cache_key=cache_key
             )
-            LOGGER.info(f"Processing {country_iso3alpha}-{admin1_names[j]}-{admin2_names[j]}")
+            # LOGGER.info(f"Processing {country_iso3alpha}-{admin1_names[j]}-{admin2_names[j]}")
 
-            if indicator == "earthquake":
+            if indicator in ["earthquake", "wildfire"]:
                 aggregation = "max"
                 if len(admin_indicator_gdf["value"]) != 0:
                     aggregate = round(max(admin_indicator_gdf["value"]), 2)
@@ -331,36 +394,6 @@ def calculate_indicator_timeseries_admin(
     print(f"CACHE_HIT: {CACHE_HIT}", flush=True)
     print(f"CACHE_MISS: {CACHE_MISS}", flush=True)
     return events
-
-
-def calculate_flood_for_admin1(
-    admin1_shape: list[geopandas.geoseries.GeoSeries],
-    country: str,
-) -> pd.DataFrame:
-    indicator_key = "flood"
-    country_iso3alpha = Country.get_iso3_country_code(country)
-    admin1_indicator_data = CLIENT.get_hazard(
-        "flood",
-        properties={
-            "country_iso3alpha": country_iso3alpha,
-        },
-    )
-
-    latitudes = admin1_indicator_data.centroids.lat.round(5)
-    longitudes = admin1_indicator_data.centroids.lon.round(5)
-    max_intensity = np.max(admin1_indicator_data.intensity, axis=0).toarray().flatten()
-    admin1_indicator_gdf = pd.DataFrame(
-        {"latitude": latitudes, "longitude": longitudes, "value": max_intensity}
-    )
-
-    # Filter out zero entries to reduce the file size
-    admin1_indicator_gdf = admin1_indicator_gdf[admin1_indicator_gdf["value"] != 0.0]
-
-    admin1_indicator_gdf = filter_dataframe_with_geometry(
-        admin1_indicator_gdf, admin1_shape, indicator_key
-    )
-
-    return admin1_indicator_gdf
 
 
 def calculate_relative_cropyield_for_admin1(

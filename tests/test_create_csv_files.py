@@ -210,3 +210,34 @@ def test_export_indicator_data_to_csv_flood():
         rows = list(csv.DictReader(summary_file))
 
     assert len(rows) == 11  # 10 regions + 1 HXL tag
+
+
+def test_export_indicator_data_to_csv_wildfire():
+    country = "Haiti"
+    indicator = "wildfire"
+    output_paths = make_detail_and_summary_file_paths(
+        country, indicator, export_directory=EXPORT_DIRECTORY
+    )
+    if os.path.exists(output_paths["output_detail_path"]):
+        os.remove(output_paths["output_detail_path"])
+
+    if os.path.exists(output_paths["output_summary_path"]):
+        os.remove(output_paths["output_summary_path"])
+
+    if os.path.exists(output_paths["output_timeseries_path"]):
+        os.remove(output_paths["output_timeseries_path"])
+
+    statuses = export_indicator_data_to_csv(country, indicator, export_directory=EXPORT_DIRECTORY)
+
+    for status in statuses:
+        print(status, flush=True)
+
+    assert len(statuses) == 4
+    assert os.path.exists(output_paths["output_summary_path"])
+    assert os.path.exists(output_paths["output_detail_path"])
+    assert os.path.exists(output_paths["output_timeseries_path"])
+
+    with open(output_paths["output_summary_path"], encoding="utf-8") as summary_file:
+        rows = list(csv.DictReader(summary_file))
+
+    assert len(rows) == 10

@@ -17,7 +17,12 @@ from hdx_scraper_climada.download_admin1_geometry import (
     get_best_admin_shapes,
 )
 
-INDICATOR_UNITS = {"earthquake": "Maximum MMI", "flood": "extent", "litpop": "USD"}
+INDICATOR_UNITS = {
+    "earthquake": "Maximum MMI",
+    "flood": "extent",
+    "litpop": "USD",
+    "wildfire": "Maximum intensity (K)",
+}
 
 
 def calc_zoom(df: pandas.DataFrame, total_bounds: None | list = None) -> tuple[float, float]:
@@ -114,6 +119,8 @@ def plot_detail_file_map(country: str, indicator: str):
         country_data["scaled_value"] = country_data["value"] * 10.0
         country_data = country_data[country_data["value"] != 0]
         print(f"Size of flood data after scaling: {len(country_data)}", flush=True)
+    elif indicator == "wildfire":
+        country_data["scaled_value"] = ((country_data["value"] - 293.0) * 5.0) / 10
     zoom = calc_zoom(country_data)
     fig = px.scatter_mapbox(
         country_data,

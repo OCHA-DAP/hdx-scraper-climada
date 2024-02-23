@@ -241,7 +241,7 @@ def create_summary_data(
             row["latitude"] = round(filtered_df["latitude"].mean(), 4)
             row["longitude"] = round(filtered_df["longitude"].mean(), 4)
             row["indicator"] = indicator
-            if indicator == "earthquake.max_intensity":
+            if indicator in ["earthquake.max_intensity", "wildfire"]:
                 row["value"] = filtered_df["value"].max()
                 row["aggregation"] = "max"
             else:

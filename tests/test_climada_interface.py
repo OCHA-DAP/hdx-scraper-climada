@@ -273,9 +273,32 @@ def test_filter_dataframe_with_geometry():
     assert admin_indicator_uncached_gdf["value"].equals(admin_indicator_cached_gdf["value"])
 
 
-@pytest.mark.skip(reason="Flood data not yet complete")
 def test_calculate_indicator_for_admin1_flood():
     indicator = "flood"
+
+    admin1_indicator_gdf_list = []
+    for i, admin1_shape in enumerate(ADMIN1_SHAPES):
+        admin1_indicator_gdf_list.append(
+            calculate_indicator_for_admin1(admin1_shape, ADMIN1_NAMES[i], COUNTRY, indicator)
+        )
+
+    admin1_indicator_gdf = pd.concat(admin1_indicator_gdf_list)
+
+    assert admin1_indicator_gdf.iloc[0].to_dict() == {
+        "country_name": "Haiti",
+        "region_name": "Centre",
+        "latitude": 19.29167,
+        "longitude": -72.20833,
+        "aggregation": "none",
+        "indicator": "flood.max_intensity",
+        "value": 6.67,
+    }
+
+    assert len(admin1_indicator_gdf) == 1300
+
+
+def test_calculate_indicator_for_admin1_wildfire():
+    indicator = "wildfire"
 
     admin1_indicator_gdf_list = []
     for i, admin1_shape in enumerate(ADMIN1_SHAPES):
@@ -289,7 +312,7 @@ def test_calculate_indicator_for_admin1_flood():
     output_paths = make_detail_and_summary_file_paths(
         COUNTRY, indicator, export_directory=export_directory
     )
-    admin1_indicator_gdf.to_csv(output_paths["detail_file_path"], index=False)
+    admin1_indicator_gdf.to_csv(output_paths["output_detail_path"], index=False)
 
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Haiti",
@@ -297,11 +320,11 @@ def test_calculate_indicator_for_admin1_flood():
         "latitude": 19.29167,
         "longitude": -72.20833,
         "aggregation": "none",
-        "indicator": "flood.max_intensity",
-        "value": 6.67,
+        "indicator": "wildfire",
+        "value": 341.0,
     }
 
-    assert len(admin1_indicator_gdf) == 1300
+    assert len(admin1_indicator_gdf) == 344
 
 
 def test_flood_shim():
