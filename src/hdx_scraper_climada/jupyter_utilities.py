@@ -19,9 +19,9 @@ from hdx_scraper_climada.download_admin1_geometry import (
 
 INDICATOR_UNITS = {
     "earthquake": "Maximum MMI",
-    "flood": "extent",
+    "flood": "extent (200m grid points)",
     "litpop": "USD",
-    "wildfire": "Maximum intensity (K)",
+    "wildfire": "Extent (4km grid points)",
 }
 
 
@@ -120,6 +120,7 @@ def plot_detail_file_map(country: str, indicator: str):
         country_data = country_data[country_data["value"] != 0]
         print(f"Size of flood data after scaling: {len(country_data)}", flush=True)
     elif indicator == "wildfire":
+        country_data = country_data[country_data["value"] != 0.0]
         country_data["scaled_value"] = ((country_data["value"] - 293.0) * 5.0) / 10
     zoom = calc_zoom(country_data)
     fig = px.scatter_mapbox(

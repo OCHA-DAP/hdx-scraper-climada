@@ -154,7 +154,7 @@ climada-wildfire-summary,2024-02-23T09:15:52.259460,filename_template,"admin1-su
 climada-wildfire-summary,2024-02-23T09:15:52.259460,file_format,"CSV",
 climada-wildfire-timeseries,2024-02-23T09:15:52.259460,entity_type,"resource",
 climada-wildfire-timeseries,2024-02-23T09:15:52.259460,description,"Wildfire extent by admin1 or admin2 for each flood for HRP countries",
-climada-wildfire-timeseries,2024-02-23T09:15:52.259460,filename_template,"admin1-timeseries-summaries-flood.csv",
+climada-wildfire-timeseries,2024-02-23T09:15:52.259460,filename_template,"admin1-timeseries-summaries-wildfire.csv",
 climada-wildfire-timeseries,2024-02-23T09:15:52.259460,file_format,"CSV",
 climada-wildfire-{country},2024-02-23T09:15:52.259460,entity_type,"resource",
 climada-wildfire-{country},2024-02-23T09:15:52.259460,description,"Gridded (4kmx4km) wildfire extent for {country} at with admin1 name column",

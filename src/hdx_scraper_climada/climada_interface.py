@@ -269,6 +269,7 @@ def calculate_indicator_timeseries_admin(
     country: str, indicator: str = "earthquake", test_run: bool = False
 ) -> list[dict]:
     global SPATIAL_FILTER_CACHE
+    SPATIAL_FILTER_CACHE = {}
     LOGGER.info(f"Creating timeseries summary for {indicator} in {country}")
     country_iso3alpha = Country.get_iso3_country_code(country)
 
@@ -294,6 +295,8 @@ def calculate_indicator_timeseries_admin(
     latitudes = indicator_data.centroids.lat
     longitudes = indicator_data.centroids.lon
     events = []
+    n_events = indicator_data.intensity.shape[0]
+    n_shapes = len(admin_shapes)
     for i, event_intensity in enumerate(indicator_data.intensity):
         values = event_intensity.toarray().flatten()
         if sum(values) == 0.0:
@@ -306,10 +309,11 @@ def calculate_indicator_timeseries_admin(
             }
         )
 
-        # It would be nice to do this but it messes up caching
+        # Flood is on a 200mx200m grid so we filter out zero values before processing, this
+        # means we can't cache the spatial filters
         if indicator == "flood":
             country_data = country_data[country_data["value"] != 0]
-
+        LOGGER.info(f"**Processing event {i} of {n_events}**")
         for j, admin_shape in enumerate(admin_shapes):
             # Switch off caching for flood because the filter above stops it working
             if indicator == "flood":
@@ -319,12 +323,22 @@ def calculate_indicator_timeseries_admin(
             admin_indicator_gdf = filter_dataframe_with_geometry(
                 country_data, admin_shape, indicator_key, cache_key=cache_key
             )
-            LOGGER.info(f"Processing {country_iso3alpha}-{admin1_names[j]}-{admin2_names[j]}")
+            LOGGER.info(
+                f"Processing shape {j} of {n_shapes} "
+                f"{country_iso3alpha}-{admin1_names[j]}-{admin2_names[j]}"
+            )
 
-            if indicator in ["earthquake", "wildfire"]:
+            if indicator in ["earthquake"]:
                 aggregation = "max"
                 if len(admin_indicator_gdf["value"]) != 0:
                     aggregate = round(max(admin_indicator_gdf["value"]), 2)
+                else:
+                    aggregate = 0.0
+            elif indicator in ["wildfire"]:
+                aggregation = "sum"
+                if len(admin_indicator_gdf["value"]) != 0:
+                    mask_df = admin_indicator_gdf[admin_indicator_gdf["value"] != 0]
+                    aggregate = round(len(mask_df), 2)
                 else:
                     aggregate = 0.0
             else:

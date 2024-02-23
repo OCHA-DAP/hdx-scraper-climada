@@ -241,9 +241,13 @@ def create_summary_data(
             row["latitude"] = round(filtered_df["latitude"].mean(), 4)
             row["longitude"] = round(filtered_df["longitude"].mean(), 4)
             row["indicator"] = indicator
-            if indicator in ["earthquake.max_intensity", "wildfire"]:
+            if indicator in ["earthquake.max_intensity"]:
                 row["value"] = filtered_df["value"].max()
                 row["aggregation"] = "max"
+            elif indicator in ["wildfire"]:
+                mask_df = filtered_df[filtered_df["value"] != 0.0]
+                row["value"] = len(mask_df)
+                row["aggregation"] = "sum"
             else:
                 row["value"] = filtered_df["value"].sum()
                 row["aggregation"] = "sum"
@@ -296,7 +300,7 @@ if __name__ == "__main__":
     LOGGER.info("============================")
     LOGGER.info(f"Timestamp: {datetime.datetime.now().isoformat()}")
     T0 = time.time()
-    STATUSES = export_indicator_data_to_csv(country="Haiti", indicator="crop_production")
+    STATUSES = export_indicator_data_to_csv(country="Cameroon", indicator="wildfire")
     for STATUS in STATUSES:
         LOGGER.info(STATUS)
     LOGGER.info(f"Processed all countries in {time.time()-T0:0.0f} seconds")

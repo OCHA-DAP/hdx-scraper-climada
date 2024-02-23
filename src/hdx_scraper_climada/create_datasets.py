@@ -130,7 +130,7 @@ def compile_resource_list(dataset_attributes: dict, countries_data: list[dict]) 
                 resource.set_file_to_upload(resource_file_path)
                 resource_list.append(resource)
             else:
-                LOGGER.info(f"Detail file for {country['country_name']} does not exist")
+                LOGGER.info(f"Resource file path {resource_file_path} does not exist")
 
     return resource_list
 
