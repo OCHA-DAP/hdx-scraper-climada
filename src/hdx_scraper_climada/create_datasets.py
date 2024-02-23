@@ -23,7 +23,7 @@ try:
     Configuration.create(
         user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
         user_agent_lookup="hdx-scraper-climada",
-        hdx_site="prod",
+        hdx_site="stage",
     )
 except ConfigurationError:
     LOGGER.info("Configuration already exists when trying to create in `create_datasets.py`")
@@ -241,5 +241,5 @@ def add_quickchart(dataset: Dataset, dataset_attributes: dict) -> tuple[str, Dat
 
 if __name__ == "__main__":
     DATASET_NAME = "climada-earthquake-dataset"
-    DRY_RUN = False
+    DRY_RUN = True
     create_datasets_in_hdx(DATASET_NAME, dry_run=DRY_RUN)
