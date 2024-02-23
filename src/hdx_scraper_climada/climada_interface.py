@@ -91,11 +91,11 @@ def calculate_indicator_for_admin1(
     elif indicator == "crop-production":
         admin1_indicator_gdf = calculate_crop_production_for_admin1(admin1_shape, country)
     elif indicator == "earthquake":
-        admin1_indicator_gdf = calculate_earthquake_for_admin1(admin1_shape, country)
+        admin1_indicator_gdf = calculate_hazards_for_admin1(admin1_shape, country, indicator)
     elif indicator == "flood":
-        admin1_indicator_gdf = calculate_flood_for_admin1(admin1_shape, country)
+        admin1_indicator_gdf = calculate_hazards_for_admin1(admin1_shape, country, indicator)
     elif indicator == "wildfire":
-        admin1_indicator_gdf = calculate_wildfire_for_admin1(admin1_shape, country)
+        admin1_indicator_gdf = calculate_hazards_for_admin1(admin1_shape, country, indicator)
     elif indicator == "relative-cropyield":
         admin1_indicator_gdf = calculate_relative_cropyield_for_admin1(admin1_shape, country)
     else:
@@ -217,14 +217,31 @@ def calculate_crop_production_for_admin1(
     return admin1_indicator_gdf
 
 
-def calculate_earthquake_for_admin1(
+def calculate_hazards_for_admin1(
     admin1_shape: list[geopandas.geoseries.GeoSeries],
     country: str,
+    indicator: str,
 ) -> pd.DataFrame:
-    indicator_key = "earthquake.max_intensity"
+    """This function calculates detail data for the earthquake, flood, and wildfire datasets
+
+    Arguments:
+        admin1_shape {list[geopandas.geoseries.GeoSeries]} -- _description_
+        country {str} -- full name of country - it is generally converted to iso3_country_code
+        indicator {str} --
+
+    Returns:
+        pd.DataFrame -- _description_
+    """
+
+    indicator_key = indicator
+    if indicator == "earthquake":
+        indicator_key = "earthquake.max_intensity"
+    elif indicator == "flood":
+        indicator_key = "flood.max_intensity"
+
     country_iso3alpha = Country.get_iso3_country_code(country)
     admin1_indicator_data = CLIENT.get_hazard(
-        "earthquake",
+        indicator,
         properties={
             "country_iso3alpha": country_iso3alpha,
         },
@@ -237,65 +254,9 @@ def calculate_earthquake_for_admin1(
         {"latitude": latitudes, "longitude": longitudes, "value": max_intensity}
     )
 
-    admin1_indicator_gdf = filter_dataframe_with_geometry(
-        admin1_indicator_gdf, admin1_shape, indicator_key
-    )
-
-    return admin1_indicator_gdf
-
-
-def calculate_flood_for_admin1(
-    admin1_shape: list[geopandas.geoseries.GeoSeries],
-    country: str,
-) -> pd.DataFrame:
-    indicator_key = "flood"
-    country_iso3alpha = Country.get_iso3_country_code(country)
-    admin1_indicator_data = CLIENT.get_hazard(
-        "flood",
-        properties={
-            "country_iso3alpha": country_iso3alpha,
-        },
-    )
-
-    latitudes = admin1_indicator_data.centroids.lat.round(5)
-    longitudes = admin1_indicator_data.centroids.lon.round(5)
-    max_intensity = np.max(admin1_indicator_data.intensity, axis=0).toarray().flatten()
-    admin1_indicator_gdf = pd.DataFrame(
-        {"latitude": latitudes, "longitude": longitudes, "value": max_intensity}
-    )
-
-    # Filter out zero entries to reduce the file size
-    admin1_indicator_gdf = admin1_indicator_gdf[admin1_indicator_gdf["value"] != 0.0]
-
-    admin1_indicator_gdf = filter_dataframe_with_geometry(
-        admin1_indicator_gdf, admin1_shape, indicator_key
-    )
-
-    return admin1_indicator_gdf
-
-
-def calculate_wildfire_for_admin1(
-    admin1_shape: list[geopandas.geoseries.GeoSeries],
-    country: str,
-) -> pd.DataFrame:
-    indicator_key = "wildfire"
-    country_iso3alpha = Country.get_iso3_country_code(country)
-    admin1_indicator_data = CLIENT.get_hazard(
-        "wildfire",
-        properties={
-            "country_iso3alpha": country_iso3alpha,
-        },
-    )
-
-    latitudes = admin1_indicator_data.centroids.lat.round(5)
-    longitudes = admin1_indicator_data.centroids.lon.round(5)
-    max_intensity = np.max(admin1_indicator_data.intensity, axis=0).toarray().flatten()
-    admin1_indicator_gdf = pd.DataFrame(
-        {"latitude": latitudes, "longitude": longitudes, "value": max_intensity}
-    )
-
-    # Filter out zero entries to reduce the file size
-    admin1_indicator_gdf = admin1_indicator_gdf[admin1_indicator_gdf["value"] != 0.0]
+    # Filter out zero entries to reduce the file size for flood
+    if indicator in ["flood"]:
+        admin1_indicator_gdf = admin1_indicator_gdf[admin1_indicator_gdf["value"] != 0.0]
 
     admin1_indicator_gdf = filter_dataframe_with_geometry(
         admin1_indicator_gdf, admin1_shape, indicator_key
@@ -358,7 +319,7 @@ def calculate_indicator_timeseries_admin(
             admin_indicator_gdf = filter_dataframe_with_geometry(
                 country_data, admin_shape, indicator_key, cache_key=cache_key
             )
-            # LOGGER.info(f"Processing {country_iso3alpha}-{admin1_names[j]}-{admin2_names[j]}")
+            LOGGER.info(f"Processing {country_iso3alpha}-{admin1_names[j]}-{admin2_names[j]}")
 
             if indicator in ["earthquake", "wildfire"]:
                 aggregation = "max"
@@ -519,10 +480,10 @@ def filter_dataframe_with_geometry(
 def flood_timeseries_data_shim(
     flood_data: climada.hazard.base.Hazard,
 ) -> climada.hazard.base.Hazard:
-    # This shim takes event date information from a file and puts it into a Hazard object to
+    # This shim takes flood event date information from a file and puts it into a Hazard object to
     # replace malformed event date. Described in this issue on the CLIMADA repo
     # https://github.com/CLIMADA-project/climada_python/issues/850
-    # The countries effected are Colombia, Nigeria, Sudan and Venezuela
+    # The countries effected are Colombia, Nigeria, Sudan and Venezuela for flood data
     # The lookup is from a dfo event number to an ordinal date
     shim_file_path = os.path.join(
         os.path.dirname(__file__), "metadata", "2024-02-21-flood_metainfo-ex-em.csv"

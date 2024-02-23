@@ -240,4 +240,4 @@ def test_export_indicator_data_to_csv_wildfire():
     with open(output_paths["output_summary_path"], encoding="utf-8") as summary_file:
         rows = list(csv.DictReader(summary_file))
 
-    assert len(rows) == 10
+    assert len(rows) == 11  # 10 regions + 1 HXL tag
