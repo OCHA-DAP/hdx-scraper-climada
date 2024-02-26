@@ -314,12 +314,19 @@ def calculate_indicator_timeseries_admin(
 
     if indicator == "flood" and country in ["Colombia", "Nigeria", "Sudan", "Venezuela"]:
         indicator_data = flood_timeseries_data_shim(indicator_data)
+
+    # For river flood we want the ability
+    selected_model = None
+    if indicator == "river-flood":
+        selected_model = "clm40_gswp3"
     latitudes = indicator_data.centroids.lat
     longitudes = indicator_data.centroids.lon
     events = []
     n_events = indicator_data.intensity.shape[0]
     n_shapes = len(admin_shapes)
     for i, event_intensity in enumerate(indicator_data.intensity):
+        if selected_model is not None and not indicator_data.event_name[i].endswith(selected_model):
+            continue
         values = event_intensity.toarray().flatten()
         if sum(values) == 0.0:
             continue
@@ -375,6 +382,8 @@ def calculate_indicator_timeseries_admin(
                     aggregate = round(max(admin_indicator_gdf["value"]), 0)
                 else:
                     aggregate = 0.0
+                model_name = indicator_data.event_name[i][5:]
+                indicator_key = f"river-flood.{model_name}"
             if aggregate > 0.0:
                 event_date = datetime.datetime.fromordinal(indicator_data.date[i]).isoformat()
                 LOGGER.info(f"Event on {event_date[0:10]}  MaxInt:{aggregate:0.2f}")
