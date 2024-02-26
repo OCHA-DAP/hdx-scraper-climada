@@ -96,6 +96,11 @@ def calculate_indicator_for_admin1(
         admin1_indicator_gdf = calculate_hazards_for_admin1(admin1_shape, country, indicator)
     elif indicator == "wildfire":
         admin1_indicator_gdf = calculate_hazards_for_admin1(admin1_shape, country, indicator)
+    elif indicator == "river-flood":
+        climada_properties = {"country_iso3alpha": None, "climate_scenario": "historical"}
+        admin1_indicator_gdf = calculate_hazards_for_admin1(
+            admin1_shape, country, "river_flood", climada_properties=climada_properties
+        )
     elif indicator == "relative-cropyield":
         admin1_indicator_gdf = calculate_relative_cropyield_for_admin1(admin1_shape, country)
     else:
@@ -221,30 +226,36 @@ def calculate_hazards_for_admin1(
     admin1_shape: list[geopandas.geoseries.GeoSeries],
     country: str,
     indicator: str,
+    climada_properties: dict = None,
 ) -> pd.DataFrame:
     """This function calculates detail data for the earthquake, flood, and wildfire datasets
 
     Arguments:
         admin1_shape {list[geopandas.geoseries.GeoSeries]} -- _description_
         country {str} -- full name of country - it is generally converted to iso3_country_code
-        indicator {str} --
+        indicator {str} -- which indicator we are processing
+        climada_properties {dict} -- properties to pass to the CLIMADA engine - required when modelling scenarios are in play
 
     Returns:
         pd.DataFrame -- _description_
     """
+
+    if climada_properties is None:
+        climada_properties = {}
+    country_iso3alpha = Country.get_iso3_country_code(country)
+    climada_properties["country_iso3alpha"] = country_iso3alpha
 
     indicator_key = indicator
     if indicator == "earthquake":
         indicator_key = "earthquake.max_intensity"
     elif indicator == "flood":
         indicator_key = "flood.max_intensity"
+    elif indicator == "river_flood":
+        indicator_key = "river-flood"
 
-    country_iso3alpha = Country.get_iso3_country_code(country)
     admin1_indicator_data = CLIENT.get_hazard(
         indicator,
-        properties={
-            "country_iso3alpha": country_iso3alpha,
-        },
+        properties=climada_properties,
     )
 
     latitudes = admin1_indicator_data.centroids.lat.round(5)
@@ -266,7 +277,10 @@ def calculate_hazards_for_admin1(
 
 
 def calculate_indicator_timeseries_admin(
-    country: str, indicator: str = "earthquake", test_run: bool = False
+    country: str,
+    indicator: str = "earthquake",
+    climate_scenario: str = None,
+    test_run: bool = False,
 ) -> list[dict]:
     global SPATIAL_FILTER_CACHE
     SPATIAL_FILTER_CACHE = {}
@@ -276,18 +290,26 @@ def calculate_indicator_timeseries_admin(
     admin1_names, admin2_names, admin_shapes, admin_level = get_best_admin_shapes(country_iso3alpha)
 
     LOGGER.info(f"Found {len(admin2_names)} admin{admin_level} for {country}")
+    climada_indicator = indicator
     if indicator == "earthquake":
         indicator_key = f"{indicator}.date.max_intensity"
     elif indicator == "flood":
         indicator_key = f"{indicator}.date"
     elif indicator == "wildfire":
         indicator_key = f"{indicator}.date"
+    elif indicator == "river-flood":
+        climada_indicator = "river_flood"
+        indicator_key = f"{indicator}.date"
+
+    climada_properties = {
+        "country_iso3alpha": country_iso3alpha,
+    }
+    if climate_scenario is not None:
+        climada_properties["climate_scenario"] = climate_scenario
 
     indicator_data = CLIENT.get_hazard(
-        indicator,
-        properties={
-            "country_iso3alpha": country_iso3alpha,
-        },
+        climada_indicator,
+        properties=climada_properties,
     )
 
     if indicator == "flood" and country in ["Colombia", "Nigeria", "Sudan", "Venezuela"]:
@@ -341,10 +363,16 @@ def calculate_indicator_timeseries_admin(
                     aggregate = round(len(mask_df), 2)
                 else:
                     aggregate = 0.0
-            else:
+            elif indicator in ["flood"]:
                 aggregation = "sum"
                 if len(admin_indicator_gdf["value"]) != 0:
                     aggregate = round(sum(admin_indicator_gdf["value"]), 0)
+                else:
+                    aggregate = 0.0
+            elif indicator in ["river-flood"]:
+                aggregation = "max"
+                if len(admin_indicator_gdf["value"]) != 0:
+                    aggregate = round(max(admin_indicator_gdf["value"]), 0)
                 else:
                     aggregate = 0.0
             if aggregate > 0.0:

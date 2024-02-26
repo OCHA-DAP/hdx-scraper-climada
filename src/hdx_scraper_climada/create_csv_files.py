@@ -66,6 +66,7 @@ TIMESERIES_HXL_TAGS = OrderedDict(
 def export_indicator_data_to_csv(
     country: str = "Haiti",
     indicator: str = "litpop",
+    climate_scenario: str = None,
     use_hdx_admin1: bool = True,
     export_directory: str = None,
 ) -> list[str]:
@@ -124,9 +125,13 @@ def export_indicator_data_to_csv(
         ):
             LOGGER.info(f"Making timeseries summary file for {country}-{indicator}")
             timeseries_summary_rows = []
+            climate_scenario = None
+            if indicator == "river-flood":
+                climate_scenario = "historical"
+
             try:
                 timeseries_summary_rows = calculate_indicator_timeseries_admin(
-                    country, indicator=indicator
+                    country, indicator=indicator, climate_scenario=climate_scenario
                 )
             except TypeError:
                 LOGGER.info(
@@ -296,11 +301,13 @@ def write_detail_data(country_dataframes: list[pd.DataFrame], output_file_path: 
 
 
 if __name__ == "__main__":
+    COUNTRY = "Haiti"
+    INDICATOR = "river-flood"
     LOGGER.info("Generating Climada csv files")
     LOGGER.info("============================")
     LOGGER.info(f"Timestamp: {datetime.datetime.now().isoformat()}")
     T0 = time.time()
-    STATUSES = export_indicator_data_to_csv(country="Cameroon", indicator="wildfire")
+    STATUSES = export_indicator_data_to_csv(country=COUNTRY, indicator=INDICATOR)
     for STATUS in STATUSES:
         LOGGER.info(STATUS)
     LOGGER.info(f"Processed all countries in {time.time()-T0:0.0f} seconds")

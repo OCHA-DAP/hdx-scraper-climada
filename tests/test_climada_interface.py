@@ -376,3 +376,33 @@ def test_flood_shim():
         732358,
         731036,
     ]
+
+
+def test_calculate_indicator_for_admin1_river_flood():
+    indicator = "river-flood"
+
+    admin1_indicator_gdf_list = []
+    for i, admin1_shape in enumerate(ADMIN1_SHAPES):
+        admin1_indicator_gdf_list.append(
+            calculate_indicator_for_admin1(admin1_shape, ADMIN1_NAMES[i], COUNTRY, indicator)
+        )
+
+    admin1_indicator_gdf = pd.concat(admin1_indicator_gdf_list)
+
+    export_directory = os.path.join(os.path.dirname(__file__), "temp")
+    output_paths = make_detail_and_summary_file_paths(
+        COUNTRY, indicator, export_directory=export_directory
+    )
+    admin1_indicator_gdf.to_csv(output_paths["output_detail_path"], index=False)
+
+    assert admin1_indicator_gdf.iloc[0].to_dict() == {
+        "country_name": "Haiti",
+        "region_name": "Centre",
+        "latitude": 19.29167,
+        "longitude": -72.20833,
+        "aggregation": "none",
+        "indicator": "river-flood",
+        "value": 0.0,
+    }
+
+    assert len(admin1_indicator_gdf) == 1300

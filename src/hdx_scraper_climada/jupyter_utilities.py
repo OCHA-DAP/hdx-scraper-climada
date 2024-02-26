@@ -22,6 +22,7 @@ INDICATOR_UNITS = {
     "flood": "extent (200m grid points)",
     "litpop": "USD",
     "wildfire": "Extent (4km grid points)",
+    "river-flood": "Flood depth (metres)",
 }
 
 
@@ -122,6 +123,9 @@ def plot_detail_file_map(country: str, indicator: str):
     elif indicator == "wildfire":
         country_data = country_data[country_data["value"] != 0.0]
         country_data["scaled_value"] = ((country_data["value"] - 293.0) * 5.0) / 10
+    elif indicator == "river-flood":
+        country_data = country_data[country_data["value"] != 0.0]
+        country_data["scaled_value"] = country_data["value"]
     zoom = calc_zoom(country_data)
     fig = px.scatter_mapbox(
         country_data,

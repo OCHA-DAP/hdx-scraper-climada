@@ -9,8 +9,8 @@ import os
 from typing import Any
 
 ATTRIBUTES_FILEPATH = os.path.join(os.path.dirname(__file__), "metadata", "attributes.csv")
-INDICATOR_LIST = ["litpop", "crop-production", "earthquake", "flood", "wildfire"]
-HAS_TIMESERIES = ["earthquake", "flood", "wildfire"]
+INDICATOR_LIST = ["litpop", "crop-production", "earthquake", "flood", "wildfire", "river-flood"]
+HAS_TIMESERIES = ["earthquake", "flood", "wildfire", "river-flood"]
 NO_DATA = {}
 NO_DATA["earthquake"] = set(["Burkina Faso", "Chad", "Niger", "Nigeria"])
 NO_DATA["flood"] = set(
