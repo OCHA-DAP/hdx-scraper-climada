@@ -14,6 +14,8 @@ from hdx_scraper_climada.create_csv_files import (
     export_indicator_data_to_csv,
 )
 
+from hdx_scraper_climada.utilities import HAS_TIMESERIES
+
 EXPORT_DIRECTORY = os.path.join(os.path.dirname(__file__), "temp")
 COUNTRY = "Haiti"
 INDICATOR = "litpop"
@@ -123,93 +125,28 @@ def test_make_detail_and_summary_file_paths():
         assert os.path.dirname(file_path) == os.path.join(EXPORT_DIRECTORY, f"{INDICATOR}")
 
 
+def test_export_indicator_data_to_csv_litpop():
+    country = "Haiti"
+    indicator = "crop-production"
+    indicator_data_to_csv_helper(country, indicator)
+
+
 def test_export_indicator_data_to_csv_crop_production():
     country = "Haiti"
     indicator = "crop-production"
-    output_paths = make_detail_and_summary_file_paths(
-        country, indicator, export_directory=EXPORT_DIRECTORY
-    )
-    if os.path.exists(output_paths["output_detail_path"]):
-        os.remove(output_paths["output_detail_path"])
-
-    if os.path.exists(output_paths["output_summary_path"]):
-        os.remove(output_paths["output_summary_path"])
-
-    statuses = export_indicator_data_to_csv(country, indicator, export_directory=EXPORT_DIRECTORY)
-
-    for status in statuses:
-        print(status, flush=True)
-
-    assert len(statuses) == 3
-    assert os.path.exists(output_paths["output_detail_path"])
-    assert os.path.exists(output_paths["output_summary_path"])
-
-    with open(output_paths["output_summary_path"], encoding="utf-8") as summary_file:
-        rows = list(csv.DictReader(summary_file))
-
-    assert len(rows) == 81  # 10 regions x 8 indicators + 1 HXL tag
+    indicator_data_to_csv_helper(country, indicator)
 
 
 def test_export_indicator_data_to_csv_earthquake():
     country = "Haiti"
     indicator = "earthquake"
-    output_paths = make_detail_and_summary_file_paths(
-        country, indicator, export_directory=EXPORT_DIRECTORY
-    )
-    if os.path.exists(output_paths["output_detail_path"]):
-        os.remove(output_paths["output_detail_path"])
-
-    if os.path.exists(output_paths["output_summary_path"]):
-        os.remove(output_paths["output_summary_path"])
-
-    if os.path.exists(output_paths["output_timeseries_path"]):
-        os.remove(output_paths["output_timeseries_path"])
-
-    statuses = export_indicator_data_to_csv(country, indicator, export_directory=EXPORT_DIRECTORY)
-
-    for status in statuses:
-        print(status, flush=True)
-
-    assert len(statuses) == 4
-    assert os.path.exists(output_paths["output_summary_path"])
-    assert os.path.exists(output_paths["output_detail_path"])
-    assert os.path.exists(output_paths["output_timeseries_path"])
-
-    with open(output_paths["output_summary_path"], encoding="utf-8") as summary_file:
-        rows = list(csv.DictReader(summary_file))
-
-    assert len(rows) == 11  # 10 regions + 1 HXL tag
+    indicator_data_to_csv_helper(country, indicator)
 
 
 def test_export_indicator_data_to_csv_flood():
     country = "Haiti"
     indicator = "flood"
-    output_paths = make_detail_and_summary_file_paths(
-        country, indicator, export_directory=EXPORT_DIRECTORY
-    )
-    if os.path.exists(output_paths["output_detail_path"]):
-        os.remove(output_paths["output_detail_path"])
-
-    if os.path.exists(output_paths["output_summary_path"]):
-        os.remove(output_paths["output_summary_path"])
-
-    if os.path.exists(output_paths["output_timeseries_path"]):
-        os.remove(output_paths["output_timeseries_path"])
-
-    statuses = export_indicator_data_to_csv(country, indicator, export_directory=EXPORT_DIRECTORY)
-
-    for status in statuses:
-        print(status, flush=True)
-
-    assert len(statuses) == 4
-    assert os.path.exists(output_paths["output_summary_path"])
-    assert os.path.exists(output_paths["output_detail_path"])
-    assert os.path.exists(output_paths["output_timeseries_path"])
-
-    with open(output_paths["output_summary_path"], encoding="utf-8") as summary_file:
-        rows = list(csv.DictReader(summary_file))
-
-    assert len(rows) == 11  # 10 regions + 1 HXL tag
+    indicator_data_to_csv_helper(country, indicator)
 
 
 def test_export_indicator_data_to_csv_wildfire():
@@ -234,20 +171,28 @@ def indicator_data_to_csv_helper(country: str, indicator: str):
     if os.path.exists(output_paths["output_summary_path"]):
         os.remove(output_paths["output_summary_path"])
 
-    if os.path.exists(output_paths["output_timeseries_path"]):
-        os.remove(output_paths["output_timeseries_path"])
+    if indicator in HAS_TIMESERIES:
+        if os.path.exists(output_paths["output_timeseries_path"]):
+            os.remove(output_paths["output_timeseries_path"])
 
     statuses = export_indicator_data_to_csv(country, indicator, export_directory=EXPORT_DIRECTORY)
 
     for status in statuses:
         print(status, flush=True)
 
-    assert len(statuses) == 4
+    if indicator in HAS_TIMESERIES:
+        assert len(statuses) == 4
+    else:
+        assert len(statuses) == 3
     assert os.path.exists(output_paths["output_summary_path"])
     assert os.path.exists(output_paths["output_detail_path"])
-    assert os.path.exists(output_paths["output_timeseries_path"])
+    if indicator in HAS_TIMESERIES:
+        assert os.path.exists(output_paths["output_timeseries_path"])
 
     with open(output_paths["output_summary_path"], encoding="utf-8") as summary_file:
         rows = list(csv.DictReader(summary_file))
 
-    assert len(rows) == 11  # 10 regions + 1 HXL tag
+    if indicator == "crop-production":
+        assert len(rows) == 81  # 10 regions x 8 indicators + 1 HXL tag
+    else:
+        assert len(rows) == 11  # 10 regions + 1 HXL tag
