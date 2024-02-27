@@ -453,16 +453,18 @@ def calculate_relative_cropyield_for_admin1(
 
 
 def aggregate_value(indicator: str, filtered_df: pd.DataFrame) -> tuple[float, str]:
-    if indicator in ["earthquake.max_intensity"]:
+    aggregation = "sum"
+    if indicator.startswith("earthquake"):
         value = round(filtered_df["value"].max(), 2)
         aggregation = "max"
-    elif indicator in ["wildfire", "river_flood"]:
+    elif indicator in ["wildfire", "river-flood", "flood", "flood.max_intensity"]:
         mask_df = filtered_df[filtered_df["value"] != 0.0]
-        value = len(mask_df)
-        aggregation = "sum"
-    else:
+        value = round(len(mask_df), 0)
+    elif indicator.startswith("crop-production") or indicator in ["litpop"]:
         value = round(filtered_df["value"].sum(), 0)
-        aggregation = "sum"
+    else:
+        print(f"Indicator {indicator} not implemented in climada_interface:aggregate_value")
+        raise NotImplementedError
 
     return value, aggregation
 
