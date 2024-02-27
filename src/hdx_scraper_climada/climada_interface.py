@@ -315,10 +315,11 @@ def calculate_indicator_timeseries_admin(
     if indicator == "flood" and country in ["Colombia", "Nigeria", "Sudan", "Venezuela"]:
         indicator_data = flood_timeseries_data_shim(indicator_data)
 
-    # For river flood we want the ability
+    # For river flood we want the ability to select a particular model
     selected_model = None
     if indicator == "river-flood":
         selected_model = "clm40_gswp3"
+
     latitudes = indicator_data.centroids.lat
     longitudes = indicator_data.centroids.lon
     events = []
@@ -357,36 +358,14 @@ def calculate_indicator_timeseries_admin(
                 f"{country_iso3alpha}-{admin1_names[j]}-{admin2_names[j]}"
             )
 
-            if indicator in ["earthquake"]:
-                aggregation = "max"
-                if len(admin_indicator_gdf["value"]) != 0:
-                    aggregate = round(max(admin_indicator_gdf["value"]), 2)
-                else:
-                    aggregate = 0.0
-            elif indicator in ["wildfire"]:
-                aggregation = "sum"
-                if len(admin_indicator_gdf["value"]) != 0:
-                    mask_df = admin_indicator_gdf[admin_indicator_gdf["value"] != 0]
-                    aggregate = round(len(mask_df), 2)
-                else:
-                    aggregate = 0.0
-            elif indicator in ["flood"]:
-                aggregation = "sum"
-                if len(admin_indicator_gdf["value"]) != 0:
-                    aggregate = round(sum(admin_indicator_gdf["value"]), 0)
-                else:
-                    aggregate = 0.0
-            elif indicator in ["river-flood"]:
-                aggregation = "max"
-                if len(admin_indicator_gdf["value"]) != 0:
-                    aggregate = round(max(admin_indicator_gdf["value"]), 0)
-                else:
-                    aggregate = 0.0
+            value, aggregation = aggregate_value(indicator, admin_indicator_gdf)
+
+            if indicator in ["river-flood"]:
                 model_name = indicator_data.event_name[i][5:]
                 indicator_key = f"river-flood.{model_name}"
-            if aggregate > 0.0:
+            if value > 0.0:
                 event_date = datetime.datetime.fromordinal(indicator_data.date[i]).isoformat()
-                LOGGER.info(f"Event on {event_date[0:10]}  MaxInt:{aggregate:0.2f}")
+                LOGGER.info(f"Event on {event_date[0:10]}  MaxInt:{value:0.2f}")
                 events.append(
                     {
                         "country_name": country,
@@ -397,7 +376,7 @@ def calculate_indicator_timeseries_admin(
                         "aggregation": aggregation,
                         "indicator": indicator_key,
                         "event_date": event_date,
-                        "value": aggregate,
+                        "value": value,
                     }
                 )
         if test_run:
@@ -471,6 +450,48 @@ def calculate_relative_cropyield_for_admin1(
     admin1_indicator_gdf = pd.concat(crop_gdfs, axis=0, ignore_index=True)
 
     return admin1_indicator_gdf
+
+
+def aggregate_value(indicator: str, filtered_df: pd.DataFrame) -> tuple[float, str]:
+    if indicator in ["earthquake.max_intensity"]:
+        value = round(filtered_df["value"].max(), 2)
+        aggregation = "max"
+    elif indicator in ["wildfire", "river_flood"]:
+        mask_df = filtered_df[filtered_df["value"] != 0.0]
+        value = len(mask_df)
+        aggregation = "sum"
+    else:
+        value = round(filtered_df["value"].sum(), 0)
+        aggregation = "sum"
+
+    return value, aggregation
+
+
+# if indicator in ["earthquake"]:
+#     aggregation = "max"
+#     if len(admin_indicator_gdf["value"]) != 0:
+#         aggregate = round(max(admin_indicator_gdf["value"]), 2)
+#     else:
+#         aggregate = 0.0
+# elif indicator in ["wildfire"]:
+#     aggregation = "sum"
+#     if len(admin_indicator_gdf["value"]) != 0:
+#         mask_df = admin_indicator_gdf[admin_indicator_gdf["value"] != 0]
+#         aggregate = round(len(mask_df), 2)
+#     else:
+#         aggregate = 0.0
+# elif indicator in ["flood"]:
+#     aggregation = "sum"
+#     if len(admin_indicator_gdf["value"]) != 0:
+#         aggregate = round(sum(admin_indicator_gdf["value"]), 0)
+#     else:
+#         aggregate = 0.0
+# elif indicator in ["river-flood"]:
+#     aggregation = "sum"
+#     if len(admin_indicator_gdf["value"]) != 0:
+#         aggregate = round(sum(admin_indicator_gdf["value"]), 0)
+#     else:
+#         aggregate = 0.0
 
 
 def get_country_iso_numeric(country):

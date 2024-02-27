@@ -30,6 +30,7 @@ from hdx_scraper_climada.download_admin1_geometry import (
 from hdx_scraper_climada.climada_interface import (
     calculate_indicator_for_admin1,
     calculate_indicator_timeseries_admin,
+    aggregate_value,
 )
 
 setup_logging()
@@ -246,16 +247,9 @@ def create_summary_data(
             row["latitude"] = round(filtered_df["latitude"].mean(), 4)
             row["longitude"] = round(filtered_df["longitude"].mean(), 4)
             row["indicator"] = indicator
-            if indicator in ["earthquake.max_intensity"]:
-                row["value"] = filtered_df["value"].max()
-                row["aggregation"] = "max"
-            elif indicator in ["wildfire"]:
-                mask_df = filtered_df[filtered_df["value"] != 0.0]
-                row["value"] = len(mask_df)
-                row["aggregation"] = "sum"
-            else:
-                row["value"] = filtered_df["value"].sum()
-                row["aggregation"] = "sum"
+            value, aggregation = aggregate_value(indicator, filtered_df)
+            row["value"] = value
+            row["aggregation"] = aggregation
 
             LOGGER.info(f"{row['region_name']:<20}, " f"{indicator:<20}, " f"{row['value']:0.0f}")
             summary_rows.append(row)

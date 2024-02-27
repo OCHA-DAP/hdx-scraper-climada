@@ -19,10 +19,10 @@ from hdx_scraper_climada.download_admin1_geometry import (
 
 INDICATOR_UNITS = {
     "earthquake": "Maximum MMI",
-    "flood": "extent (200m grid points)",
+    "flood": "Extent (200m grid points)",
     "litpop": "USD",
     "wildfire": "Extent (4km grid points)",
-    "river-flood": "Flood depth (metres)",
+    "river-flood": "Extent (4km grid points)",
 }
 
 
