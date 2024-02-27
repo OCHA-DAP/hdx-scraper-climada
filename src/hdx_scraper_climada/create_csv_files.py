@@ -20,7 +20,6 @@ from hdx_scraper_climada.utilities import (
     write_dictionary,
     HAS_TIMESERIES,
     get_set_of_countries_in_summary_file,
-    NO_DATA,
 )
 from hdx_scraper_climada.download_admin1_geometry import (
     get_admin1_shapes_from_hdx,

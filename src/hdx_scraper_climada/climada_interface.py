@@ -22,11 +22,7 @@ from climada.util.api_client import Client
 import climada.util.coordinates as u_coord
 from climada.entity import LitPop
 
-from hdx_scraper_climada.download_admin1_geometry import (
-    get_best_admin_shapes,
-    get_admin1_shapes_from_hdx,
-    get_admin2_shapes_from_hdx,
-)
+from hdx_scraper_climada.download_admin1_geometry import get_best_admin_shapes
 
 
 CLIENT = Client()
@@ -234,7 +230,8 @@ def calculate_hazards_for_admin1(
         admin1_shape {list[geopandas.geoseries.GeoSeries]} -- _description_
         country {str} -- full name of country - it is generally converted to iso3_country_code
         indicator {str} -- which indicator we are processing
-        climada_properties {dict} -- properties to pass to the CLIMADA engine - required when modelling scenarios are in play
+        climada_properties {dict} -- properties to pass to the CLIMADA engine -
+                                     required when modelling scenarios are in play
 
     Returns:
         pd.DataFrame -- _description_
@@ -467,33 +464,6 @@ def aggregate_value(indicator: str, filtered_df: pd.DataFrame) -> tuple[float, s
         raise NotImplementedError
 
     return value, aggregation
-
-
-# if indicator in ["earthquake"]:
-#     aggregation = "max"
-#     if len(admin_indicator_gdf["value"]) != 0:
-#         aggregate = round(max(admin_indicator_gdf["value"]), 2)
-#     else:
-#         aggregate = 0.0
-# elif indicator in ["wildfire"]:
-#     aggregation = "sum"
-#     if len(admin_indicator_gdf["value"]) != 0:
-#         mask_df = admin_indicator_gdf[admin_indicator_gdf["value"] != 0]
-#         aggregate = round(len(mask_df), 2)
-#     else:
-#         aggregate = 0.0
-# elif indicator in ["flood"]:
-#     aggregation = "sum"
-#     if len(admin_indicator_gdf["value"]) != 0:
-#         aggregate = round(sum(admin_indicator_gdf["value"]), 0)
-#     else:
-#         aggregate = 0.0
-# elif indicator in ["river-flood"]:
-#     aggregation = "sum"
-#     if len(admin_indicator_gdf["value"]) != 0:
-#         aggregate = round(sum(admin_indicator_gdf["value"]), 0)
-#     else:
-#         aggregate = 0.0
 
 
 def get_country_iso_numeric(country):
