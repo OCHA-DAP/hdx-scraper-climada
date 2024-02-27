@@ -146,6 +146,8 @@ def plot_detail_file_map(country: str, indicator: str):
     )
     fig.show()
 
+    return None
+
 
 def plot_histogram(country: str, indicator: str):
     country_data = get_detail_data_from_csv(country, indicator)
@@ -164,6 +166,7 @@ def plot_histogram(country: str, indicator: str):
         xaxis_title_text=f"{INDICATOR_UNITS[indicator]}", yaxis_title_text="Count", width=1200
     )
     fig.show()
+    return None
 
 
 def plot_timeseries_histogram(country: str, indicator: str):
@@ -202,6 +205,7 @@ def plot_timeseries_histogram(country: str, indicator: str):
         width=1200,
     )
     fig.show()
+    return None
 
 
 def plot_admin_boundaries(country: str):
@@ -308,6 +312,7 @@ def plot_timeseries_chloropleth(country: str, indicator: str, event_idx: None | 
     # fig.update_geos(fitbounds="locations", visible=False)
 
     fig.show()
+    return None
 
 
 def get_detail_data_from_csv(country: str, indicator: str) -> pandas.DataFrame | None:

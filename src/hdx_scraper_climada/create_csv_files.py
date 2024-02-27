@@ -78,9 +78,6 @@ def export_indicator_data_to_csv(
     # Construct file paths
     output_paths = make_detail_and_summary_file_paths(country, indicator, export_directory)
 
-    # if country in NO_DATA[indicator]:
-    #     statuses.append(f"There is no CLIMADA data for {country}-{indicator}")
-    #     return statuses
     if os.path.exists(output_paths["output_detail_path"]):
         LOGGER.info(f"Detail file for {country}-{indicator} already exists")
         statuses.append(f"Output file {output_paths['output_detail_path']} already exists")
@@ -106,10 +103,6 @@ def export_indicator_data_to_csv(
             LOGGER.info(
                 f"No country_dataframes available to make summary file for {country}-{indicator}"
             )
-            # raise NotImplementedError(
-            #     "Can't make summary data entries for {country}-{indicator} "
-            #     "without country_dataframes"
-            # )
         else:
             summary_rows, n_lines = create_summary_data(country_dataframes)
             status = write_summary_data(summary_rows, output_paths["output_summary_path"])

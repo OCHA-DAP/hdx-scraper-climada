@@ -81,7 +81,7 @@ def produce_csv_files(countries_to_process: list[dict], indicator: str):
 
 
 if __name__ == "__main__":
-    INDICATOR = "wildfire"
+    INDICATOR = "river-flood"
     DRY_RUN = False
     T0 = time.time()
     print_banner_to_log(LOGGER, "Updating Climada Datasets")

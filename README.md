@@ -17,7 +17,7 @@ The maintainer for this dataset is set in the `climada-litpop.json` file to `ema
 Since these datasets are processed locally the following process is followed to publish to production:
 1. Set `INDICATOR` to correct value in `run.py`
 2. Set `DRY_RUN` to `False` in `run.py`
-3. Set the `HDX_SITE` to `prod` in `~/.hdx_configuration.yaml`
+3. Set the `HDX_SITE` to `prod` in `~/.hdx_configuration.yaml` or in `create_datasets.py`
 
 This changes should be reverted after publication. The resources should have been generated prior to publication with publication itself taking 5-10 minutes
 
@@ -74,13 +74,22 @@ nbstripout --install
 
 ## Data format
 
-Each dataset will have a a "country" CSV format file for each country where data are available and a CSV format summary file. Both types of file include HXL tags on the second row of the dataset. Both files have the same columns:
+Each dataset will have a a "country" CSV format file for each country where data are available and a CSV format summary file.  Both types of file include HXL tags on the second row of the dataset. Both files have the same columns:
 ```
 country_name,region_name,latitude,longitude,aggregation,indicator,value
 #country,#adm1+name,#geo+lat,#geo+lon,,#indicator+name,#indicator+num
 ```
 
-The country files have aggregation `none` and the summary files will have aggregation `sum`. The `indicator` column may be a compound value such as `crop_production.whe.noirr.USD` where an indicator calculation takes multiple values or it may be simple, such as `litpop`.
+Some datasets also have a CSV format timeseries summary file, these have the following columns and HXL tags:
+
+```
+country_name,admin1_name,admin2_name,latitude,longitude,aggregation,indicator,event_date,value
+#country,#adm1+name,#adm2+name,#geo+lat,#geo+lon,,#indicator+name,#date,#indicator+num
+```
+
+Where possible timeseries data is provided at the admin2 aggregation level
+
+The country files have aggregation `none` and the summary files will have aggregation of either `sum` or `max`. The `indicator` column may be a compound value such as `crop_production.whe.noirr.USD` where an indicator calculation takes multiple values or it may be simple, such as `litpop`.
 
 The summary file has a row per country per admin1 region per indicator whilst the country file has a row per underlying latitude / longitude grid point per indicator. 
 
@@ -116,13 +125,23 @@ The underlying data is historic records of earthquakes between 1905 and 2017. Th
 Also included is a time series summary which shows the maximum intensity for each earthquake in each
 admin1 area or admin2 if it is available.
 
-## Flood
+### Flood
 
 Runtime for Flood is about 12 hours and generates 239MB of data.
 
 The underlying data is a binary mask (values either 0 or 1.) on a 200mx200m grid for each flood event. For the detail view this is sparse grid is stripped of non-zero values reducing the grid size from approximately 1 million points to O(10000). For the summary views the number of non-zero grid points is summed to provide an aggregate value per admin1 or admin2 area (where available).
 
 Admin2 geometries are only available for Ethiopia, Haiti and Somalia
+
+### Wildfire
+
+Runtime for wildfire is about 30 minutes for 45MB
+
+The underlying data is a fire intensity measured in Kelvin on a 4km grid, we retain this data for the country detail files but for both summary files we calculate a "fire extent" which is a count of the grid points for which there is a non-zero intensity.
+
+### River flood
+
+Runtime for river-flood is about 75 minutes for 46 MB (single model)
 
 ### Relative cropyield
 
