@@ -19,28 +19,24 @@ from hdx_scraper_climada.utilities import read_attributes, read_countries
 setup_logging()
 LOGGER = logging.getLogger(__name__)
 
-try:
-    Configuration.create(
-        user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
-        user_agent_lookup="hdx-scraper-climada",
-        hdx_site="stage",
-    )
-except ConfigurationError:
-    LOGGER.info("Configuration already exists when trying to create in `create_datasets.py`")
-
 INDICATOR_DIRECTORY = os.path.join(os.path.dirname(__file__), "output")
 
 
-def create_datasets_in_hdx(
-    dataset_name: str,
-    dry_run: bool = True,
-):
+def create_datasets_in_hdx(dataset_name: str, dry_run: bool = True, hdx_site: str = "stage"):
     LOGGER.info("*********************************************")
     LOGGER.info("* Climada - Create dataset   *")
     LOGGER.info(f"* Invoked at: {datetime.datetime.now().isoformat(): <23}    *")
     LOGGER.info("*********************************************")
     LOGGER.info(f"Dataset name: {dataset_name}")
     t0 = time.time()
+    try:
+        Configuration.create(
+            user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
+            user_agent_lookup="hdx-scraper-climada",
+            hdx_site=hdx_site,
+        )
+    except ConfigurationError:
+        LOGGER.info("Configuration already exists when trying to create in `create_datasets.py`")
     dataset_attributes = read_attributes(dataset_name)
     countries_data = read_countries()
 

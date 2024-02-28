@@ -19,18 +19,17 @@ setup_logging()
 LOGGER = logging.getLogger(__name__)
 
 
-try:
-    Configuration.create(
-        user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
-        user_agent_lookup="hdx-scraper-climada",
-    )
-except ConfigurationError:
-    LOGGER.info(
-        "Configuration already exists when trying to create in `download_admin1_geometry.py`"
-    )
-
-
 def download_hdx_admin1_boundaries():
+    try:
+        Configuration.create(
+            user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
+            user_agent_lookup="hdx-scraper-climada",
+        )
+    except ConfigurationError:
+        LOGGER.info(
+            "Configuration already exists when trying to create in `download_admin1_geometry.py`"
+        )
+
     boundary_dataset = Dataset.read_from_hdx(UNMAP_DATASET_NAME)
     boundary_resources = boundary_dataset.get_resources()
     subn_resources = []
