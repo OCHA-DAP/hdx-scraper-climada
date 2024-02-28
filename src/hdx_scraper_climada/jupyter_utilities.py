@@ -23,6 +23,7 @@ INDICATOR_UNITS = {
     "litpop": "USD",
     "wildfire": "Extent (4km grid points)",
     "river-flood": "Extent (4km grid points)",
+    "tropical-cyclone": "Wind speed (m/s)",
 }
 
 
@@ -126,6 +127,8 @@ def plot_detail_file_map(country: str, indicator: str):
     elif indicator == "river-flood":
         country_data = country_data[country_data["value"] != 0.0]
         country_data["scaled_value"] = country_data["value"]
+    elif indicator == "tropical-cyclone":
+        country_data["scaled_value"] = country_data["value"] - min(country_data["value"])
     zoom = calc_zoom(country_data)
     fig = px.scatter_mapbox(
         country_data,
@@ -154,6 +157,8 @@ def plot_histogram(country: str, indicator: str):
     if country_data is None:
         print(f"No {indicator} data for {country}", flush=True)
         return None
+
+    country_data = country_data[country_data["value"] != 0]
     fig = px.histogram(
         country_data,
         x="value",

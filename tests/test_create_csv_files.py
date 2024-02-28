@@ -161,6 +161,12 @@ def test_export_indicator_data_to_csv_river_flood():
     indicator_data_to_csv_helper(country, indicator)
 
 
+def test_export_indicator_data_to_csv_tropical_cyclone():
+    country = "Haiti"
+    indicator = "tropical-cyclone"
+    indicator_data_to_csv_helper(country, indicator)
+
+
 def indicator_data_to_csv_helper(country: str, indicator: str):
     output_paths = make_detail_and_summary_file_paths(
         country, indicator, export_directory=EXPORT_DIRECTORY

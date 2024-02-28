@@ -118,13 +118,15 @@ def export_indicator_data_to_csv(
         ):
             LOGGER.info(f"Making timeseries summary file for {country}-{indicator}")
             timeseries_summary_rows = []
-            climate_scenario = None
+            climada_properties = None
             if indicator == "river-flood":
-                climate_scenario = "historical"
+                climada_properties = {"climate_scenario": "historical"}
+            elif indicator == "tropical-cyclone":
+                climada_properties = {"event_type": "observed"}
 
             try:
                 timeseries_summary_rows = calculate_indicator_timeseries_admin(
-                    country, indicator=indicator, climate_scenario=climate_scenario
+                    country, indicator=indicator, climada_properties=climada_properties
                 )
             except TypeError:
                 LOGGER.info(

@@ -97,6 +97,11 @@ def calculate_indicator_for_admin1(
         admin1_indicator_gdf = calculate_hazards_for_admin1(
             admin1_shape, country, "river_flood", climada_properties=climada_properties
         )
+    elif indicator == "tropical-cyclone":
+        climada_properties = {"country_iso3alpha": None, "event_type": "observed"}
+        admin1_indicator_gdf = calculate_hazards_for_admin1(
+            admin1_shape, country, "tropical_cyclone", climada_properties=climada_properties
+        )
     elif indicator == "relative-cropyield":
         admin1_indicator_gdf = calculate_relative_cropyield_for_admin1(admin1_shape, country)
     else:
@@ -224,7 +229,8 @@ def calculate_hazards_for_admin1(
     indicator: str,
     climada_properties: dict = None,
 ) -> pd.DataFrame:
-    """This function calculates detail data for the earthquake, flood, and wildfire datasets
+    """This function calculates detail data for the earthquake, flood, wildfire and tropical_cyclone
+    datasets
 
     Arguments:
         admin1_shape {list[geopandas.geoseries.GeoSeries]} -- _description_
@@ -249,6 +255,8 @@ def calculate_hazards_for_admin1(
         indicator_key = "flood.max_intensity"
     elif indicator == "river_flood":
         indicator_key = "river-flood"
+    elif indicator == "tropical_cyclone":
+        indicator_key = "tropical-cyclone"
 
     admin1_indicator_data = CLIENT.get_hazard(
         indicator,
@@ -276,7 +284,7 @@ def calculate_hazards_for_admin1(
 def calculate_indicator_timeseries_admin(
     country: str,
     indicator: str = "earthquake",
-    climate_scenario: str = None,
+    climada_properties: dict = None,
     test_run: bool = False,
 ) -> list[dict]:
     global SPATIAL_FILTER_CACHE
@@ -297,12 +305,16 @@ def calculate_indicator_timeseries_admin(
     elif indicator == "river-flood":
         climada_indicator = "river_flood"
         indicator_key = f"{indicator}.date"
+    elif indicator == "tropical-cyclone":
+        climada_indicator = "tropical_cyclone"
+        indicator_key = f"{indicator}.date"
 
-    climada_properties = {
-        "country_iso3alpha": country_iso3alpha,
-    }
-    if climate_scenario is not None:
-        climada_properties["climate_scenario"] = climate_scenario
+    if climada_properties is None:
+        climada_properties = {
+            "country_iso3alpha": country_iso3alpha,
+        }
+    else:
+        climada_properties["country_iso3alpha"] = country_iso3alpha
 
     indicator_data = CLIENT.get_hazard(
         climada_indicator,
@@ -451,7 +463,7 @@ def calculate_relative_cropyield_for_admin1(
 
 def aggregate_value(indicator: str, filtered_df: pd.DataFrame) -> tuple[float, str]:
     aggregation = "sum"
-    if indicator.startswith("earthquake"):
+    if indicator.startswith("earthquake") or indicator in ["tropical-cyclone"]:
         value = round(filtered_df["value"].max(), 2)
         aggregation = "max"
     elif indicator in ["wildfire", "river-flood", "flood", "flood.max_intensity"]:
