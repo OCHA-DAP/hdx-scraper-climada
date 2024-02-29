@@ -32,3 +32,5 @@ src/hdx_scraper_climada/analysis/admin1-timeseries-summaries-earthquake.csv
 src/hdx_scraper_climada/analysis/earthquake_explorer_notebook.ipynb
 
 src/hdx_scraper_climada/analysis/flood_explorer_notebook.ipynb
+
+src/hdx_scraper_climada/analysis/scratch_notebook.ipynb
