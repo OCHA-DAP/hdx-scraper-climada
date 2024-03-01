@@ -270,9 +270,7 @@ def calculate_hazards_for_admin1(
         {"latitude": latitudes, "longitude": longitudes, "value": max_intensity}
     )
 
-    # Filter out zero entries to reduce the file size for flood
-    if indicator in ["flood"]:
-        admin1_indicator_gdf = admin1_indicator_gdf[admin1_indicator_gdf["value"] != 0.0]
+    admin1_indicator_gdf = filter_dataframe_with_intensity(admin1_indicator_gdf, indicator)
 
     admin1_indicator_gdf = filter_dataframe_with_geometry(
         admin1_indicator_gdf, admin1_shape, indicator_key
@@ -348,10 +346,8 @@ def calculate_indicator_timeseries_admin(
             }
         )
 
-        # Flood is on a 200mx200m grid so we filter out zero values before processing, this
-        # means we can't cache the spatial filters
-        if indicator == "flood":
-            country_data = country_data[country_data["value"] != 0]
+        country_data = filter_dataframe_with_intensity(country_data, indicator)
+
         LOGGER.info(f"**Processing event {i} of {n_events}**")
         for j, admin_shape in enumerate(admin_shapes):
             # Switch off caching for flood because the filter above stops it working
@@ -495,6 +491,23 @@ def calculate_centroid(admin1_shape: list[geopandas.geoseries.GeoSeries]) -> Any
     gdf = geopandas.GeoDataFrame({}, geometry=centroids)
     centroid = gdf.dissolve().centroid
     return centroid
+
+
+def filter_dataframe_with_intensity(
+    admin1_indicator_gdf: pd.DataFrame, indicator: str
+) -> pd.DataFrame:
+
+    # Filter out zero entries to reduce the file size for flood
+    if indicator in ["flood"]:
+        admin1_indicator_gdf = admin1_indicator_gdf[admin1_indicator_gdf["value"] != 0.0]
+
+    # Halve values over 600 for wildfire to remove grid line artefact,
+    if indicator in ["wildfire"]:
+        admin1_indicator_gdf["value"] = admin1_indicator_gdf["value"].apply(
+            lambda x: x / 2.0 if x > 600.0 else x
+        )
+
+    return admin1_indicator_gdf
 
 
 def filter_dataframe_with_geometry(
