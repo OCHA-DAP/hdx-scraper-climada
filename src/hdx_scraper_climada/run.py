@@ -81,7 +81,7 @@ def produce_csv_files(countries_to_process: list[dict], indicator: str):
 
 
 if __name__ == "__main__":
-    INDICATOR = "tropical-cyclone"
+    INDICATOR = "wildfire"
     DRY_RUN = False
     HDX_SITE = "stage"
     T0 = time.time()

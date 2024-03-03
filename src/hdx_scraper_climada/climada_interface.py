@@ -506,6 +506,10 @@ def filter_dataframe_with_intensity(
         admin1_indicator_gdf["value"] = admin1_indicator_gdf["value"].apply(
             lambda x: x / 2.0 if x > 600.0 else x
         )
+        # Further half values over 600.0 which were the vertices
+        admin1_indicator_gdf["value"] = admin1_indicator_gdf["value"].apply(
+            lambda x: x / 2.0 if x > 600.0 else x
+        )
 
     return admin1_indicator_gdf
 

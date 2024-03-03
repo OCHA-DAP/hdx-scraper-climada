@@ -123,7 +123,7 @@ def plot_detail_file_map(country: str, indicator: str):
         print(f"Size of flood data after scaling: {len(country_data)}", flush=True)
     elif indicator == "wildfire":
         country_data = country_data[country_data["value"] != 0.0]
-        country_data["scaled_value"] = ((country_data["value"] - 293.0) * 5.0) / 10
+        country_data["scaled_value"] = (country_data["value"] - 293.0) / 10.0
     elif indicator == "river-flood":
         country_data = country_data[country_data["value"] != 0.0]
         country_data["scaled_value"] = country_data["value"]
