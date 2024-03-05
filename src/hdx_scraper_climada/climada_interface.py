@@ -102,6 +102,8 @@ def calculate_indicator_for_admin1(
         admin1_indicator_gdf = calculate_hazards_for_admin1(
             admin1_shape, country, "tropical_cyclone", climada_properties=climada_properties
         )
+    elif indicator == "storm-europe":
+        admin1_indicator_gdf = calculate_hazards_for_admin1(admin1_shape, country, "storm_europe")
     elif indicator == "relative-cropyield":
         admin1_indicator_gdf = calculate_relative_cropyield_for_admin1(admin1_shape, country)
     else:
@@ -229,8 +231,8 @@ def calculate_hazards_for_admin1(
     indicator: str,
     climada_properties: dict = None,
 ) -> pd.DataFrame:
-    """This function calculates detail data for the earthquake, flood, wildfire and tropical_cyclone
-    datasets
+    """This function calculates detail data for the earthquake, flood, wildfire, tropical_cyclone
+    and storm_europe datasets
 
     Arguments:
         admin1_shape {list[geopandas.geoseries.GeoSeries]} -- _description_
@@ -257,6 +259,8 @@ def calculate_hazards_for_admin1(
         indicator_key = "river-flood"
     elif indicator == "tropical_cyclone":
         indicator_key = "tropical-cyclone"
+    elif indicator == "storm_europe":
+        indicator_key = "storm-europe"
 
     admin1_indicator_data = CLIENT.get_hazard(
         indicator,
@@ -305,6 +309,12 @@ def calculate_indicator_timeseries_admin(
         indicator_key = f"{indicator}.date"
     elif indicator == "tropical-cyclone":
         climada_indicator = "tropical_cyclone"
+        indicator_key = f"{indicator}.date"
+    elif indicator == "tropical-cyclone":
+        climada_indicator = "tropical_cyclone"
+        indicator_key = f"{indicator}.date"
+    elif indicator == "storm-europe":
+        climada_indicator = "storm_europe"
         indicator_key = f"{indicator}.date"
 
     if climada_properties is None:
@@ -369,7 +379,7 @@ def calculate_indicator_timeseries_admin(
                 model_name = indicator_data.event_name[i][5:]
                 indicator_key = f"river-flood.{model_name}"
             if value > 0.0:
-                event_date = datetime.datetime.fromordinal(indicator_data.date[i]).isoformat()
+                event_date = datetime.datetime.fromordinal(int(indicator_data.date[i])).isoformat()
                 LOGGER.info(f"Event on {event_date[0:10]}  MaxInt:{value:0.2f}")
                 events.append(
                     {
@@ -459,7 +469,7 @@ def calculate_relative_cropyield_for_admin1(
 
 def aggregate_value(indicator: str, filtered_df: pd.DataFrame) -> tuple[float, str]:
     aggregation = "sum"
-    if indicator.startswith("earthquake") or indicator in ["tropical-cyclone"]:
+    if indicator.startswith("earthquake") or indicator in ["tropical-cyclone", "storm-europe"]:
         value = round(filtered_df["value"].max(), 2)
         aggregation = "max"
     elif indicator in ["wildfire", "river-flood", "flood", "flood.max_intensity"]:

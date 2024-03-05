@@ -289,8 +289,8 @@ def write_detail_data(country_dataframes: list[pd.DataFrame], output_file_path: 
 
 
 if __name__ == "__main__":
-    COUNTRY = "Haiti"
-    INDICATOR = "river-flood"
+    COUNTRY = "Ukraine"
+    INDICATOR = "storm-europe"
     LOGGER.info("Generating Climada csv files")
     LOGGER.info("============================")
     LOGGER.info(f"Timestamp: {datetime.datetime.now().isoformat()}")
