@@ -215,6 +215,26 @@ def test_calculate_indicator_timeseries_admin():
     }
 
 
+def test_calculate_indicator_timeseries_admin_storm_europe():
+    country = "Ukraine"
+    storm_europe = calculate_indicator_timeseries_admin(
+        country, indicator="earthquake", test_run=False
+    )
+
+    assert len(storm_europe) == 1
+    assert storm_europe[0] == {
+        "country_name": "Ukraine",
+        "admin1_name": "Odeska",
+        "admin2_name": "",
+        "latitude": 46.7483,
+        "longitude": -73.7667,
+        "aggregation": "max",
+        "indicator": "earthquake.date.max_intensity",
+        "event_date": "1913-06-14T00:00:00",
+        "value": 4.65,
+    }
+
+
 def test_filter_dataframe_with_geometry():
     t0 = time.time()
     admin1_names, admin2_names, admin_shapes = get_admin2_shapes_from_hdx(COUNTRY_ISO3A)
@@ -436,3 +456,38 @@ def test_calculate_indicator_for_admin1_tropical_cyclone():
     }
 
     assert len(admin1_indicator_gdf) == 1300
+
+
+def test_calculate_indicator_for_admin1_storm_europe():
+    # Storm-europe is unusual, of the HRP countries it is only available for Ukraine
+    country = "Ukraine"
+    indicator = "storm-europe"
+    ukr_admin1_names, ukr_admin1_shapes = get_admin1_shapes_from_hdx("UKR")
+
+    admin1_indicator_gdf_list = []
+    for i, ukr_admin1_shape in enumerate(ukr_admin1_shapes):
+        admin1_indicator_gdf_list.append(
+            calculate_indicator_for_admin1(
+                ukr_admin1_shape, ukr_admin1_names[i], country, indicator
+            )
+        )
+
+    admin1_indicator_gdf = pd.concat(admin1_indicator_gdf_list)
+
+    export_directory = os.path.join(os.path.dirname(__file__), "temp")
+    output_paths = make_detail_and_summary_file_paths(
+        country, indicator, export_directory=export_directory
+    )
+    admin1_indicator_gdf.to_csv(output_paths["output_detail_path"], index=False)
+
+    assert admin1_indicator_gdf.iloc[0].to_dict() == {
+        "country_name": "Ukraine",
+        "region_name": "Autonomous Republic of Crimea",
+        "latitude": 46.17969,
+        "longitude": 33.66016,
+        "aggregation": "none",
+        "indicator": "storm-europe",
+        "value": 31.0,
+    }
+
+    assert len(admin1_indicator_gdf) == 43782

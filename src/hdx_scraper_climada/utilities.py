@@ -17,8 +17,17 @@ INDICATOR_LIST = [
     "wildfire",
     "river-flood",
     "tropical-cyclone",
+    "storm-europe",
 ]
-HAS_TIMESERIES = ["earthquake", "flood", "wildfire", "river-flood", "tropical-cyclone"]
+HAS_TIMESERIES = [
+    "earthquake",
+    "flood",
+    "wildfire",
+    "river-flood",
+    "tropical-cyclone",
+    "storm-europe",
+]
+
 NO_DATA = {}
 NO_DATA["earthquake"] = set(["Burkina Faso", "Chad", "Niger", "Nigeria"])
 NO_DATA["flood"] = set(

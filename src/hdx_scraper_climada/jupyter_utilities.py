@@ -23,7 +23,8 @@ INDICATOR_UNITS = {
     "litpop": "USD",
     "wildfire": "Extent (4km grid points)",
     "river-flood": "Extent (4km grid points)",
-    "tropical-cyclone": "Wind speed (m/s)",
+    "tropical-cyclone": "Maximum wind speed (m/s)",
+    "storm-europe": "Maximum wind speed (m/s)",
 }
 
 
@@ -129,6 +130,8 @@ def plot_detail_file_map(country: str, indicator: str):
         country_data["scaled_value"] = country_data["value"]
     elif indicator == "tropical-cyclone":
         country_data["scaled_value"] = country_data["value"] - min(country_data["value"])
+    elif indicator == "storm-europe":
+        country_data["scaled_value"] = country_data["value"] - min(country_data["value"])
     zoom = calc_zoom(country_data)
     fig = px.scatter_mapbox(
         country_data,
@@ -182,6 +185,9 @@ def plot_timeseries_histogram(country: str, indicator: str):
     timeseries_data = pandas.read_csv(output_paths["output_timeseries_path"])
 
     timeseries_data.drop(timeseries_data.head(1).index, inplace=True)
+    timeseries_data["latitude"] = timeseries_data["latitude"].astype(float)
+    timeseries_data["longitude"] = timeseries_data["longitude"].astype(float)
+    timeseries_data["value"] = timeseries_data["value"].astype(float)
     timeseries_data = timeseries_data[timeseries_data["country_name"] == country]
     if len(timeseries_data) == 0:
         print(f"No {indicator} timeseries data for {country}", flush=True)
