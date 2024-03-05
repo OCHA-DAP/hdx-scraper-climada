@@ -29,7 +29,7 @@
                         "#f2645a",
                         "#9C27B0"
                     ],
-                    "title": "Wind speed (m/s)"
+                    "title": "Average wind speed (m/s)"
                 },
                 "dataProperties": {},
                 "displayCategory": "Key Figures",
@@ -53,7 +53,7 @@
                     "explainedFiltersMap": {},
                     "pieChart": false,
                     "title": "Unique Values in region_name by country_name",
-                    "dataTitle": "Maximum wind speed (m/s)"
+                    "dataTitle": "Average wind speed (m/s)"
                 },
                 "uiProperties": {
                     "swapAxis": true,
@@ -67,7 +67,7 @@
                         "#f2645a",
                         "#9C27B0"
                     ],
-                    "title": "Wind speed (m/s) by admin1 name"
+                    "title": "Average wind speed (m/s) by admin1 name"
                 },
                 "dataProperties": {},
                 "displayCategory": "Charts",
@@ -91,7 +91,7 @@
                     "explainedFiltersMap": {},
                     "pieChart": false,
                     "title": "Row Count by region_name",
-                    "dataTitle": "Maximum wind speed (m/s)"
+                    "dataTitle": "Average wind speed (m/s)"
                 },
                 "uiProperties": {
                     "swapAxis": true,
@@ -106,7 +106,7 @@
                         "#9C27B0"
                     ],
                     "limit": 100,
-                    "title": "Maximum wind speed by country"
+                    "title": "Average wind speed by country"
                 },
                 "dataProperties": {},
                 "displayCategory": "Charts",

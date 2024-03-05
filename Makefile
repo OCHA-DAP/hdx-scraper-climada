@@ -8,5 +8,7 @@ lint:
 	pylint --rcfile=config/.pylintrc src/ || true
 unit_tests:
 	pytest --cov=hdx_scraper_climada --cov-config=config/.coveragerc tests/
+timed_tests:
+	pytest --durations=0 --durations-min=1 --cov=hdx_scraper_climada --cov-config=config/.coveragerc tests/
 run:
 	python src/hdx_scraper_climada/run.py
