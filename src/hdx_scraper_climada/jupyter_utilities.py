@@ -2,8 +2,11 @@
 # encoding: utf-8
 
 import csv
+import datetime
 import math
 import geopandas
+import kaleido
+import os
 import pandas
 import plotly.express as px
 import plotly.graph_objects as go
@@ -106,6 +109,20 @@ def plot_summary_barcharts(country: str, indicator: str):
         )
         fig.show()
 
+        image_file_path = make_image_file_path(indicator, "all-country", "barcharts")
+        fig.write_image(image_file_path)
+
+
+def make_image_file_path(indicator: str, country: str, identifier: str) -> str:
+    isodate = datetime.datetime.now().isoformat()[0:10]
+    image_file_path = os.path.join(
+        os.path.dirname(__file__),
+        "analysis",
+        f"{isodate}-{indicator}-{country}-{identifier}.png",
+    )
+
+    return image_file_path
+
 
 def plot_detail_file_map(country: str, indicator: str):
     country_data = get_detail_data_from_csv(country, indicator)
@@ -151,6 +168,8 @@ def plot_detail_file_map(country: str, indicator: str):
         height=800,
     )
     fig.show()
+    image_file_path = make_image_file_path(indicator, country, "gridded")
+    fig.write_image(image_file_path)
 
     return None
 
@@ -174,6 +193,8 @@ def plot_histogram(country: str, indicator: str):
         xaxis_title_text=f"{INDICATOR_UNITS[indicator]}", yaxis_title_text="Count", width=1200
     )
     fig.show()
+    image_file_path = make_image_file_path(indicator, country, "histogram")
+    fig.write_image(image_file_path)
     return None
 
 
@@ -216,6 +237,9 @@ def plot_timeseries_histogram(country: str, indicator: str):
         width=1200,
     )
     fig.show()
+
+    image_file_path = make_image_file_path(indicator, country, "event-histogram")
+    fig.write_image(image_file_path)
     return None
 
 
@@ -323,6 +347,10 @@ def plot_timeseries_chloropleth(country: str, indicator: str, event_idx: None | 
     # fig.update_geos(fitbounds="locations", visible=False)
 
     fig.show()
+
+    image_file_path = make_image_file_path(indicator, country, "event-chloropleth")
+    fig.write_image(image_file_path)
+
     return None
 
 

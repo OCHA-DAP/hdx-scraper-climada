@@ -72,6 +72,24 @@ We use `nbstripout` to remove output cells from Jupyter Notebooks prior, this ne
 nbstripout --install
 ```
 
+The `write_image` function in `plotly` which is used to export figures to png format in Jupyter Notebook functions requires the `kaleido` library which is rather difficult to install on Windows 10. Simply installing with `pip` leads to a hang when an attempt is
+
+The solution is to downgrade to kaleido 0.1.0 and patch the library (file: Kaleido\scope\base.py - Line:70)! In the original `kaleido.cmd` reads `kaleido`.
+
+```python
+  @classmethod
+  def executable_path(cls):
+      vendored_executable_path = os.path.join(
+          os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+          'executable',
+          'kaleido.cmd'
+  
+      )
+```
+
+Described here:
+https://github.com/plotly/Kaleido/issues/110#issuecomment-1021672450 
+
 ## Data format
 
 Each dataset will have a a "country" CSV format file for each country where data are available and a CSV format summary file.  Both types of file include HXL tags on the second row of the dataset. Both files have the same columns:

@@ -27,6 +27,8 @@ LOGGER = logging.getLogger(__name__)
 
 def check_for_existing_csv_files(indicator: str) -> set:
     all_countries = {x["country_name"] for x in read_countries()}
+    if indicator == "storm-europe":
+        all_countries = set(["Ukraine"])
     output_paths = make_detail_and_summary_file_paths("Haiti", indicator)
 
     # Check which countries are in the summary
@@ -81,9 +83,9 @@ def produce_csv_files(countries_to_process: list[dict], indicator: str):
 
 
 if __name__ == "__main__":
-    INDICATOR = "wildfire"
+    INDICATOR = "storm-europe"
     DRY_RUN = False
-    HDX_SITE = "stage"
+    HDX_SITE = "prod"
     T0 = time.time()
     print_banner_to_log(LOGGER, "Updating Climada Datasets")
 
@@ -101,4 +103,4 @@ if __name__ == "__main__":
     LOGGER.info(f"Timestamp: {datetime.datetime.now().isoformat()}")
 
     DATASET_NAME = f"climada-{INDICATOR}-dataset"
-    create_datasets_in_hdx(DATASET_NAME, dry_run=DRY_RUN, hdx_site=HDX_SITE)
+    create_datasets_in_hdx(DATASET_NAME, dry_run=DRY_RUN, hdx_site=HDX_SITE, force_create=True)

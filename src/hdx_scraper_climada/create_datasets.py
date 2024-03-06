@@ -22,7 +22,9 @@ LOGGER = logging.getLogger(__name__)
 INDICATOR_DIRECTORY = os.path.join(os.path.dirname(__file__), "output")
 
 
-def create_datasets_in_hdx(dataset_name: str, dry_run: bool = True, hdx_site: str = "stage"):
+def create_datasets_in_hdx(
+    dataset_name: str, dry_run: bool = True, hdx_site: str = "stage", force_create: bool = True
+):
     LOGGER.info("*********************************************")
     LOGGER.info("* Climada - Create dataset   *")
     LOGGER.info(f"* Invoked at: {datetime.datetime.now().isoformat(): <23}    *")
@@ -40,7 +42,9 @@ def create_datasets_in_hdx(dataset_name: str, dry_run: bool = True, hdx_site: st
     dataset_attributes = read_attributes(dataset_name)
     countries_data = read_countries()
 
-    dataset, _ = create_or_fetch_base_dataset(dataset_name, dataset_attributes)
+    dataset, _ = create_or_fetch_base_dataset(
+        dataset_name, dataset_attributes, force_create=force_create
+    )
 
     countries_group = [{"name": x["iso3alpha_country_code"].lower()} for x in countries_data]
 
