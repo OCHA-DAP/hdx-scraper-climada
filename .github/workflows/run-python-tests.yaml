@@ -15,9 +15,9 @@ jobs:
       matrix:
         python-version: ["3.11"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -33,11 +33,12 @@ jobs:
           pip install GDAL==`gdal-config --version`
           python -m pip install --upgrade pip
           make install
-          python src/hdx_scraper_climada/download_admin_geometries_from_hdx.py
-          python src/hdx_scraper_climada/download_gwp_population.py
       - name: Analysing the code with pylint
         run: |
           make lint
+      - name: Download HDX and NASA assets
+          run: |
+          make download_assets
       - name: Running unit tests
         env:
             HDX_KEY_STAGE: ${{ secrets.HDX_KEY_STAGE }}
