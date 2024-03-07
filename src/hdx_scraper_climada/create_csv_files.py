@@ -66,7 +66,6 @@ TIMESERIES_HXL_TAGS = OrderedDict(
 def export_indicator_data_to_csv(
     country: str = "Haiti",
     indicator: str = "litpop",
-    climate_scenario: str = None,
     use_hdx_admin1: bool = True,
     export_directory: str = None,
 ) -> list[str]:

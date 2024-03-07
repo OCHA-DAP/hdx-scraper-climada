@@ -506,7 +506,6 @@ def calculate_centroid(admin1_shape: list[geopandas.geoseries.GeoSeries]) -> Any
 def filter_dataframe_with_intensity(
     admin1_indicator_gdf: pd.DataFrame, indicator: str
 ) -> pd.DataFrame:
-
     # Filter out zero entries to reduce the file size for flood
     if indicator in ["flood"]:
         admin1_indicator_gdf = admin1_indicator_gdf[admin1_indicator_gdf["value"] != 0.0]

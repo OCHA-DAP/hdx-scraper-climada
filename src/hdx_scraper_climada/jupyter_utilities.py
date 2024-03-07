@@ -4,9 +4,9 @@
 import csv
 import datetime
 import math
-import geopandas
-import kaleido
 import os
+
+import geopandas
 import pandas
 import plotly.express as px
 import plotly.graph_objects as go
