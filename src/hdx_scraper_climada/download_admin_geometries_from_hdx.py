@@ -6,8 +6,6 @@ import logging
 
 import geopandas
 
-import climada.util.coordinates as u_coord
-
 from hdx.data.dataset import Dataset
 from hdx.utilities.easy_logging import setup_logging
 from hdx_scraper_climada.create_datasets import configure_hdx_connection
