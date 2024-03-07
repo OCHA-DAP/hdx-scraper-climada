@@ -14,9 +14,10 @@ import datetime
 import logging
 import os
 import zipfile
-import requests
 
 from pathlib import Path
+
+import requests
 
 from hdx.utilities.easy_logging import setup_logging
 
@@ -90,7 +91,7 @@ def download_gpw_population(target_directory: str = None):
         response.raise_for_status()
         # save the file
         with open(output_path, "wb") as fd:
-            for i, chunk in enumerate(response.iter_content(chunk_size=1024 * 1024)):
+            for chunk in response.iter_content(chunk_size=1024 * 1024):
                 fd.write(chunk)
                 print(".", end="", flush=True)
         print("", flush=True)
