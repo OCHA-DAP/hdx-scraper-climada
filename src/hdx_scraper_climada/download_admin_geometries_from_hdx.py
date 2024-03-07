@@ -94,21 +94,6 @@ def get_admin2_shapes_from_hdx(
     return admin1_names, admin2_names, admin2_shapes
 
 
-def get_admin1_shapes_from_natural_earth(country_iso3a):
-    try:
-        admin1_info, admin1_shapes = u_coord.get_admin1_info(country_iso3a)
-        admin1_info = admin1_info[country_iso3a]
-        admin1_shapes = admin1_shapes[country_iso3a]
-
-        admin1_names = [record["name"] for record in admin1_info]
-    except LookupError as error:
-        LOGGER.info(error)
-        admin1_names = []
-        admin1_shapes = []
-
-    return admin1_names, admin1_shapes
-
-
 def get_best_admin_shapes(
     country_iso3alpha: str,
 ) -> tuple[list, list, list[geopandas.GeoDataFrame], str]:
@@ -120,6 +105,14 @@ def get_best_admin_shapes(
         admin2_names = len(admin1_names) * [""]
 
     return admin1_names, admin2_names, admin_shapes, admin_level
+
+def download_gpw_population():
+#     The `.from_shape_and_countries` method for `litpop` (at least) requires the following file to be downloaded:
+# http://sedac.ciesin.columbia.edu/downloads/data/gpw-v4/gpw-v4-population-count-rev11/gpw-v4-population-count-rev11_2020_30_sec_tif.zip
+# to
+# ~\climada\data\gpw-v4-population-count-rev11_2020_30_sec_tif\gpw_v4_population_count_rev11_2020_30_sec.tif
+# This requires an account to be created for the download. An example script is provided to automate this download:
+# https://urs.earthdata.nasa.gov/documentation/for_users/data_access/python
 
 
 if __name__ == "__main__":

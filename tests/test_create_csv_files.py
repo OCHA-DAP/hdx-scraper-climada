@@ -42,7 +42,7 @@ EXPECTED_HXL_TAGS = [
 
 @pytest.fixture(scope="module")
 def haiti_detail_dataframes():
-    country_geodataframes_list = create_detail_dataframes(COUNTRY, INDICATOR, use_hdx_admin1=True)
+    country_geodataframes_list = create_detail_dataframes(COUNTRY, INDICATOR)
     return country_geodataframes_list
 
 

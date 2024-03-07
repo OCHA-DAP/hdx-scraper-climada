@@ -33,7 +33,7 @@ jobs:
           pip install GDAL==`gdal-config --version`
           python -m pip install --upgrade pip
           make install
-          python src/hdx_scraper_climada/download_admin1_geometry.py
+          python src/hdx_scraper_climada/download_admin_geometries_from_hdx.py
       - name: Analysing the code with pylint
         run: |
           make lint

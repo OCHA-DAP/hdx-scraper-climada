@@ -21,9 +21,8 @@ from hdx_scraper_climada.utilities import (
     HAS_TIMESERIES,
     get_set_of_countries_in_summary_file,
 )
-from hdx_scraper_climada.download_admin1_geometry import (
+from hdx_scraper_climada.download_adim_geometries_from_hdx import (
     get_admin1_shapes_from_hdx,
-    get_admin1_shapes_from_natural_earth,
 )
 
 from hdx_scraper_climada.climada_interface import (
@@ -66,7 +65,6 @@ TIMESERIES_HXL_TAGS = OrderedDict(
 def export_indicator_data_to_csv(
     country: str = "Haiti",
     indicator: str = "litpop",
-    use_hdx_admin1: bool = True,
     export_directory: str = None,
 ) -> list[str]:
     statuses = []
@@ -84,9 +82,7 @@ def export_indicator_data_to_csv(
         # Make detail files
         LOGGER.info(f"Making detail file for {country}-{indicator}")
         try:
-            country_dataframes = create_detail_dataframes(
-                country, indicator, use_hdx_admin1=use_hdx_admin1
-            )
+            country_dataframes = create_detail_dataframes(country, indicator)
             status = write_detail_data(country_dataframes, output_paths["output_detail_path"])
         except (Client.NoResult, AttributeError):
             country_dataframes = None
@@ -184,15 +180,10 @@ def make_detail_and_summary_file_paths(
     return file_path_dict
 
 
-def create_detail_dataframes(
-    country: str, indicator: str = "litpop", use_hdx_admin1: bool = True
-) -> list:
+def create_detail_dataframes(country: str, indicator: str = "litpop") -> list:
     country_iso3a = Country.get_iso3_country_code(country)
     # Get admin1 dataset
-    if use_hdx_admin1:
-        admin1_names, admin1_shapes = get_admin1_shapes_from_hdx(country_iso3a)
-    else:
-        admin1_names, admin1_shapes = get_admin1_shapes_from_natural_earth(country_iso3a)
+    admin1_names, admin1_shapes = get_admin1_shapes_from_hdx(country_iso3a)
 
     if len(admin1_names) == 0 and len(admin1_shapes) == 0:
         LOGGER.info(f"No Admin1 areas found for {country}")
