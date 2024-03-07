@@ -15,7 +15,7 @@ import pytest
 
 from climada.entity import LitPop
 from climada.util.api_client import Client
-from hdx_scraper_climada.download_admin1_geometry import (
+from hdx_scraper_climada.download_admin_geometries_from_hdx import (
     get_admin1_shapes_from_hdx,
     get_admin2_shapes_from_hdx,
 )
@@ -70,7 +70,6 @@ def test_syria_litpop_population():
     assert syria_litpop_gdf["value"].isna().sum() == 0
 
 
-@pytest.mark.local_only
 def test_calculate_indicator_for_admin1_litpop():
     indicator = "litpop"
 

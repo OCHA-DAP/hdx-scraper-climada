@@ -34,6 +34,7 @@ jobs:
           python -m pip install --upgrade pip
           make install
           python src/hdx_scraper_climada/download_admin_geometries_from_hdx.py
+          python src/hdx_scraper_climada/download_gwp_population.py
       - name: Analysing the code with pylint
         run: |
           make lint
@@ -44,5 +45,7 @@ jobs:
             HDX_SITE: ${{ vars.HDX_SITE }}
             USER_AGENT: ${{ vars.USER_AGENT }}
             PREPREFIX: ${{ vars.PREPREFIX }}
+            NASA_EARTHDATA_USERNAME: ${{ vars.NASA_EARTHDATA_USERNAME }}
+            NASA_EARTHDATA_PASSWORD: ${{ secrets.NASA_EARTHDATA_PASSWORD }}
         run: |
           make github_tests

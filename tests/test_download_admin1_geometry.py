@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 import os
-from hdx_scraper_climada.download_admin1_geometry import (
+from hdx_scraper_climada.download_admin_geometries_from_hdx import (
     download_hdx_admin1_boundaries,
     get_admin1_shapes_from_hdx,
     get_admin2_shapes_from_hdx,

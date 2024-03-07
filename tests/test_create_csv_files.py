@@ -124,10 +124,9 @@ def test_make_detail_and_summary_file_paths():
         assert os.path.dirname(file_path) == os.path.join(EXPORT_DIRECTORY, f"{INDICATOR}")
 
 
-@pytest.mark.local_only
 def test_export_indicator_data_to_csv_litpop():
     country = "Haiti"
-    indicator = "crop-production"
+    indicator = "litpop"
     indicator_data_to_csv_helper(country, indicator)
 
 
