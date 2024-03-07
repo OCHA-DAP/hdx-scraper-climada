@@ -16,7 +16,7 @@ from hdx.location.country import Country
 
 from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_paths
 from hdx_scraper_climada.utilities import HAS_TIMESERIES, read_countries
-from hdx_scraper_climada.download_admin1_geometry import (
+from hdx_scraper_climada.download_admin_geometries_from_hdx import (
     get_best_admin_shapes,
 )
 

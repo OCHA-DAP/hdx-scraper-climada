@@ -21,7 +21,7 @@ from hdx_scraper_climada.utilities import (
     HAS_TIMESERIES,
     get_set_of_countries_in_summary_file,
 )
-from hdx_scraper_climada.download_adim_geometries_from_hdx import (
+from hdx_scraper_climada.download_admin_geometries_from_hdx import (
     get_admin1_shapes_from_hdx,
 )
 

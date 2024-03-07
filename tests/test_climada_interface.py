@@ -7,7 +7,6 @@ Ian Hopkinson 2024-01-16
 """
 
 import os
-import numpy
 import time
 import pandas as pd
 import pytest
@@ -27,7 +26,6 @@ from hdx_scraper_climada.climada_interface import (
 )
 from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_paths
 
-from hdx_scraper_climada.utilities import write_dictionary
 
 COUNTRY_ISO3A = "HTI"
 COUNTRY = "Haiti"

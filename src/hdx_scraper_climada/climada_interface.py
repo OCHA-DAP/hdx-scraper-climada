@@ -22,7 +22,7 @@ from climada.util.api_client import Client
 import climada.util.coordinates as u_coord
 from climada.entity import LitPop
 
-from hdx_scraper_climada.download_admin1_geometry import get_best_admin_shapes
+from hdx_scraper_climada.download_admin_geometries_from_hdx import get_best_admin_shapes
 
 
 CLIENT = Client()
