@@ -10,7 +10,7 @@ import climada.util.coordinates as u_coord
 
 from hdx.data.dataset import Dataset
 from hdx.utilities.easy_logging import setup_logging
-from hdx.api.configuration import Configuration, ConfigurationError
+from hdx_scraper_climada.create_datasets import configure_hdx_connection
 
 ADMIN1_GEOMETRY_FOLDER = os.path.join(os.path.dirname(__file__), "admin1_geometry")
 UNMAP_DATASET_NAME = "unmap-international-boundaries-geojson"
@@ -20,21 +20,13 @@ LOGGER = logging.getLogger(__name__)
 
 
 def download_hdx_admin1_boundaries():
-    try:
-        Configuration.create(
-            user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
-            user_agent_lookup="hdx-scraper-climada",
-        )
-    except ConfigurationError:
-        LOGGER.info(
-            "Configuration already exists when trying to create in `download_admin1_geometry.py`"
-        )
+    configure_hdx_connection(hdx_site="prod")
 
     boundary_dataset = Dataset.read_from_hdx(UNMAP_DATASET_NAME)
     boundary_resources = boundary_dataset.get_resources()
     subn_resources = []
     for resource in boundary_resources:
-        if "polbnda_adm1" in resource["name"]:
+        if "polbnda_adm1" in resource["name"] or "polbnda_adm2" in resource["name"]:
             expected_file_path = os.path.join(ADMIN1_GEOMETRY_FOLDER, f"{resource['name']}")
             if os.path.exists(expected_file_path):
                 LOGGER.info(f"Expected file {expected_file_path} is already present, continuing")

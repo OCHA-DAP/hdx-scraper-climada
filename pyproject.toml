@@ -43,3 +43,8 @@ extend-exclude = '''
 # in the root of the project.
 ^/foo.py  # exclude a file named foo.py in the root of the project (in addition to the defaults)
 '''
+
+[tool.pytest.ini_options]
+markers = [
+    "local_only: tests which require manual downloads or are slow",
+]

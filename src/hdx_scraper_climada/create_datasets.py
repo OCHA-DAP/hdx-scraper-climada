@@ -31,19 +31,12 @@ def create_datasets_in_hdx(
     LOGGER.info("*********************************************")
     LOGGER.info(f"Dataset name: {dataset_name}")
     t0 = time.time()
-    try:
-        Configuration.create(
-            user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
-            user_agent_lookup="hdx-scraper-climada",
-            hdx_site=hdx_site,
-        )
-    except ConfigurationError:
-        LOGGER.info("Configuration already exists when trying to create in `create_datasets.py`")
+    configure_hdx_connection(hdx_site=hdx_site)
     dataset_attributes = read_attributes(dataset_name)
     countries_data = read_countries()
 
     dataset, _ = create_or_fetch_base_dataset(
-        dataset_name, dataset_attributes, force_create=force_create
+        dataset_name, dataset_attributes, hdx_site=hdx_site, force_create=force_create
     )
 
     countries_group = [{"name": x["iso3alpha_country_code"].lower()} for x in countries_data]
@@ -81,6 +74,17 @@ def create_datasets_in_hdx(
     LOGGER.info(f"Elapsed time: {time.time() - t0: 0.2f} seconds")
 
     return dataset
+
+
+def configure_hdx_connection(hdx_site: str = "stage"):
+    try:
+        Configuration.create(
+            user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
+            user_agent_lookup="hdx-scraper-climada",
+            hdx_site=hdx_site,
+        )
+    except ConfigurationError:
+        LOGGER.info("Configuration already exists when trying to create in `create_datasets.py`")
 
 
 def compile_resource_list(dataset_attributes: dict, countries_data: list[dict]) -> list[dict]:
@@ -161,8 +165,9 @@ def compile_showcase_list(dataset_attributes: dict):
 
 
 def create_or_fetch_base_dataset(
-    dataset_name: str, dataset_attributes: dict, force_create: bool = False
+    dataset_name: str, dataset_attributes: dict, hdx_site: str = "stage", force_create: bool = False
 ) -> tuple[Dataset, bool]:
+    configure_hdx_connection(hdx_site=hdx_site)
     dataset = Dataset.read_from_hdx(dataset_name)
     is_new = True
     if dataset is not None and not force_create:

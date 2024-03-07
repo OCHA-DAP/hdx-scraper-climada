@@ -44,4 +44,4 @@ jobs:
             USER_AGENT: ${{ vars.USER_AGENT }}
             PREPREFIX: ${{ vars.PREPREFIX }}
         run: |
-          make unit_tests
+          make github_tests

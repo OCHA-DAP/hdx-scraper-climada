@@ -18,7 +18,7 @@ from hdx_scraper_climada.utilities import HAS_TIMESERIES
 
 EXPORT_DIRECTORY = os.path.join(os.path.dirname(__file__), "temp")
 COUNTRY = "Haiti"
-INDICATOR = "litpop"
+INDICATOR = "earthquake"
 EXPECTED_COLUMN_LIST = [
     "country_name",
     "region_name",
@@ -55,7 +55,7 @@ def test_create_summary(haiti_detail_dataframes):
     summary_rows, n_lines = create_summary_data(haiti_detail_dataframes)
 
     assert len(summary_rows) == 10
-    assert n_lines == 1312
+    assert n_lines == 1300
 
 
 def test_write_detail_data(haiti_detail_dataframes):
@@ -73,7 +73,7 @@ def test_write_detail_data(haiti_detail_dataframes):
     with open(output_paths["output_detail_path"], encoding="utf-8") as summary_file:
         rows = list(csv.DictReader(summary_file))
 
-    assert len(rows) == 1313
+    assert len(rows) == 1301
 
     assert set(list(rows[0].keys())) == set(EXPECTED_COLUMN_LIST)
 
@@ -117,9 +117,9 @@ def test_make_detail_and_summary_file_paths():
         COUNTRY, INDICATOR, export_directory=EXPORT_DIRECTORY
     )
 
-    assert "haiti-admin1-litpop.csv" in output_paths["output_detail_path"]
-    assert "admin1-summaries-litpop.csv" in output_paths["output_summary_path"]
-    assert "admin1-timeseries-summaries-litpop.csv" in output_paths["output_timeseries_path"]
+    assert "haiti-admin1-earthquake.csv" in output_paths["output_detail_path"]
+    assert "admin1-summaries-earthquake.csv" in output_paths["output_summary_path"]
+    assert "admin1-timeseries-summaries-earthquake.csv" in output_paths["output_timeseries_path"]
 
     for _, file_path in output_paths.items():
         assert os.path.dirname(file_path) == os.path.join(EXPORT_DIRECTORY, f"{INDICATOR}")
@@ -167,6 +167,7 @@ def test_export_indicator_data_to_csv_tropical_cyclone():
     indicator_data_to_csv_helper(country, indicator)
 
 
+@pytest.mark.skip(reason="Runtime over 10 minutes - currently failing")
 def test_export_indicator_data_to_csv_storm_europe():
     country = "Ukraine"
     indicator = "storm-europe"

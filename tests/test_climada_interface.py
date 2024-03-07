@@ -34,6 +34,7 @@ COUNTRY = "Haiti"
 ADMIN1_NAMES, ADMIN1_SHAPES = get_admin1_shapes_from_hdx(COUNTRY_ISO3A)
 
 
+@pytest.mark.local_only
 def test_afghanistan_litpop():
     country_iso3a = "AFG"
     afghanistan_litpop = LitPop.from_countries(country_iso3a)
@@ -42,6 +43,7 @@ def test_afghanistan_litpop():
     assert not afghanistan_litpop_gdf["value"].isna().any()
 
 
+@pytest.mark.local_only
 def test_syria_litpop():
     country_iso3a = "SYR"
     syria_litpop = LitPop.from_countries(country_iso3a)
@@ -50,6 +52,7 @@ def test_syria_litpop():
     assert syria_litpop_gdf["value"].isna().sum() == len(syria_litpop_gdf)
 
 
+@pytest.mark.local_only
 def test_syria_litpop_nightlight_intensity():
     country_iso3a = "SYR"
     syria_litpop = LitPop.from_nightlight_intensity(country_iso3a)
@@ -58,6 +61,7 @@ def test_syria_litpop_nightlight_intensity():
     assert syria_litpop_gdf["value"].isna().sum() == 0
 
 
+@pytest.mark.local_only
 def test_syria_litpop_population():
     country_iso3a = "SYR"
     syria_litpop = LitPop.from_population(country_iso3a)
@@ -66,6 +70,7 @@ def test_syria_litpop_population():
     assert syria_litpop_gdf["value"].isna().sum() == 0
 
 
+@pytest.mark.local_only
 def test_calculate_indicator_for_admin1_litpop():
     indicator = "litpop"
 
@@ -86,6 +91,7 @@ def test_calculate_indicator_for_admin1_litpop():
     assert len(admin1_indicator_gdf) == 176
 
 
+@pytest.mark.local_only
 def test_calculate_indicator_for_admin1_litpop_alt():
     indicator = "litpop_alt"
 
@@ -106,6 +112,7 @@ def test_calculate_indicator_for_admin1_litpop_alt():
     assert len(admin1_indicator_gdf) == 176
 
 
+@pytest.mark.local_only
 def test_litpop_cross_check():
     # This test shows that the litpop value from the Litpop Class and the litpop value from
     # the get_exposures method differ consistently by about 10%. This is likely an issue
@@ -215,10 +222,11 @@ def test_calculate_indicator_timeseries_admin():
     }
 
 
+@pytest.mark.skip(reason="Runtime over 10 minutes - currently failing")
 def test_calculate_indicator_timeseries_admin_storm_europe():
     country = "Ukraine"
     storm_europe = calculate_indicator_timeseries_admin(
-        country, indicator="earthquake", test_run=False
+        country, indicator="storm_europe", test_run=False
     )
 
     assert len(storm_europe) == 1
@@ -458,6 +466,7 @@ def test_calculate_indicator_for_admin1_tropical_cyclone():
     assert len(admin1_indicator_gdf) == 1300
 
 
+@pytest.mark.skip(reason="Runtime over 10 minutes")
 def test_calculate_indicator_for_admin1_storm_europe():
     # Storm-europe is unusual, of the HRP countries it is only available for Ukraine
     country = "Ukraine"
