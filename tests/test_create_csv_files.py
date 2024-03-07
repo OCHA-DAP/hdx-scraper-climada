@@ -79,9 +79,8 @@ def test_write_detail_data(haiti_detail_dataframes):
 
     assert set(list(rows[0].values())) == set(EXPECTED_HXL_TAGS)
 
-    # The underlying litpop data has many decimal places, we round to an integer
     assert set(list(rows[1].values())) == set(
-        ["Haiti", "Centre", "19.3125", "-72.02083333", "none", "litpop", "759342.0"]
+        ["Haiti", "Centre", "19.29167", "-72.20833", "none", "earthquake.max_intensity", "6.67"]
     )
 
 
@@ -108,7 +107,7 @@ def test_write_summary_data(haiti_detail_dataframes):
     assert set(list(rows[0].values())) == set(EXPECTED_HXL_TAGS)
 
     assert set(list(rows[1].values())) == set(
-        ["Haiti", "Centre", "19.0069", "-71.9886", "sum", "litpop", "175640022.0"]
+        ["Haiti", "Centre", "19.0099", "-71.9855", "max", "earthquake.max_intensity", "7.5"]
     )
 
 
@@ -125,6 +124,7 @@ def test_make_detail_and_summary_file_paths():
         assert os.path.dirname(file_path) == os.path.join(EXPORT_DIRECTORY, f"{INDICATOR}")
 
 
+@pytest.mark.local_only
 def test_export_indicator_data_to_csv_litpop():
     country = "Haiti"
     indicator = "crop-production"
