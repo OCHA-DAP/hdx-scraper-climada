@@ -87,7 +87,9 @@ def configure_hdx_connection(hdx_site: str = "stage"):
         LOGGER.info("Configuration already exists when trying to create in `create_datasets.py`")
 
 
-def compile_resource_list(dataset_attributes: dict, countries_data: list[dict]) -> list[dict]:
+def compile_resource_list(
+    dataset_attributes: dict, countries_data: list[dict], test_run: bool = False
+) -> list[dict]:
     resource_names = dataset_attributes["resource"]
     resource_list = []
     for resource_name in resource_names:
@@ -103,7 +105,7 @@ def compile_resource_list(dataset_attributes: dict, countries_data: list[dict]) 
                     dataset_attributes["output_subdirectory"],
                     attributes["filename_template"].format(country=country_str),
                 )
-                if os.path.exists(resource_file_path):
+                if os.path.exists(resource_file_path) or test_run:
                     resource = Resource(
                         {
                             "name": os.path.basename(resource_file_path),
@@ -123,7 +125,7 @@ def compile_resource_list(dataset_attributes: dict, countries_data: list[dict]) 
                 dataset_attributes["output_subdirectory"],
                 attributes["filename_template"],
             )
-            if os.path.exists(resource_file_path):
+            if os.path.exists(resource_file_path) or test_run:
                 resource = Resource(
                     {
                         "name": os.path.basename(resource_file_path),

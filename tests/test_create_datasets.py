@@ -42,7 +42,7 @@ def test_compile_resource_list():
     dataset_attributes = read_attributes(dataset_name)
     countries_data = read_countries()
 
-    resource_list = compile_resource_list(dataset_attributes, countries_data)
+    resource_list = compile_resource_list(dataset_attributes, countries_data, test_run=True)
 
     assert len(resource_list) == 23
 
