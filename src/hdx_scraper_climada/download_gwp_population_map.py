@@ -70,7 +70,7 @@ def download_gpw_population(target_directory: str = None):
         "gpw-v4-population-count-rev11_2020_30_sec_tif.zip"
     )
     # extract the filename from the url to be used when saving the file
-    filename = url[(url.rfind("/") + 1) :]
+    filename = url[(url.rfind("/") + 1) :]  # noqa: E203
     output_path = os.path.join(target_directory, filename)
 
     if os.path.exists(output_path):
