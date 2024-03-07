@@ -16,6 +16,7 @@ import os
 import zipfile
 import requests
 
+from pathlib import Path
 
 from hdx.utilities.easy_logging import setup_logging
 
@@ -72,6 +73,8 @@ def download_gpw_population(target_directory: str = None):
     # extract the filename from the url to be used when saving the file
     filename = url[(url.rfind("/") + 1) :]  # noqa: E203
     output_path = os.path.join(target_directory, filename)
+
+    Path(target_directory).mkdir(parents=True, exist_ok=True)
 
     if os.path.exists(output_path):
         LOGGER.info(f"{output_path} is already present locally, returning with no action")
