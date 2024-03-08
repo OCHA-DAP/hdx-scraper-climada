@@ -115,6 +115,9 @@ def read_attributes(dataset_name: str) -> dict:
             else:
                 attributes[row["attribute"]] = row["value"]
 
+        if attributes and "name" not in attributes:
+            attributes["name"] = dataset_name
+
     return attributes
 
 

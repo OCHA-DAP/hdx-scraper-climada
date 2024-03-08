@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+import os
 from hdx_scraper_climada.create_datasets import (
     create_or_fetch_base_dataset,
     create_datasets_in_hdx,
     compile_resource_list,
     compile_showcase_list,
+    get_date_range_from_timeseries_file,
 )
-from hdx_scraper_climada.utilities import read_attributes, read_countries
+from hdx_scraper_climada.utilities import read_attributes, read_countries, INDICATOR_LIST
 
 
 def test_create_or_fetch_base_dataset():
@@ -55,3 +57,19 @@ def test_compile_showcase_list():
 
     assert len(showcase_list) == 1
     assert showcase_list[0]["name"] == "climada-flood-showcase"
+
+
+def test_get_date_range_from_timeseries_file():
+    # This fragment prints the
+    # for indicator in INDICATOR_LIST:
+    #     dataset_attributes = read_attributes(f"climada-{indicator}-dataset")
+    #     date_range = get_date_range_from_timeseries_file(dataset_attributes)
+    #     print(f"{indicator}: {date_range}", flush=True)
+
+    output_directory = os.path.join(os.path.dirname(__file__), "fixtures")
+    dataset_attributes = read_attributes("climada-flood-dataset")
+    date_range = get_date_range_from_timeseries_file(
+        dataset_attributes, output_directory=output_directory
+    )
+
+    assert date_range == "[2000-04-05T00:00:00 TO 2018-07-15T00:00:00]"

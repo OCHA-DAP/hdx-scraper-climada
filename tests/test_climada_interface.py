@@ -18,6 +18,7 @@ from hdx_scraper_climada.download_admin_geometries_from_hdx import (
     get_admin1_shapes_from_hdx,
     get_admin2_shapes_from_hdx,
 )
+
 from hdx_scraper_climada.climada_interface import (
     calculate_indicator_for_admin1,
     calculate_indicator_timeseries_admin,

@@ -5,6 +5,7 @@ import datetime
 import json
 import logging
 import os
+import pandas
 import time
 import yaml
 
@@ -41,8 +42,7 @@ def create_datasets_in_hdx(
 
     countries_group = [{"name": x["iso3alpha_country_code"].lower()} for x in countries_data]
 
-    # iso_date = datetime.datetime.now().isoformat()[0:10]
-    # dataset["dataset_date"] = f"[{iso_date} to {iso_date}]".replace("Z", "")
+    dataset["dataset_date"] = get_date_range_from_timeseries_file(dataset_attributes)
     dataset["groups"] = countries_group
     dataset["maintainer"] = "76f545b9-6944-41c8-a999-eeb1bb70de7a"  # this is Emanuel
     # dataset["maintainer"] = "972627a5-4f23-4922-8892-371ece6531b6"  # this is me
@@ -244,6 +244,43 @@ def add_quickchart(dataset: Dataset, dataset_attributes: dict) -> tuple[str, Dat
         f"to dataset '{dataset['name']}', resource '{resource_name}'"
     )
     return dataset, status
+
+
+def get_date_range_from_timeseries_file(
+    dataset_attributes: dict, output_directory: str = None
+) -> str:
+    date_range = ""
+    if output_directory is None:
+        output_directory = os.path.join(os.path.dirname(__file__), "output")
+
+    # Default behaviour for litpop and crop production since they have no timeseries
+    # The target reference year for the original,published litpop data is 2018 however the
+    # population file it uses is 2020. The alternate method is 2018 throughout.
+    if "litpop" in dataset_attributes["name"]:
+        date_range = "[2020-01-01T00:00:00 TO 2020-12-31T23:59:59]"
+    # There is ref_year metadata in the crop_production exposure object
+    elif "crop-production" in dataset_attributes["name"]:
+        date_range = "[2018-01-01T00:00:00 TO 2018-12-31T23:59:59]"
+    else:
+        # find filename for timeseries
+        timeseries_attributes = read_attributes(
+            dataset_attributes["name"].replace("dataset", "timeseries")
+        )
+        timeseries_filename = timeseries_attributes["filename_template"]
+        timeseries_path = os.path.join(
+            output_directory, dataset_attributes["output_subdirectory"], timeseries_filename
+        )
+        # Load file if it exists
+        timeseries_data = pandas.read_csv(timeseries_path)
+        timeseries_data.drop(timeseries_data.head(1).index, inplace=True)
+
+        # Extract first and last date
+        start_date = timeseries_data["event_date"].min()
+        end_date = timeseries_data["event_date"].max()
+
+        date_range = f"[{start_date} TO {end_date}]"
+
+    return date_range
 
 
 if __name__ == "__main__":
