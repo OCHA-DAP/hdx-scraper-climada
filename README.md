@@ -59,8 +59,13 @@ This requires an account to be created for the download. An example script is pr
 https://urs.earthdata.nasa.gov/documentation/for_users/data_access/python
 
 
-To use the UNMAP boundaries the LitPop.from_shape_and_countries needs to be monkey patched. In a virtual environment this file needs to be
-changed at line 424 replacing `gdf = gdf.append(...` with `gdf = gdf._append(...`
+To use the UNMAP boundaries the LitPop.from_shape_and_countries we need to use a patched version of the LitPop class. This is done by copying the original `litpop.py` which implements the class into this repo and importing LitPop from this patched version with
+
+```
+from hdx_scraper_climada.patched_litpop import LitPop
+```
+
+The change made is at approximately line 424 replacing `gdf = gdf.append(...` with `gdf = gdf._append(...`
 
 ```
 venv\Lib\site-packages\climada\entity\exposures\litpop\litpop.py
