@@ -12,7 +12,7 @@ import pandas as pd
 import pytest
 
 
-from climada.entity import LitPop
+from hdx_scraper_climada.patched_litpop import LitPop
 from climada.util.api_client import Client
 from hdx_scraper_climada.download_admin_geometries_from_hdx import (
     get_admin1_shapes_from_hdx,
