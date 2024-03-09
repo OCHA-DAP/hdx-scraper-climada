@@ -21,9 +21,10 @@ from hdx_scraper_climada.download_admin_geometries_from_hdx import (
 )
 
 INDICATOR_UNITS = {
+    "litpop": "USD",
+    "crop-production": "USD",
     "earthquake": "Maximum MMI",
     "flood": "Extent (200m grid points)",
-    "litpop": "USD",
     "wildfire": "Extent (4km grid points)",
     "river-flood": "Extent (4km grid points)",
     "tropical-cyclone": "Maximum wind speed (m/s)",
@@ -91,7 +92,12 @@ def plot_summary_barcharts(country: str, indicator: str):
         figlets = []
         for country_ in countries_:
             country_data = display_data[display_data["country_name"] == country_]
-            figlets.append(go.Bar(x=country_data["region_name"], y=country_data["value"]))
+            figlets.append(
+                go.Bar(
+                    x=country_data["region_name"],
+                    y=country_data["value"],
+                )
+            )
 
         for i, figlet in enumerate(figlets, start=1):
             row = int((i - 1) / n_cols) + 1
@@ -129,6 +135,10 @@ def plot_detail_file_map(country: str, indicator: str):
     if country_data is None:
         return None
     if indicator == "litpop":
+        country_data["scaled_value"] = 0.1 + 10.0 * country_data["value"] / max(
+            country_data["value"]
+        )
+    elif indicator == "crop-production":
         country_data["scaled_value"] = 0.1 + 10.0 * country_data["value"] / max(
             country_data["value"]
         )

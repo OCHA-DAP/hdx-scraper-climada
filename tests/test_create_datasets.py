@@ -65,6 +65,7 @@ def test_get_date_range_from_timeseries_file():
     #     dataset_attributes = read_attributes(f"climada-{indicator}-dataset")
     #     date_range = get_date_range_from_timeseries_file(dataset_attributes)
     #     print(f"{indicator}: {date_range}", flush=True)
+    # assert False
 
     output_directory = os.path.join(os.path.dirname(__file__), "fixtures")
     dataset_attributes = read_attributes("climada-flood-dataset")

@@ -39,6 +39,26 @@ NO_DATA["flood"] = set(
     ]
 )
 
+NO_DATA["tropical-cyclone"] = set(
+    [
+        "Afghanistan",
+        "Burkina Faso",
+        "Burundi",
+        "Cameroon",
+        "Central African Republic",
+        "Chad",
+        "DR Congo",
+        "Mali",
+        "Niger",
+        "Nigeria",
+        "South Sudan",
+        "State of Palestine",
+        "Sudan",
+        "Syrian Arab Republic",
+        "Ukraine",
+    ]
+)
+
 
 def get_set_of_countries_in_summary_file(summary_file_path: str, indicator: str) -> set:
     summary_countries = set()
