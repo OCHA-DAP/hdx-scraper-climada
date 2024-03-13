@@ -11,6 +11,7 @@ authors = [
 
 dependencies = [
     "climada==4.0.1",
+    "dask_expr-1.0.1",
     "pandas",
     "GDAL",
     "geopandas",
