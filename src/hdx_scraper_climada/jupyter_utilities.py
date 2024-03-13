@@ -69,7 +69,7 @@ def plot_summary_barcharts(country: str, indicator: str):
 
         fig = px.bar(
             country_data,
-            x="region_name",
+            x="admin1_name",
             y="value",
             title=f"Summary {indicator} data for {country}",
         )
@@ -94,7 +94,7 @@ def plot_summary_barcharts(country: str, indicator: str):
             country_data = display_data[display_data["country_name"] == country_]
             figlets.append(
                 go.Bar(
-                    x=country_data["region_name"],
+                    x=country_data["admin1_name"],
                     y=country_data["value"],
                 )
             )
@@ -164,7 +164,7 @@ def plot_detail_file_map(country: str, indicator: str):
         country_data,
         lat="latitude",
         lon="longitude",
-        color="region_name",
+        color="admin1_name",
         size="scaled_value",
         hover_data="value",
         title=(

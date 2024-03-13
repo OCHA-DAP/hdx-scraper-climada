@@ -38,7 +38,7 @@ LOGGER = logging.getLogger(__name__)
 HXL_TAGS = OrderedDict(
     [
         ("country_name", "#country"),
-        ("region_name", "#adm1+name"),
+        ("admin1_name", "#adm1+name"),
         ("latitude", "#geo+lat"),
         ("longitude", "#geo+lon"),
         ("aggregation", ""),
@@ -227,7 +227,7 @@ def create_summary_data(
             n_lines += len(filtered_df)
             row = HXL_TAGS.copy()
             row["country_name"] = country
-            row["region_name"] = filtered_df["region_name"].to_list()[0]
+            row["admin1_name"] = filtered_df["admin1_name"].to_list()[0]
             row["latitude"] = round(filtered_df["latitude"].mean(), 4)
             row["longitude"] = round(filtered_df["longitude"].mean(), 4)
             row["indicator"] = indicator

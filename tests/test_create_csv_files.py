@@ -21,7 +21,7 @@ COUNTRY = "Haiti"
 INDICATOR = "earthquake"
 EXPECTED_COLUMN_LIST = [
     "country_name",
-    "region_name",
+    "admin1_name",
     "latitude",
     "longitude",
     "aggregation",
@@ -80,7 +80,7 @@ def test_write_detail_data(haiti_detail_dataframes):
     assert set(list(rows[0].values())) == set(EXPECTED_HXL_TAGS)
 
     assert set(list(rows[1].values())) == set(
-        ["Haiti", "Centre", "19.29167", "-72.20833", "none", "earthquake.max_intensity", "6.67"]
+        ["Haiti", "Centre", "19.29167", "-72.20833", "none", "earthquake", "6.67"]
     )
 
 
@@ -107,7 +107,7 @@ def test_write_summary_data(haiti_detail_dataframes):
     assert set(list(rows[0].values())) == set(EXPECTED_HXL_TAGS)
 
     assert set(list(rows[1].values())) == set(
-        ["Haiti", "Centre", "19.0099", "-71.9855", "max", "earthquake.max_intensity", "7.5"]
+        ["Haiti", "Centre", "19.0099", "-71.9855", "max", "earthquake", "7.5"]
     )
 
 

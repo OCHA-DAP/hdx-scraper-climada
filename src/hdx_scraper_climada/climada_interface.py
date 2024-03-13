@@ -110,13 +110,13 @@ def calculate_indicator_for_admin1(
         LOGGER.info(f"Indicator {indicator} is not yet implemented")
         raise NotImplementedError
 
-    admin1_indicator_gdf["region_name"] = len(admin1_indicator_gdf) * [admin1_name]
+    admin1_indicator_gdf["admin1_name"] = len(admin1_indicator_gdf) * [admin1_name]
     admin1_indicator_gdf["country_name"] = len(admin1_indicator_gdf) * [country]
     admin1_indicator_gdf["aggregation"] = len(admin1_indicator_gdf) * ["none"]
     admin1_indicator_gdf = admin1_indicator_gdf[
         [
             "country_name",
-            "region_name",
+            "admin1_name",
             "latitude",
             "longitude",
             "aggregation",
@@ -252,9 +252,9 @@ def calculate_hazards_for_admin1(
 
     indicator_key = indicator
     if indicator == "earthquake":
-        indicator_key = "earthquake.max_intensity"
+        indicator_key = "earthquake"
     elif indicator == "flood":
-        indicator_key = "flood.max_intensity"
+        indicator_key = "flood"
     elif indicator == "river_flood":
         indicator_key = "river-flood"
     elif indicator == "tropical_cyclone":
@@ -299,7 +299,7 @@ def calculate_indicator_timeseries_admin(
     LOGGER.info(f"Found {len(admin2_names)} admin{admin_level} for {country}")
     climada_indicator = indicator
     if indicator == "earthquake":
-        indicator_key = f"{indicator}.date.max_intensity"
+        indicator_key = f"{indicator}.date"
     elif indicator == "flood":
         indicator_key = f"{indicator}.date"
     elif indicator == "wildfire":
@@ -472,7 +472,7 @@ def aggregate_value(indicator: str, filtered_df: pd.DataFrame) -> tuple[float, s
     if indicator.startswith("earthquake") or indicator in ["tropical-cyclone", "storm-europe"]:
         value = round(filtered_df["value"].max(), 2)
         aggregation = "max"
-    elif indicator in ["wildfire", "river-flood", "flood", "flood.max_intensity"]:
+    elif indicator in ["wildfire", "river-flood", "flood"]:
         mask_df = filtered_df[filtered_df["value"] != 0.0]
         value = round(len(mask_df), 0)
     elif indicator.startswith("crop-production") or indicator in ["litpop"]:

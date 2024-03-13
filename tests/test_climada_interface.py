@@ -78,7 +78,7 @@ def test_calculate_indicator_for_admin1_litpop():
 
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Haiti",
-        "region_name": "Centre",
+        "admin1_name": "Centre",
         "latitude": 19.3125,
         "longitude": -72.02083333,
         "aggregation": "none",
@@ -99,7 +99,7 @@ def test_calculate_indicator_for_admin1_litpop_alt():
 
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Haiti",
-        "region_name": "Centre",
+        "admin1_name": "Centre",
         "latitude": 19.3125,
         "longitude": -72.02083333,
         "aggregation": "none",
@@ -130,8 +130,8 @@ def test_litpop_cross_check():
         litpop_alt_row = admin1_litpop_alt_gdf.iloc[i].to_dict()
         assert litpop_row["country_name"] == "Haiti"
         assert litpop_alt_row["country_name"] == "Haiti"
-        assert litpop_row["region_name"] == "Centre"
-        assert litpop_alt_row["region_name"] == "Centre"
+        assert litpop_row["admin1_name"] == "Centre"
+        assert litpop_alt_row["admin1_name"] == "Centre"
         assert litpop_row["indicator"] == "litpop"
         assert litpop_alt_row["indicator"] == "litpop_alt"
         assert litpop_row["latitude"] == litpop_alt_row["latitude"]
@@ -159,7 +159,7 @@ def test_calculate_indicator_for_admin1_crop_production():
 
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Haiti",
-        "region_name": "Centre",
+        "admin1_name": "Centre",
         "latitude": 19.25,
         "longitude": -71.75,
         "aggregation": "none",
@@ -189,11 +189,11 @@ def test_calculate_indicator_for_admin1_earthquake():
 
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Haiti",
-        "region_name": "Centre",
+        "admin1_name": "Centre",
         "latitude": 19.29167,
         "longitude": -72.20833,
         "aggregation": "none",
-        "indicator": "earthquake.max_intensity",
+        "indicator": "earthquake",
         "value": 6.67,
     }
 
@@ -214,7 +214,7 @@ def test_calculate_indicator_timeseries_admin():
         "latitude": 18.2625,
         "longitude": -73.7667,
         "aggregation": "max",
-        "indicator": "earthquake.date.max_intensity",
+        "indicator": "earthquake.date",
         "event_date": "1907-01-14T00:00:00",
         "value": 4.22,
     }
@@ -235,7 +235,7 @@ def test_calculate_indicator_timeseries_admin_storm_europe():
         "latitude": 46.7483,
         "longitude": -73.7667,
         "aggregation": "max",
-        "indicator": "earthquake.date.max_intensity",
+        "indicator": "earthquake.date",
         "event_date": "1913-06-14T00:00:00",
         "value": 4.65,
     }
@@ -315,11 +315,11 @@ def test_calculate_indicator_for_admin1_flood():
 
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Haiti",
-        "region_name": "Centre",
+        "admin1_name": "Centre",
         "latitude": 19.21609,
         "longitude": -71.69117,
         "aggregation": "none",
-        "indicator": "flood.max_intensity",
+        "indicator": "flood",
         "value": 1.0,
     }
 
@@ -347,7 +347,7 @@ def test_calculate_indicator_for_admin1_wildfire():
 
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Haiti",
-        "region_name": "Centre",
+        "admin1_name": "Centre",
         "latitude": 19.29167,
         "longitude": -72.20833,
         "aggregation": "none",
@@ -423,7 +423,7 @@ def test_calculate_indicator_for_admin1_river_flood():
 
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Haiti",
-        "region_name": "Centre",
+        "admin1_name": "Centre",
         "latitude": 19.29167,
         "longitude": -72.20833,
         "aggregation": "none",
@@ -453,7 +453,7 @@ def test_calculate_indicator_for_admin1_tropical_cyclone():
 
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Haiti",
-        "region_name": "Centre",
+        "admin1_name": "Centre",
         "latitude": 19.29167,
         "longitude": -72.20833,
         "aggregation": "none",
@@ -489,7 +489,7 @@ def test_calculate_indicator_for_admin1_storm_europe():
 
     assert admin1_indicator_gdf.iloc[0].to_dict() == {
         "country_name": "Ukraine",
-        "region_name": "Autonomous Republic of Crimea",
+        "admin1_name": "Autonomous Republic of Crimea",
         "latitude": 46.17969,
         "longitude": 33.66016,
         "aggregation": "none",

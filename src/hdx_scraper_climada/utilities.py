@@ -29,6 +29,7 @@ HAS_TIMESERIES = [
 ]
 
 NO_DATA = {}
+NO_DATA["litpop"] = set(["Syrian Arab Republic"])
 NO_DATA["earthquake"] = set(["Burkina Faso", "Chad", "Niger", "Nigeria"])
 NO_DATA["flood"] = set(
     [
