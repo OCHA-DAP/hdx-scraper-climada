@@ -15,7 +15,7 @@ from hdx.data.dataset import Dataset
 from hdx.data.resource import Resource
 from hdx.data.showcase import Showcase
 
-from hdx_scraper_climada.utilities import read_attributes, read_countries
+from hdx_scraper_climada.utilities import read_attributes, read_countries, NO_DATA
 
 setup_logging()
 LOGGER = logging.getLogger(__name__)
@@ -40,10 +40,8 @@ def create_datasets_in_hdx(
         dataset_name, dataset_attributes, hdx_site=hdx_site, force_create=force_create
     )
 
-    countries_group = [{"name": x["iso3alpha_country_code"].lower()} for x in countries_data]
-
     dataset["dataset_date"] = get_date_range_from_timeseries_file(dataset_attributes)
-    dataset["groups"] = countries_group
+    dataset["groups"] = make_countries_group(dataset_name)
     dataset["maintainer"] = "76f545b9-6944-41c8-a999-eeb1bb70de7a"  # this is Emanuel
     # dataset["maintainer"] = "972627a5-4f23-4922-8892-371ece6531b6"  # this is me
 
@@ -74,6 +72,24 @@ def create_datasets_in_hdx(
     LOGGER.info(f"Elapsed time: {time.time() - t0: 0.2f} seconds")
 
     return dataset
+
+
+def make_countries_group(dataset_name: str) -> list[dict]:
+    countries_data = read_countries()
+    countries_group = []
+
+    indicator = dataset_name.replace("climada-", "").replace("-dataset", "")
+
+    if indicator == "storm-europe":
+        countries_group = [{"name": "ukr"}]
+    else:
+        countries_group = [
+            {"name": x["iso3alpha_country_code"].lower()}
+            for x in countries_data
+            if x["country_name"] not in NO_DATA[indicator]
+        ]
+
+    return countries_group
 
 
 def configure_hdx_connection(hdx_site: str = "stage"):

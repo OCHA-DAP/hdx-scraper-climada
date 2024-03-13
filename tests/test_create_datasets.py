@@ -8,6 +8,7 @@ from hdx_scraper_climada.create_datasets import (
     compile_resource_list,
     compile_showcase_list,
     get_date_range_from_timeseries_file,
+    make_countries_group,
 )
 from hdx_scraper_climada.utilities import read_attributes, read_countries, INDICATOR_LIST
 
@@ -74,3 +75,23 @@ def test_get_date_range_from_timeseries_file():
     )
 
     assert date_range == "[2000-04-05T00:00:00 TO 2018-07-15T00:00:00]"
+
+
+def test_make_countries_group_storm_europe():
+    dataset_name = "climada-storm-europe-dataset"
+
+    countries_group = make_countries_group(dataset_name)
+
+    assert len(countries_group) == 1
+    assert countries_group == [{"name": "ukr"}]
+
+
+def test_make_countries_group_tropical_cyclone():
+    dataset_name = "climada-tropical-cyclone-dataset"
+
+    countries_group = make_countries_group(dataset_name)
+
+    assert len(countries_group) == 8
+    assert {x["name"] for x in countries_group} == set(
+        ["col", "eth", "hti", "moz", "mmr", "som", "ven", "yem"]
+    )
