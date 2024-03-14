@@ -11,6 +11,7 @@ authors = [
 
 dependencies = [
     "climada==4.0.1",
+    "click",
     "dask_expr",
     "pandas",
     "GDAL",
@@ -27,6 +28,9 @@ dependencies = [
     "flake8>=6.1.0",
     "pylint>=3.0.1"
 ]
+
+[project.scripts]
+hdx-climada = "hdx_scraper_climada.cli:hdx_climada"
 
 [build-system]
 requires = ["setuptools >= 61.0.0"]
