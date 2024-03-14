@@ -6,6 +6,7 @@ import logging
 
 import geopandas
 
+from pathlib import Path
 from hdx.data.dataset import Dataset
 from hdx.utilities.easy_logging import setup_logging
 from hdx_scraper_climada.create_datasets import configure_hdx_connection
@@ -17,21 +18,26 @@ setup_logging()
 LOGGER = logging.getLogger(__name__)
 
 
-def download_hdx_admin1_boundaries():
+def download_hdx_admin1_boundaries(download_directory: str = None) -> list[str]:
     configure_hdx_connection(hdx_site="prod")
+    if download_directory is None:
+        download_directory = ADMIN1_GEOMETRY_FOLDER
+    else:
+        download_directory = os.path.join(os.getcwd(), download_directory)
+        Path(download_directory).mkdir(parents=True, exist_ok=True)
 
     boundary_dataset = Dataset.read_from_hdx(UNMAP_DATASET_NAME)
     boundary_resources = boundary_dataset.get_resources()
     subn_resources = []
     for resource in boundary_resources:
         if "polbnda_adm1" in resource["name"] or "polbnda_adm2" in resource["name"]:
-            expected_file_path = os.path.join(ADMIN1_GEOMETRY_FOLDER, f"{resource['name']}")
+            expected_file_path = os.path.join(download_directory, f"{resource['name']}")
             if os.path.exists(expected_file_path):
                 LOGGER.info(f"Expected file {expected_file_path} is already present, continuing")
                 subn_resources.append(expected_file_path)
             else:
                 LOGGER.info(f"Downloading {resource['name']}...")
-                resource_url, resource_file = resource.download(folder=ADMIN1_GEOMETRY_FOLDER)
+                resource_url, resource_file = resource.download(folder=download_directory)
 
                 LOGGER.info(f"...from {resource_url}")
                 subn_resources.append(resource_file)

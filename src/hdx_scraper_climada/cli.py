@@ -6,6 +6,8 @@ import click
 from hdx_scraper_climada.climada_interface import print_overview_information
 from hdx_scraper_climada.utilities import read_attributes, INDICATOR_LIST
 from hdx_scraper_climada.create_datasets import get_date_range_from_timeseries_file
+from hdx_scraper_climada.download_admin_geometries_from_hdx import download_hdx_admin1_boundaries
+from hdx_scraper_climada.download_gpw_population_map import download_gpw_population
 
 
 @click.group()
@@ -48,3 +50,31 @@ def dataset_date(indicator: str = "all"):
         dataset_attributes = read_attributes(f"climada-{indicator}-dataset")
         date_range = get_date_range_from_timeseries_file(dataset_attributes)
         print(f"{indicator}: {date_range}", flush=True)
+
+
+@hdx_climada.command(name="download")
+@click.option(
+    "--data_name",
+    is_flag=False,
+    default="all",
+    help="data to download, one of {boundaries|population}",
+)
+@click.option("--download_directory", is_flag=False, default=None, help="target_directory")
+def download(data_name: str = "boundaries", download_directory: str = None):
+    """Download data assets required to build the datasets"""
+
+    if data_name == "boundaries":
+        print("Downloading admin boundaries from HDX requires an appropriate HDX API key")
+        resource_file_paths = download_hdx_admin1_boundaries(download_directory=download_directory)
+        print(f"Downloaded admin1 boundary data to: {resource_file_paths}")
+    elif data_name == "population":
+        print(
+            "The population data download requires the environment variables "
+            "NASA_EARTHDATA_USERNAME and NASA_EARTHDATA_PASSWORD to be defined. "
+            "These credentials are created at https://urs.earthdata.nasa.gov/"
+        )
+        download_gpw_population(target_directory=download_directory)
+    else:
+        print(
+            f"Data_name '{data_name}' is not know, only 'boundaries' and 'population' are supported"
+        )
