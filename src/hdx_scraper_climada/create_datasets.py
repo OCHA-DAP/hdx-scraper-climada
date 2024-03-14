@@ -287,7 +287,7 @@ def get_date_range_from_timeseries_file(
             output_directory, dataset_attributes["output_subdirectory"], timeseries_filename
         )
         # Load file if it exists
-        timeseries_data = pandas.read_csv(timeseries_path)
+        timeseries_data = pandas.read_csv(timeseries_path, low_memory=False)
         timeseries_data.drop(timeseries_data.head(1).index, inplace=True)
 
         # Extract first and last date

@@ -127,6 +127,10 @@ But they are picked up by `create_datasets` from
 \src\hdx_scraper_climada\metadata\attributes.csv
 ``` 
 
+## Commandline Interface
+
+This repository implements a commandline interface using the `click` library. It is asked via the command `hdx-climada`. Help is provided by invoking `hdx-climada --help`
+
 ## Dataset updates
 
 The data are generated using `make run`. Currently updates are manual since there are unresolved challenges in running the process in a GitHub Action.
