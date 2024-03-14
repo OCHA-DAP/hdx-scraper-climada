@@ -212,13 +212,7 @@ def plot_timeseries_histogram(country: str, indicator: str):
     if indicator not in HAS_TIMESERIES:
         print(f"plot_timeseries_histogram: Indicator '{indicator}' does not have time series data")
         return None
-    output_paths = make_detail_and_summary_file_paths(country, indicator)
-    timeseries_data = pandas.read_csv(output_paths["output_timeseries_path"])
-
-    timeseries_data.drop(timeseries_data.head(1).index, inplace=True)
-    timeseries_data["latitude"] = timeseries_data["latitude"].astype(float)
-    timeseries_data["longitude"] = timeseries_data["longitude"].astype(float)
-    timeseries_data["value"] = timeseries_data["value"].astype(float)
+    timeseries_data = get_timeseries_data_from_csv(country, indicator)
     timeseries_data = timeseries_data[timeseries_data["country_name"] == country]
     if len(timeseries_data) == 0:
         print(f"No {indicator} timeseries data for {country}", flush=True)
@@ -373,6 +367,9 @@ def get_detail_data_from_csv(country: str, indicator: str) -> pandas.DataFrame |
         return None
 
     country_data.drop(country_data.head(1).index, inplace=True)
+
+    if "region_name" in country_data:
+        country_data.rename(columns={"region_name": "admin1_name"}, inplace=True)
     country_data["latitude"] = country_data["latitude"].astype(float)
     country_data["longitude"] = country_data["longitude"].astype(float)
     country_data["value"] = country_data["value"].astype(float)
@@ -386,7 +383,22 @@ def get_summary_data_from_csv(country: str, indicator: str) -> pandas.DataFrame 
     country_data = pandas.read_csv(output_paths["output_summary_path"])
 
     country_data.drop(country_data.head(1).index, inplace=True)
+    if "region_name" in country_data:
+        country_data.rename(columns={"region_name": "admin1_name"}, inplace=True)
     country_data["latitude"] = country_data["latitude"].astype(float)
     country_data["longitude"] = country_data["longitude"].astype(float)
     country_data["value"] = country_data["value"].astype(float)
     return country_data
+
+
+def get_timeseries_data_from_csv(country: str, indicator: str) -> pandas.DataFrame:
+    output_paths = make_detail_and_summary_file_paths(country, indicator)
+    timeseries_data = pandas.read_csv(output_paths["output_timeseries_path"])
+
+    timeseries_data.drop(timeseries_data.head(1).index, inplace=True)
+    if "region_name" in timeseries_data:
+        timeseries_data.rename(columns={"region_name": "admin1_name"}, inplace=True)
+    timeseries_data["latitude"] = timeseries_data["latitude"].astype(float)
+    timeseries_data["longitude"] = timeseries_data["longitude"].astype(float)
+    timeseries_data["value"] = timeseries_data["value"].astype(float)
+    return timeseries_data
