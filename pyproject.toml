@@ -16,7 +16,7 @@ dependencies = [
     "pandas",
     "GDAL",
     "geopandas",
-    "hdx-python-api>=6.2.1",
+    "hdx-python-api==6.2.1",
     "hdx-python-country",
     "kaleido==0.1.0",
     "pytest",
