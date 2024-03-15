@@ -12,6 +12,7 @@ jobs:
       name: test
     env:
       HDX_KEY_STAGE: ${{ secrets.HDX_KEY_STAGE }}
+      HDX_KEY: ${{ secrets.HDX_BOT_SCRAPERS_API_TOKEN }}
       HDX_SITE: ${{ vars.HDX_SITE }}
       USER_AGENT: ${{ vars.USER_AGENT }}
       PREPREFIX: ${{ vars.PREPREFIX }}
@@ -38,14 +39,11 @@ jobs:
           make lint
       - name: Download HDX and NASA assets
         env:
-          HDX_KEY: ${{ secrets.HDX_BOT_SCRAPERS_API_TOKEN }}
           NASA_EARTHDATA_USERNAME: ${{ vars.NASA_EARTHDATA_USERNAME }}
           NASA_EARTHDATA_PASSWORD: ${{ secrets.NASA_EARTHDATA_PASSWORD }}
         run: |
           hdx-climada download --data_name="boundaries"
           hdx-climada download --data_name="population"
       - name: Running unit tests
-        env:
-          HDX_KEY: ${{ secrets.HDX_KEY_STAGE }}
         run: |
           make github_tests

@@ -96,6 +96,7 @@ def make_countries_group(dataset_name: str) -> list[dict]:
 
 def configure_hdx_connection(hdx_site: str = "stage"):
     try:
+        Configuration.delete()
         Configuration.create(
             user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
             user_agent_lookup="hdx-scraper-climada",
