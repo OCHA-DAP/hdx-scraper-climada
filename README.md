@@ -173,7 +173,7 @@ Runtime for river-flood is about 75 minutes for 46MB (single model)
 
 ### Storm Europe
 
-Runtime for storm-europe is about 3 hours, generating 11MB. It is only run for
+Runtime for storm-europe is about 3 hours, generating 11MB. It is only run for Ukraine
 
 The event date are supplied as a float which needs to be coerced to an int to convert to a date. 
 Multiple events are recorded on each date, possibly representing hourly figures.

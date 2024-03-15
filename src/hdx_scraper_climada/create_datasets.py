@@ -5,8 +5,10 @@ import datetime
 import json
 import logging
 import os
-import pandas
 import time
+import traceback
+
+import pandas
 import yaml
 
 from hdx.utilities.easy_logging import setup_logging
@@ -100,6 +102,7 @@ def configure_hdx_connection(hdx_site: str = "stage"):
             hdx_site=hdx_site,
         )
     except ConfigurationError:
+        LOGGER.info(traceback.format_exc())
         LOGGER.info("Configuration already exists when trying to create in `create_datasets.py`")
 
 
