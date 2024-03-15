@@ -82,25 +82,33 @@ def produce_csv_files(countries_to_process: list[dict], indicator: str):
             LOGGER.info(status)
 
 
+def hdx_climada_run(indicator: str, country: str, hdx_site: str = "stage", dry_run: bool = True):
+    t0 = time.time()
+    print_banner_to_log(LOGGER, "Updating Climada Datasets")
+    LOGGER.info(f"Indicator: {indicator}")
+    LOGGER.info(f"country: {country}")
+    LOGGER.info(f"hdx_site: {hdx_site}")
+    LOGGER.info(f"dry_run: {dry_run}")
+
+    countries_to_process = check_for_existing_csv_files(indicator)
+
+    if len(countries_to_process) == 0:
+        LOGGER.info("CSV data files for all countries are already available")
+    else:
+        LOGGER.info("Countries to process:")
+        for country_ in countries_to_process:
+            LOGGER.info(country_)
+        produce_csv_files(countries_to_process, indicator)
+
+    LOGGER.info(f"Processed all countries in {time.time()-t0:0.0f} seconds")
+    LOGGER.info(f"Timestamp: {datetime.datetime.now().isoformat()}")
+
+    dataset_name = f"climada-{indicator}-dataset"
+    create_datasets_in_hdx(dataset_name, dry_run=dry_run, hdx_site=hdx_site, force_create=True)
+
+
 if __name__ == "__main__":
     INDICATOR = "tropical-cyclone"
     DRY_RUN = False
     HDX_SITE = "stage"
-    T0 = time.time()
-    print_banner_to_log(LOGGER, "Updating Climada Datasets")
-
-    COUNTRIES_TO_PROCESS = check_for_existing_csv_files(INDICATOR)
-
-    if len(COUNTRIES_TO_PROCESS) == 0:
-        LOGGER.info("CSV data files for all countries are already available")
-    else:
-        LOGGER.info("Countries to process:")
-        for COUNTRY in COUNTRIES_TO_PROCESS:
-            LOGGER.info(COUNTRY)
-        produce_csv_files(COUNTRIES_TO_PROCESS, INDICATOR)
-
-    LOGGER.info(f"Processed all countries in {time.time()-T0:0.0f} seconds")
-    LOGGER.info(f"Timestamp: {datetime.datetime.now().isoformat()}")
-
-    DATASET_NAME = f"climada-{INDICATOR}-dataset"
-    create_datasets_in_hdx(DATASET_NAME, dry_run=DRY_RUN, hdx_site=HDX_SITE, force_create=True)
+    hdx_climada_run(INDICATOR, "all", hdx_site=HDX_SITE, dry_run=DRY_RUN)

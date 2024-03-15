@@ -193,9 +193,12 @@ def create_or_fetch_base_dataset(
         LOGGER.info(f"Dataset already exists in hdx_site: `{Configuration.read().hdx_site}`")
         LOGGER.info("Updating")
     else:
-        LOGGER.info(
-            f"`{dataset_name}` does not exist in hdx_site: `{Configuration.read().hdx_site}`"
-        )
+        if not force_create:
+            LOGGER.info(
+                f"`{dataset_name}` does not exist in hdx_site: `{Configuration.read().hdx_site}`"
+            )
+        else:
+            LOGGER.info("Force_create is set")
         LOGGER.info(
             f"Using {dataset_attributes['dataset_template']} as a template for a new dataset"
         )

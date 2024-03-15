@@ -8,6 +8,7 @@ from hdx_scraper_climada.utilities import read_attributes, INDICATOR_LIST
 from hdx_scraper_climada.create_datasets import get_date_range_from_timeseries_file
 from hdx_scraper_climada.download_admin_geometries_from_hdx import download_hdx_admin1_boundaries
 from hdx_scraper_climada.download_gpw_population_map import download_gpw_population
+from hdx_scraper_climada.run import hdx_climada_run
 
 
 @click.group()
@@ -78,3 +79,38 @@ def download(data_name: str = "boundaries", download_directory: str = None):
         print(
             f"Data_name '{data_name}' is not know, only 'boundaries' and 'population' are supported"
         )
+
+
+@hdx_climada.command(name="create_dataset")
+@click.option(
+    "--indicator",
+    is_flag=False,
+    default="all",
+    help=(
+        "an HDX-CLIMADA in the set "
+        "{litpop|crop_production|earthquake|flood|wildfire|tropical_cyclone|storm_europe}"
+    ),
+)
+@click.option(
+    "--country",
+    is_flag=False,
+    default="all",
+    help="A country name, currently unused the default value is 'all'",
+)
+@click.option(
+    "--hdx_site",
+    is_flag=False,
+    default="stage",
+    help="an hdx_site value {stage|prod}",
+)
+@click.option(
+    "--live",
+    is_flag=True,
+    default=False,
+    help="if present then update to HDX is made, if absent then a dry run is done",
+)
+def create_dataset(
+    indicator: str = "litpop", country: str = "all", hdx_site: str = "stage", live: bool = False
+):
+    """Create CSV data files for an indicator and create dataset in HDX"""
+    hdx_climada_run(indicator, "all", hdx_site=hdx_site, dry_run=not live)
