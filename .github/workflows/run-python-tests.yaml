@@ -45,5 +45,7 @@ jobs:
           hdx-climada download --data_name="boundaries"
           hdx-climada download --data_name="population"
       - name: Running unit tests
+        env:
+          HDX_KEY: ${{ secrets.HDX_KEY_STAGE }}
         run: |
           make github_tests
