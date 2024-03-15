@@ -235,7 +235,7 @@ def create_summary_data(
             row["value"] = value
             row["aggregation"] = aggregation
 
-            LOGGER.info(f"{row['region_name']:<20}, " f"{indicator:<20}, " f"{row['value']:0.0f}")
+            LOGGER.info(f"{row['admin1_name']:<20}, " f"{indicator:<20}, " f"{row['value']:0.0f}")
             summary_rows.append(row)
 
     return summary_rows, n_lines
