@@ -38,3 +38,5 @@ src/hdx_scraper_climada/analysis/scratch_notebook.ipynb
 *.png
 
 src/hdx_scraper_climada/temp/
+
+temp/

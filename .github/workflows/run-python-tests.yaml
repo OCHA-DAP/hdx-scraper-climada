@@ -42,7 +42,8 @@ jobs:
           NASA_EARTHDATA_USERNAME: ${{ vars.NASA_EARTHDATA_USERNAME }}
           NASA_EARTHDATA_PASSWORD: ${{ secrets.NASA_EARTHDATA_PASSWORD }}
         run: |
-          make download_assets
+          hdx-climada download --data_name="boundaries"
+          hdx-climada download --data_name="population"
       - name: Running unit tests
         run: |
           make github_tests

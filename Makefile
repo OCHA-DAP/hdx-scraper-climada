@@ -2,9 +2,6 @@ SHELL := /bin/bash
 install:
 	echo "GDAL must be installed from pre-compiled binaries on Windows machines prior to pip install"
 	pip install -e .
-download_assets:
-	python src/hdx_scraper_climada/download_admin_geometries_from_hdx.py
-	python src/hdx_scraper_climada/download_gpw_population_map.py
 lint:
 	black . --check
 	flake8 --config=config/.flake8 src/
