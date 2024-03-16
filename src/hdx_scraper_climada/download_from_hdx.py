@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+import fnmatch
 import os
 import logging
 
+from pathlib import Path
+
 import geopandas
 
-from pathlib import Path
 from hdx.data.dataset import Dataset
 from hdx.utilities.easy_logging import setup_logging
 from hdx_scraper_climada.create_datasets import configure_hdx_connection
@@ -109,6 +111,39 @@ def get_best_admin_shapes(
         admin2_names = len(admin1_names) * [""]
 
     return admin1_names, admin2_names, admin_shapes, admin_level
+
+
+def download_hdx_datasets(
+    dataset_filter: str,
+    resource_filter: str = "*",
+    hdx_site: str = "prod",
+    download_directory: str = None,
+):
+    configure_hdx_connection(hdx_site=hdx_site)
+    if download_directory is None:
+        download_directory = os.path.join(os.path.dirname(__file__), "output")
+
+    Path(download_directory).mkdir(parents=True, exist_ok=True)
+
+    if resource_filter is None:
+        resource_filter = "*"
+
+    dataset = Dataset.read_from_hdx(dataset_filter)
+    resources = dataset.get_resources()
+    download_paths = []
+    for resource in resources:
+        if fnmatch.fnmatch(resource["name"], resource_filter):
+            expected_file_path = os.path.join(download_directory, f"{resource['name']}")
+            if os.path.exists(expected_file_path):
+                LOGGER.info(f"Expected file {expected_file_path} is already present, continuing")
+                download_paths.append(expected_file_path)
+            else:
+                LOGGER.info(f"Downloading {resource['name']}...")
+                resource_url, resource_file = resource.download(folder=download_directory)
+                LOGGER.info(f"...from {resource_url}")
+                download_paths.append(resource_file)
+
+    return download_paths
 
 
 if __name__ == "__main__":

@@ -84,7 +84,6 @@ def produce_csv_files(countries_to_process: list[dict], indicator: str):
 
 def hdx_climada_run(indicator: str, country: str, hdx_site: str = "stage", dry_run: bool = True):
     t0 = time.time()
-    print_banner_to_log(LOGGER, "Updating Climada Datasets")
     LOGGER.info(f"Indicator: {indicator}")
     LOGGER.info(f"country: {country}")
     LOGGER.info(f"hdx_site: {hdx_site}")
@@ -111,4 +110,5 @@ if __name__ == "__main__":
     INDICATOR = "tropical-cyclone"
     DRY_RUN = False
     HDX_SITE = "stage"
+    print_banner_to_log(LOGGER, "Updating Climada Datasets")
     hdx_climada_run(INDICATOR, "all", hdx_site=HDX_SITE, dry_run=DRY_RUN)
