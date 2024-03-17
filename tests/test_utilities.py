@@ -8,7 +8,12 @@ from pathlib import Path
 
 import pytest
 
-from hdx_scraper_climada.utilities import read_attributes, write_dictionary, print_banner_to_log
+from hdx_scraper_climada.utilities import (
+    read_attributes,
+    write_dictionary,
+    print_banner_to_log,
+    read_documentation_from_file,
+)
 
 TEMP_FILE_PATH = os.path.join(Path(__file__).parent, "temp", "tmp.csv")
 DICT_LIST = [
@@ -27,6 +32,25 @@ def test_read_attributes():
     assert len(dataset_attributes["resource"]) == 2
     assert dataset_attributes["skip_country"] == ["SYR"]
     assert dataset_attributes["data_type_group"] == "exposure"
+    assert dataset_attributes["notes"].startswith("A high-resolution asset exposure")
+    assert dataset_attributes["methodology_other"].startswith("Created from the Climada API")
+    assert dataset_attributes["caveats"] == (
+        "2024-01-10: There is an issue with the Syria data so it is not included, "
+        "this issue is being addressed\n"
+    )
+
+
+def test_read_documentation_from_file():
+    dataset_name = "climada-litpop-dataset"
+    documentation_dict = read_documentation_from_file(dataset_name)
+
+    assert set(documentation_dict.keys()) == set(["notes", "methodology_other", "caveats"])
+    assert documentation_dict["notes"].startswith("A high-resolution asset exposure")
+    assert documentation_dict["methodology_other"].startswith("Created from the Climada API")
+    assert documentation_dict["caveats"] == (
+        "2024-01-10: There is an issue with the Syria data so it is not included, "
+        "this issue is being addressed\n"
+    )
 
 
 def test_write_dictionary_to_local_file():

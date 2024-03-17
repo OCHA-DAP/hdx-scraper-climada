@@ -139,7 +139,48 @@ def read_attributes(dataset_name: str) -> dict:
         if attributes and "name" not in attributes:
             attributes["name"] = dataset_name
 
+    documentation_dict = read_documentation_from_file(dataset_name)
+
+    for key in ["notes", "methodology_other", "caveats"]:
+        if documentation_dict[key] != "":
+            attributes[key] = documentation_dict[key]
+
     return attributes
+
+
+def read_documentation_from_file(dataset_name: str) -> dict:
+    documentation = {"notes": "", "methodology_other": "", "caveats": ""}
+
+    found_name = False
+    in_name_section = False
+
+    documentation_file_path = ATTRIBUTES_FILEPATH.replace("attributes.csv", "documentation.md")
+    with open(documentation_file_path, "r", encoding="UTF-8") as documentation_file:
+        for text_line in documentation_file:
+            if (
+                text_line.startswith("##")
+                and text_line.strip().endswith("##")
+                and dataset_name in text_line
+            ):
+                found_name = True
+                in_name_section = True
+                section_type = text_line.split(".")[1].replace("##", "").strip()
+                continue
+            if (
+                text_line.startswith("##")
+                and text_line.strip().endswith("##")
+                and dataset_name not in text_line
+            ):
+                in_name_section = False
+                continue
+
+            if in_name_section:
+                if section_type in documentation:
+                    documentation[section_type] += text_line
+                else:
+                    documentation[section_type] = text_line
+
+    return documentation
 
 
 def read_countries():
