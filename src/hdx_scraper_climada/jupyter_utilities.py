@@ -16,7 +16,7 @@ from hdx.location.country import Country
 
 from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_paths
 from hdx_scraper_climada.utilities import HAS_TIMESERIES, read_countries
-from hdx_scraper_climada.download_admin_geometries_from_hdx import (
+from hdx_scraper_climada.download_from_hdx import (
     get_best_admin_shapes,
 )
 
@@ -61,8 +61,8 @@ def calc_zoom(df: pandas.DataFrame, total_bounds: None | list = None) -> tuple[f
     return min(round(zoom_y, 2), round(zoom_x, 2))
 
 
-def plot_summary_barcharts(country: str, indicator: str):
-    display_data = get_summary_data_from_csv(country, indicator)
+def plot_summary_barcharts(country: str, indicator: str, export_directory: str = None):
+    display_data = get_summary_data_from_csv(country, indicator, export_directory=export_directory)
 
     if country is not None:
         country_data = display_data[display_data["country_name"] == country]
@@ -130,8 +130,8 @@ def make_image_file_path(indicator: str, country: str, identifier: str) -> str:
     return image_file_path
 
 
-def plot_detail_file_map(country: str, indicator: str):
-    country_data = get_detail_data_from_csv(country, indicator)
+def plot_detail_file_map(country: str, indicator: str, export_directory: str = None):
+    country_data = get_detail_data_from_csv(country, indicator, export_directory=export_directory)
     if country_data is None:
         return None
     if indicator == "litpop":
@@ -184,8 +184,8 @@ def plot_detail_file_map(country: str, indicator: str):
     return None
 
 
-def plot_histogram(country: str, indicator: str):
-    country_data = get_detail_data_from_csv(country, indicator)
+def plot_histogram(country: str, indicator: str, export_directory: str = None):
+    country_data = get_detail_data_from_csv(country, indicator, export_directory=export_directory)
     if country_data is None:
         print(f"No {indicator} data for {country}", flush=True)
         return None
@@ -208,11 +208,13 @@ def plot_histogram(country: str, indicator: str):
     return None
 
 
-def plot_timeseries_histogram(country: str, indicator: str):
+def plot_timeseries_histogram(country: str, indicator: str, export_directory: str = None):
     if indicator not in HAS_TIMESERIES:
         print(f"plot_timeseries_histogram: Indicator '{indicator}' does not have time series data")
         return None
-    timeseries_data = get_timeseries_data_from_csv(country, indicator)
+    timeseries_data = get_timeseries_data_from_csv(
+        country, indicator, export_directory=export_directory
+    )
     timeseries_data = timeseries_data[timeseries_data["country_name"] == country]
     if len(timeseries_data) == 0:
         print(f"No {indicator} timeseries data for {country}", flush=True)
@@ -281,7 +283,9 @@ def plot_admin_boundaries(country: str):
     fig.show()
 
 
-def plot_timeseries_chloropleth(country: str, indicator: str, event_idx: None | int = None):
+def plot_timeseries_chloropleth(
+    country: str, indicator: str, event_idx: None | int = None, export_directory: str = None
+):
     if indicator not in HAS_TIMESERIES:
         print(
             f"plot_timeseries_chloropleth: Indicator '{indicator}' does not have time series data"
@@ -290,7 +294,9 @@ def plot_timeseries_chloropleth(country: str, indicator: str, event_idx: None | 
     country_iso3alpha = Country.get_iso3_country_code(country)
     admin1_names, admin2_names, admin_shapes, admin_level = get_best_admin_shapes(country_iso3alpha)
     admin_column_name = f"admin{admin_level}_name"
-    output_paths = make_detail_and_summary_file_paths(country, indicator)
+    output_paths = make_detail_and_summary_file_paths(
+        country, indicator, export_directory=export_directory
+    )
     with open(output_paths["output_timeseries_path"], encoding="utf-8") as timeseries_file:
         timeseries_data = list(csv.DictReader(timeseries_file))
 
@@ -358,8 +364,12 @@ def plot_timeseries_chloropleth(country: str, indicator: str, event_idx: None | 
     return None
 
 
-def get_detail_data_from_csv(country: str, indicator: str) -> pandas.DataFrame | None:
-    output_paths = make_detail_and_summary_file_paths(country, indicator)
+def get_detail_data_from_csv(
+    country: str, indicator: str, export_directory: str = None
+) -> pandas.DataFrame | None:
+    output_paths = make_detail_and_summary_file_paths(
+        country, indicator, export_directory=export_directory
+    )
     country_data = pandas.read_csv(output_paths["output_detail_path"])
 
     if country == "Syrian Arab Republic" and indicator == "litpop":
@@ -376,10 +386,14 @@ def get_detail_data_from_csv(country: str, indicator: str) -> pandas.DataFrame |
     return country_data
 
 
-def get_summary_data_from_csv(country: str, indicator: str) -> pandas.DataFrame | None:
+def get_summary_data_from_csv(
+    country: str, indicator: str, export_directory: str = None
+) -> pandas.DataFrame | None:
     if country is None:
         country = "Haiti"
-    output_paths = make_detail_and_summary_file_paths(country, indicator)
+    output_paths = make_detail_and_summary_file_paths(
+        country, indicator, export_directory=export_directory
+    )
     country_data = pandas.read_csv(output_paths["output_summary_path"])
 
     country_data.drop(country_data.head(1).index, inplace=True)
@@ -391,8 +405,12 @@ def get_summary_data_from_csv(country: str, indicator: str) -> pandas.DataFrame 
     return country_data
 
 
-def get_timeseries_data_from_csv(country: str, indicator: str) -> pandas.DataFrame:
-    output_paths = make_detail_and_summary_file_paths(country, indicator)
+def get_timeseries_data_from_csv(
+    country: str, indicator: str, export_directory: str = None
+) -> pandas.DataFrame:
+    output_paths = make_detail_and_summary_file_paths(
+        country, indicator, export_directory=export_directory
+    )
     timeseries_data = pandas.read_csv(output_paths["output_timeseries_path"])
 
     timeseries_data.drop(timeseries_data.head(1).index, inplace=True)
