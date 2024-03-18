@@ -9,7 +9,12 @@ from hdx.utilities.easy_logging import setup_logging
 
 
 from hdx_scraper_climada.climada_interface import print_overview_information
-from hdx_scraper_climada.utilities import read_attributes, INDICATOR_LIST, print_banner_to_log
+from hdx_scraper_climada.utilities import (
+    read_attributes,
+    INDICATOR_LIST,
+    print_banner_to_log,
+    CLIMADA_DISCLAIMER,
+)
 from hdx_scraper_climada.create_datasets import get_date_range_from_timeseries_file
 from hdx_scraper_climada.download_from_hdx import (
     download_hdx_admin1_boundaries,
@@ -92,19 +97,26 @@ def download(
     """Download data assets required to build the datasets"""
     print_banner_to_log(LOGGER, "download")
     if data_name == "boundaries":
-        print("Downloading admin boundaries from HDX requires an appropriate HDX API key")
+        print(
+            "Downloading admin boundaries from HDX requires an appropriate HDX API key", flush=True
+        )
         resource_file_paths = download_hdx_admin1_boundaries(download_directory=download_directory)
         print(f"Downloaded admin1 boundary data to: {resource_file_paths}")
     elif data_name == "population":
-        print(
-            "The population data download requires the environment variables "
-            "NASA_EARTHDATA_USERNAME and NASA_EARTHDATA_PASSWORD to be defined. "
-            "These credentials are created at https://urs.earthdata.nasa.gov/"
-        )
+        if ("NASA_EARTHDATA_USERNAME" not in os.environ) or (
+            "NASA_EARTHDATA_USERNAME" not in os.environ
+        ):
+            print(
+                "The population data download requires the environment variables "
+                "NASA_EARTHDATA_USERNAME and NASA_EARTHDATA_PASSWORD to be defined. "
+                "These credentials are created at https://urs.earthdata.nasa.gov/"
+            )
+
         download_gpw_population(target_directory=download_directory)
     elif data_name == "climada":
         # We would handle "all" here by listing indicators and looping over them
         # Make dataset name
+        print(CLIMADA_DISCLAIMER, flush=True)
         dataset_name = f"climada-{indicator}-dataset"
         if download_directory is None:
             download_directory = os.path.join(os.path.dirname(__file__), "output")
