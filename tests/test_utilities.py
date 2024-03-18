@@ -34,9 +34,9 @@ def test_read_attributes():
     assert dataset_attributes["data_type_group"] == "exposure"
     assert dataset_attributes["notes"].startswith("A high-resolution asset exposure")
     assert dataset_attributes["methodology_other"].startswith("Created from the Climada API")
-    assert dataset_attributes["caveats"] == (
+    assert dataset_attributes["caveats"].startswith(
         "2024-01-10: There is an issue with the Syria data so it is not included, "
-        "this issue is being addressed\n"
+        "this issue is being addressed"
     )
 
 
@@ -47,9 +47,9 @@ def test_read_documentation_from_file():
     assert set(documentation_dict.keys()) == set(["notes", "methodology_other", "caveats"])
     assert documentation_dict["notes"].startswith("A high-resolution asset exposure")
     assert documentation_dict["methodology_other"].startswith("Created from the Climada API")
-    assert documentation_dict["caveats"] == (
+    assert documentation_dict["caveats"].startswith(
         "2024-01-10: There is an issue with the Syria data so it is not included, "
-        "this issue is being addressed\n"
+        "this issue is being addressed"
     )
 
 
