@@ -151,7 +151,6 @@ def read_attributes(dataset_name: str) -> dict:
 def read_documentation_from_file(dataset_name: str) -> dict:
     documentation = {"notes": "", "methodology_other": "", "caveats": ""}
 
-    found_name = False
     in_name_section = False
 
     documentation_file_path = ATTRIBUTES_FILEPATH.replace("attributes.csv", "documentation.md")
@@ -162,7 +161,6 @@ def read_documentation_from_file(dataset_name: str) -> dict:
                 and text_line.strip().endswith("##")
                 and dataset_name in text_line
             ):
-                found_name = True
                 in_name_section = True
                 section_type = text_line.split(".")[1].replace("##", "").strip()
                 continue
