@@ -87,6 +87,13 @@ def dataset_date(indicator: str = "all"):
     default="all",
     help=("an HDX-CLIMADA indicator or 'all'"),
 )
+@click.option(
+    "--hdx_site",
+    type=click.Choice(["stage", "prod"]),
+    is_flag=False,
+    default="stage",
+    help="an hdx_site value",
+)
 @click.option("--download_directory", is_flag=False, default=None, help="target_directory")
 def download(
     data_name: str = "boundaries",
@@ -100,7 +107,9 @@ def download(
         print(
             "Downloading admin boundaries from HDX requires an appropriate HDX API key", flush=True
         )
-        resource_file_paths = download_hdx_admin1_boundaries(download_directory=download_directory)
+        resource_file_paths = download_hdx_admin1_boundaries(
+            download_directory=download_directory, hdx_site=hdx_site
+        )
         print(f"Downloaded admin1 boundary data to: {resource_file_paths}")
     elif data_name == "population":
         if ("NASA_EARTHDATA_USERNAME" not in os.environ) or (

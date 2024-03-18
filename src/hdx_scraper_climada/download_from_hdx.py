@@ -20,8 +20,10 @@ setup_logging()
 LOGGER = logging.getLogger(__name__)
 
 
-def download_hdx_admin1_boundaries(download_directory: str = None) -> list[str]:
-    configure_hdx_connection(hdx_site="prod")
+def download_hdx_admin1_boundaries(
+    download_directory: str = None, hdx_site: str = "stage"
+) -> list[str]:
+    configure_hdx_connection(hdx_site=hdx_site)
     if download_directory is None:
         download_directory = ADMIN1_GEOMETRY_FOLDER
     else:
@@ -116,7 +118,7 @@ def get_best_admin_shapes(
 def download_hdx_datasets(
     dataset_filter: str,
     resource_filter: str = "*",
-    hdx_site: str = "prod",
+    hdx_site: str = "stage",
     download_directory: str = None,
 ):
     configure_hdx_connection(hdx_site=hdx_site)
