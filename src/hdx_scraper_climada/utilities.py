@@ -65,16 +65,15 @@ These datasets were generated from the CLIMADA API which comes with the followin
 
 In this API we provide datasets in a form that can readily be used in CLIMADA analyses.
 
-Users should determine whether these datasets are suitable for a particular purpose or application, 
-considering factors such as resolution (for example, a 4km grid is not suitable for modelling risk 
-at the neighborhood level), the way that hazards are represented in the dataset 
-(for example, specific events, event thresholds, probabilistic event sets, etc.), 
+Users should determine whether these datasets are suitable for a particular purpose or application,
+considering factors such as resolution (for example, a 4km grid is not suitable for modelling risk
+at the neighborhood level), the way that hazards are represented in the dataset
+(for example, specific events, event thresholds, probabilistic event sets, etc.),
 the way that exposure is represented, and other aspects.
 
 Data provided with no warranty of any kind under CC BY 4.0.
 
 See respective API metadata and referenced publications for details and limitations.
-
 
 Original at: https://climada.ethz.ch/disclaimer/
 """
