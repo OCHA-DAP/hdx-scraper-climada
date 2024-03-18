@@ -54,22 +54,11 @@ to
 
 ~\climada\data\gpw-v4-population-count-rev11_2020_30_sec_tif\gpw_v4_population_count_rev11_2020_30_sec.tif
 
-This requires an account to be created for the download. An example script is provided to automate this download:
+This can be done using the `hdx-climada` commandline tool, described below. This requires an account to be created for the download. An example script is provided to automate this download:
 
 https://urs.earthdata.nasa.gov/documentation/for_users/data_access/python
 
-
-To use the UNMAP boundaries the LitPop.from_shape_and_countries we need to use a patched version of the LitPop class. This is done by copying the original `litpop.py` which implements the class into this repo and importing LitPop from this patched version with
-
-```
-from hdx_scraper_climada.patched_litpop import LitPop
-```
-
-The change made is at approximately line 424 replacing `gdf = gdf.append(...` with `gdf = gdf._append(...`
-
-```
-venv\Lib\site-packages\climada\entity\exposures\litpop\litpop.py
-```
+In addition UNMAP boundaries need to be downloaded from HDX which are private datasets, not publically available. This can be done using the `hdx-climada` commandline tool, described below. They can only be downloaded programmatically from the `prod` HDX site but can be downloaded manually from `stage` or elsewhere.
 
 We use `nbstripout` to remove output cells from Jupyter Notebooks prior, this needs to be installed per repository with:
 

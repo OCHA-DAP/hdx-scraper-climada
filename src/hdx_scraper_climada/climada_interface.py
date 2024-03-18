@@ -133,6 +133,10 @@ def calculate_indicator_for_admin1(
     return admin1_indicator_gdf
 
 
+def get_date_range_from_live_api(indicator: str) -> str:
+    pass
+
+
 def calculate_litpop_for_admin1(
     admin1_shape: list[geopandas.geoseries.GeoSeries],
     country: str,

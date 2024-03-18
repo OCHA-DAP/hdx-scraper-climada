@@ -103,7 +103,8 @@ def configure_hdx_connection(hdx_site: str = "stage"):
             hdx_site=hdx_site,
         )
         LOGGER.info(f"Authenticated to HDX site at {Configuration.read().get_hdx_site_url()}")
-        LOGGER.info(f"With HDX_KEY ending {Configuration.read().get_api_key()[10:]}")
+        hdx_key = Configuration.read().get_api_key()
+        LOGGER.info(f"With HDX_KEY ending {hdx_key[-10:]}")
 
     except ConfigurationError:
         LOGGER.info(traceback.format_exc())

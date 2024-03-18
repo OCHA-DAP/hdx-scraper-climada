@@ -34,9 +34,10 @@ jobs:
         env:
           NASA_EARTHDATA_USERNAME: ${{ vars.NASA_EARTHDATA_USERNAME }}
           NASA_EARTHDATA_PASSWORD: ${{ secrets.NASA_EARTHDATA_PASSWORD }}
+          HDX_SITE: prod
         run: |
-          hdx-climada download --data_name="boundaries"
-          hdx-climada download --data_name="population"
+          hdx-climada download --data_name="boundaries" --hdx_site="prod"
+          hdx-climada download --data_name="population" --hdx_site="prod"
       - name: Publish crop-production
         run: |
           hdx-climada create_dataset --indicator=crop-production --hdx_site=stage --live
