@@ -102,6 +102,9 @@ def configure_hdx_connection(hdx_site: str = "stage"):
             user_agent_lookup="hdx-scraper-climada",
             hdx_site=hdx_site,
         )
+        LOGGER.info(f"Authenticated to HDX site at {Configuration.read().get_hdx_site_url()}")
+        LOGGER.info(f"With HDX_KEY ending {Configuration.read().get_api_key()[10:]}")
+
     except ConfigurationError:
         LOGGER.info(traceback.format_exc())
         LOGGER.info("Configuration already exists when trying to create in `create_datasets.py`")
