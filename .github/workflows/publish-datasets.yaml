@@ -1,4 +1,4 @@
-name: CLIMADA Publication
+name: CLIMADA Publication Litpop
 
 on:
   workflow_dispatch:
@@ -40,4 +40,4 @@ jobs:
           hdx-climada download --data_name="population" --hdx_site="prod"
       - name: Publish crop-production
         run: |
-          hdx-climada create_dataset --indicator=crop-production --hdx_site=stage --live
+          hdx-climada create_dataset --indicator=litpop --hdx_site=stage --live
