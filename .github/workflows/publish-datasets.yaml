@@ -1,4 +1,4 @@
-name: CLIMADA Publication Litpop
+name: CLIMADA Publication
 
 on:
   workflow_dispatch:

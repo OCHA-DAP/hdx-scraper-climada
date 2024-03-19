@@ -142,7 +142,10 @@ def calculate_litpop_for_admin1(
     country: str,
     indicator: str,
 ) -> pd.DataFrame:
-    admin1_indicator_data = LitPop.from_shape_and_countries(admin1_shape, country, res_arcsec=150)
+    country_iso_numeric = get_country_iso_numeric(country)
+    admin1_indicator_data = LitPop.from_shape_and_countries(
+        admin1_shape, country_iso_numeric, res_arcsec=150
+    )
     admin1_indicator_gdf = admin1_indicator_data.gdf
     admin1_indicator_gdf["indicator"] = len(admin1_indicator_gdf) * [indicator]
     admin1_indicator_gdf = admin1_indicator_gdf[["latitude", "longitude", "indicator", "value"]]
