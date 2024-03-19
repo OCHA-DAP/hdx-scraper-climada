@@ -38,6 +38,6 @@ jobs:
         run: |
           hdx-climada download --data_name="boundaries" --hdx_site="prod"
           hdx-climada download --data_name="population" --hdx_site="prod"
-      - name: Publish crop-production
+      - name: Publish CLIMADA dataset
         run: |
-          hdx-climada create_dataset --indicator=earthquake --hdx_site=stage --live
+          hdx-climada create_dataset --indicator=wildfire --hdx_site=stage --live

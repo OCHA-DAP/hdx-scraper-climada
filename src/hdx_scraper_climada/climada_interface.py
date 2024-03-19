@@ -295,6 +295,7 @@ def calculate_indicator_timeseries_admin(
     indicator: str = "earthquake",
     climada_properties: dict = None,
     test_run: bool = False,
+    verbose: bool = False,
 ) -> list[dict]:
     global SPATIAL_FILTER_CACHE
     SPATIAL_FILTER_CACHE = {}
@@ -375,10 +376,11 @@ def calculate_indicator_timeseries_admin(
             admin_indicator_gdf = filter_dataframe_with_geometry(
                 country_data, admin_shape, indicator_key, cache_key=cache_key
             )
-            LOGGER.info(
-                f"Processing shape {j} of {n_shapes} "
-                f"{country_iso3alpha}-{admin1_names[j]}-{admin2_names[j]}"
-            )
+            if verbose:
+                LOGGER.info(
+                    f"Processing shape {j} of {n_shapes} "
+                    f"{country_iso3alpha}-{admin1_names[j]}-{admin2_names[j]}"
+                )
 
             value, aggregation = aggregate_value(indicator, admin_indicator_gdf)
 
@@ -387,7 +389,8 @@ def calculate_indicator_timeseries_admin(
                 indicator_key = f"river-flood.{model_name}"
             if value > 0.0:
                 event_date = datetime.datetime.fromordinal(int(indicator_data.date[i])).isoformat()
-                LOGGER.info(f"Event on {event_date[0:10]}  MaxInt:{value:0.2f}")
+                if verbose:
+                    LOGGER.info(f"Event on {event_date[0:10]}  MaxInt:{value:0.2f}")
                 events.append(
                     {
                         "country_name": country,
