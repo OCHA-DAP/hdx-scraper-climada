@@ -40,4 +40,4 @@ jobs:
           hdx-climada download --data_name="population" --hdx_site="prod"
       - name: Publish CLIMADA dataset
         run: |
-          hdx-climada create_dataset --indicator=storm-europe --hdx_site=stage --live
+          hdx-climada create_dataset --indicator=flood --hdx_site=stage --live
