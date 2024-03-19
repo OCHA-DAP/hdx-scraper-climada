@@ -40,4 +40,4 @@ jobs:
           hdx-climada download --data_name="population" --hdx_site="prod"
       - name: Publish crop-production
         run: |
-          hdx-climada create_dataset --indicator=litpop --hdx_site=stage --live
+          hdx-climada create_dataset --indicator=earthquake --hdx_site=stage --live
