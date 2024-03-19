@@ -99,7 +99,7 @@ Created from the Climada API. Background described in Eberenz, S., Lüthi, S., a
 Aznar-Siguan, G., and Bresch, D. N., 2019: CLIMADA v1: a global weather and climate risk assessment platform, Geosci. Model Dev., 12, 3085–3097. https://doi.org/10.5194/gmd-12-3085-2019.
 Bresch, D. N. and Aznar-Siguan, G., 2021: CLIMADA v1.4.1: towards a globally consistent adaptation options appraisal tool, Geosci. Model Dev., 14, 351-363, https://doi.org/10.5194/gmd-14-351-2021
 
-##climada-tropical-cyclone-production-dataset.caveats##
+##climada-tropical-cyclone-dataset.caveats##
 In this API we provide datasets in a form that can readily be used in CLIMADA analyses.
 
 Users should determine whether these datasets are suitable for a particular purpose or application, considering factors such as resolution (for example, a 4km grid is not suitable for modelling risk at the neighborhood level), the way that hazards are represented in the dataset (for example, specific events, event thresholds, probabilistic event sets, etc.), the way that exposure is represented, and other aspects.
