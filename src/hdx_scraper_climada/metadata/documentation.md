@@ -63,10 +63,10 @@ See respective API metadata and referenced publications for details and limitati
 ##climada-wildfire-dataset.notes##
 Global wildfire dataset at 4km resolution, based on MODIS satellite data 2000-2021 (cf https://firms.modaps.eosdis.nasa.gov).
 
-##climada-wildfire-production-dataset.methodology_other##
+##climada-wildfire-dataset.methodology_other##
 Created from the Climada API: Background described in Lüthi, Aznar-Siguan, G., Fairless, C., and Bresch, D. N., 2021: Globally consistent assessment of economic impacts of wildfires in CLIMADA v2.2, Geosci. Model Dev., 14, 7175-7187, https://gmd.copernicus.org/articles/14/7175/2021/
 
-##climada-wildfire-production-dataset.caveats##
+##climada-wildfire-dataset.caveats##
 In this API we provide datasets in a form that can readily be used in CLIMADA analyses.
 
 Users should determine whether these datasets are suitable for a particular purpose or application, considering factors such as resolution (for example, a 4km grid is not suitable for modelling risk at the neighborhood level), the way that hazards are represented in the dataset (for example, specific events, event thresholds, probabilistic event sets, etc.), the way that exposure is represented, and other aspects.
