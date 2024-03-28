@@ -148,6 +148,20 @@ def download_hdx_datasets(
     return download_paths
 
 
+def get_date_range_from_hdx(indicator: str, hdx_site: str = "stage"):
+    configure_hdx_connection(hdx_site=hdx_site)
+    dataset_name = f"climada-{indicator}-dataset"
+
+    dataset = Dataset.read_from_hdx(dataset_name)
+
+    if dataset is None:
+        date_range = "No date on HDX"
+    else:
+        date_range = dataset["dataset_date"]
+
+    return date_range
+
+
 if __name__ == "__main__":
     RESOURCE_FILE_PATHS = download_hdx_admin1_boundaries()
     LOGGER.info(f"Downloaded admin1 boundary data to: {RESOURCE_FILE_PATHS}")

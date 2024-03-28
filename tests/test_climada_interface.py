@@ -509,5 +509,4 @@ def test_get_date_range_from_live_api():
     for indicator in INDICATOR_LIST:
         date_range = get_date_range_from_live_api(indicator)
         print(f"{indicator}: {date_range}", flush=True)
-
-    assert False
+        assert len(date_range) == 44

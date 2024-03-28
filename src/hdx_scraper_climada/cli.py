@@ -8,7 +8,10 @@ import click
 from hdx.utilities.easy_logging import setup_logging
 
 
-from hdx_scraper_climada.climada_interface import print_overview_information
+from hdx_scraper_climada.climada_interface import (
+    print_overview_information,
+    get_date_range_from_live_api,
+)
 from hdx_scraper_climada.utilities import (
     read_attributes,
     INDICATOR_LIST,
@@ -19,6 +22,7 @@ from hdx_scraper_climada.create_datasets import get_date_range_from_timeseries_f
 from hdx_scraper_climada.download_from_hdx import (
     download_hdx_admin1_boundaries,
     download_hdx_datasets,
+    get_date_range_from_hdx,
 )
 from hdx_scraper_climada.download_gpw_population_map import download_gpw_population
 from hdx_scraper_climada.run import hdx_climada_run
@@ -58,16 +62,40 @@ def info(data_type: str = "litpop"):
     default="all",
     help=("an HDX-CLIMADA indicator or 'all'"),
 )
-def dataset_date(indicator: str = "all"):
-    """Show dataset date ranges read from the output timeseries files"""
+@click.option(
+    "--source",
+    type=click.Choice(["local", "HDX", "API"]),
+    is_flag=False,
+    default="local",
+    help=("Source for date range"),
+)
+@click.option(
+    "--hdx_site",
+    type=click.Choice(["stage", "prod"]),
+    is_flag=False,
+    default="stage",
+    help="an hdx_site value",
+)
+def dataset_date(indicator: str = "all", source: str = "local", hdx_site: str = "stage"):
+    """Show dataset date ranges read various sources"""
     print_banner_to_log(LOGGER, "dataset_date")
+    logging.disable(logging.INFO)
     if indicator == "all":
         indicator_list = INDICATOR_LIST
     else:
         indicator_list = [indicator]
+
+    output = []
+
     for indicator_ in indicator_list:
         dataset_attributes = read_attributes(f"climada-{indicator_}-dataset")
-        date_range = get_date_range_from_timeseries_file(dataset_attributes)
+        if source == "local":
+            date_range = get_date_range_from_timeseries_file(dataset_attributes)
+        elif source == "API":
+            date_range = get_date_range_from_live_api(indicator_)
+        elif source == "HDX":
+            date_range = get_date_range_from_hdx(indicator_, hdx_site=hdx_site)
+        output.append({"indicator": indicator_, "date_range": date_range})
         indicator_str = f"{indicator_} dataset_date:"
         print(f"{indicator_str:<40} {date_range}", flush=True)
 
