@@ -11,6 +11,7 @@ import time
 import pandas as pd
 import pytest
 
+
 from climada.util.api_client import Client
 
 from hdx_scraper_climada.patched_litpop import LitPop
@@ -24,7 +25,11 @@ from hdx_scraper_climada.climada_interface import (
     calculate_indicator_timeseries_admin,
     filter_dataframe_with_geometry,
     flood_timeseries_data_shim,
+    get_date_range_from_live_api,
 )
+
+from hdx_scraper_climada.utilities import INDICATOR_LIST
+
 from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_paths
 
 
@@ -498,3 +503,11 @@ def test_calculate_indicator_for_admin1_storm_europe():
     }
 
     assert len(admin1_indicator_gdf) == 43782
+
+
+def test_get_date_range_from_live_api():
+    for indicator in INDICATOR_LIST:
+        date_range = get_date_range_from_live_api(indicator)
+        print(f"{indicator}: {date_range}", flush=True)
+
+    assert False

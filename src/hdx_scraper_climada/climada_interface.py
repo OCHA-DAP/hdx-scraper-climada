@@ -18,6 +18,7 @@ from hdx.utilities.easy_logging import setup_logging
 from hdx.location.country import Country
 
 
+from climada import CONFIG
 from climada.util.api_client import Client
 import climada.util.coordinates as u_coord
 from hdx_scraper_climada.patched_litpop import LitPop
@@ -134,7 +135,46 @@ def calculate_indicator_for_admin1(
 
 
 def get_date_range_from_live_api(indicator: str) -> str:
-    pass
+    climada_properties = {}
+    date_range = []
+    if indicator in ["litpop", "litpop_alt", "crop-production"]:
+        ref_year = CONFIG.exposures.def_ref_year.int()
+        date_range = f"[{ref_year}-01-01T00:00:00 TO {ref_year}-12-31T23:59:59]"
+    elif indicator == "earthquake":
+        climada_properties["country_iso3alpha"] = "HTI"
+    elif indicator == "flood":
+        climada_properties["country_iso3alpha"] = "HTI"
+    elif indicator == "wildfire":
+        climada_properties["country_iso3alpha"] = "HTI"
+    elif indicator == "river-flood":
+        climada_properties = {"country_iso3alpha": "HTI", "climate_scenario": "historical"}
+    elif indicator == "tropical-cyclone":
+        climada_properties = {"country_iso3alpha": "HTI", "event_type": "observed"}
+    elif indicator == "storm-europe":
+        climada_properties["country_iso3alpha"] = "UKR"
+    # elif indicator == "relative-cropyield":
+    #     admin1_indicator_gdf = calculate_relative_cropyield_for_admin1(admin1_shape, country)
+    else:
+        LOGGER.info(f"Indicator {indicator} is not yet implemented")
+        raise NotImplementedError
+
+    if indicator in [
+        "earthquake",
+        "flood",
+        "wildfire",
+        "river-flood",
+        "tropical-cyclone",
+        "storm-europe",
+    ]:
+        indicator_data = CLIENT.get_hazard(
+            indicator.replace("-", "_"),
+            properties=climada_properties,
+        )
+        start_date = datetime.datetime.fromordinal(int(indicator_data.date[0])).isoformat()
+        end_date = datetime.datetime.fromordinal(int(indicator_data.date[-1])).isoformat()
+        date_range = f"[{start_date} TO {end_date}]"
+
+    return date_range
 
 
 def calculate_litpop_for_admin1(
