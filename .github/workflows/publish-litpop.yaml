@@ -3,7 +3,7 @@ name: CLIMADA Publication - crop-production
 on:
   workflow_dispatch:
   schedule: # 
-  - cron: "0 7 3 * *" # schedule for test
+  - cron: "0 7 2 * *" # schedule for test
 jobs:
   build:
     environment: 
@@ -15,7 +15,7 @@ jobs:
       USER_AGENT: ${{ vars.USER_AGENT }}
       PREPREFIX: ${{ vars.PREPREFIX }}
       CLIMADA_NEW_DATA: ${{ vars.CLIMADA_NEW_DATA}}
-      CLIMADA_INDICATOR: crop-production
+      CLIMADA_INDICATOR: litpop
     runs-on: ubuntu-latest
     strategy:
       matrix:
