@@ -44,7 +44,7 @@ jobs:
       - name: Publish CLIMADA dataset
         run: |
           hdx-climada create_dataset --indicator=crop-production --hdx_site=stage --live
-          echo "NEW_CLIMADA_DATA: ${env.CLIMADA_NEW_DATA}"
+          echo "NEW_CLIMADA_DATA: $CLIMADA_NEW_DATA"
       - name: Send mail - no new data
         if: env.CLIMADA_NEW_DATA == 'No'
         uses: dawidd6/action-send-mail@v3
@@ -57,7 +57,7 @@ jobs:
           body: ${{github.workflow}} produced no new data!
           to: ${{secrets.EMAIL_LIST}}
           from: ${{vars.EMAIL_FROM}}
-      - name: Send mail - no new data
+      - name: Send mail - new data
         if: env.CLIMADA_NEW_DATA == 'Yes'
         uses: dawidd6/action-send-mail@v3
         with:
