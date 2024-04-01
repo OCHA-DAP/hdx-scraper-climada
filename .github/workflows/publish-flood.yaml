@@ -1,9 +1,9 @@
-name: CLIMADA Publication - storm-europe
+name: CLIMADA API data date range - flood
 
 on:
   workflow_dispatch:
   schedule: # 
-  - cron: "0 7 7 * *" # schedule for test
+  - cron: "0 7 8 * *" # schedule for test
 jobs:
   build:
     environment: 
@@ -15,7 +15,7 @@ jobs:
       USER_AGENT: ${{ vars.USER_AGENT }}
       PREPREFIX: ${{ vars.PREPREFIX }}
       CLIMADA_NEW_DATA: ${{ vars.CLIMADA_NEW_DATA}}
-      CLIMADA_INDICATOR: tropical-cyclone
+      CLIMADA_INDICATOR: flood
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -42,31 +42,17 @@ jobs:
         run: |
           hdx-climada download --data_name="boundaries" --hdx_site="prod"
           hdx-climada download --data_name="population" --hdx_site="prod"
-      - name: Publish CLIMADA dataset
+      - name: Check API date range
         run: |
-          hdx-climada create_dataset --indicator=$CLIMADA_INDICATOR --hdx_site=$HDX_SITE --live
-          echo "NEW_CLIMADA_DATA: $CLIMADA_NEW_DATA"
-      - name: Send mail - no new data
-        if: env.CLIMADA_NEW_DATA == 'No'
+          hdx-climada dataset_date --indicator=all --source=API
+      - name: Send mail - reminder
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{secrets.EMAIL_SERVER}}
           server_port: ${{vars.EMAIL_PORT}}
           username: ${{vars.EMAIL_USERNAME}}
           password: ${{secrets.EMAIL_PASSWORD}}
-          subject: "No new data: ${{github.workflow}} run job"
-          body: ${{github.workflow}} produced no new data!
-          to: ${{secrets.EMAIL_LIST}}
-          from: ${{vars.EMAIL_FROM}}
-      - name: Send mail - new data
-        if: env.CLIMADA_NEW_DATA == 'Yes'
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: ${{secrets.EMAIL_SERVER}}
-          server_port: ${{vars.EMAIL_PORT}}
-          username: ${{vars.EMAIL_USERNAME}}
-          password: ${{secrets.EMAIL_PASSWORD}}
-          subject: "New data! :-) : ${{github.workflow}} run job"
-          body: ${{github.workflow}} produced new data!
+          subject: "CLIMADA - check dates for flood indicator"
+          body: CLIMADA - check dates for flood indicator
           to: ${{secrets.EMAIL_LIST}}
           from: ${{vars.EMAIL_FROM}}

@@ -1,4 +1,4 @@
-name: CLIMADA Publication - crop-production
+name: CLIMADA Publication - earthquake
 
 on:
   workflow_dispatch:

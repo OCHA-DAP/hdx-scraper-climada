@@ -1,4 +1,4 @@
-name: CLIMADA Publication - crop-production
+name: CLIMADA Publication - tropical-cyclone
 
 on:
   workflow_dispatch:

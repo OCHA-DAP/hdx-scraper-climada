@@ -1,9 +1,9 @@
-name: CLIMADA Publication - crop-production
+name: CLIMADA Publication - wildfire
 
 on:
   workflow_dispatch:
   schedule: # 
-  - cron: "0 7 4 * *" # schedule for test
+  - cron: "0 7 5 * *" # schedule for test
 jobs:
   build:
     environment: 
