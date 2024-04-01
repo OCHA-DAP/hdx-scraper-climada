@@ -46,15 +46,19 @@ def create_datasets_in_hdx(
     LOGGER.info(f"dataset_date from new build: {file_dataset_date}")
     LOGGER.info(f"dataset_date from HDX: {hdx_dataset_date}")
 
+    # In GitHub Actions environment variables are transmitted between job steps via the file
+    # at $GITHUB_ENV but within a job step they are accessed as normal environment variables.
     if os.getenv("GITHUB_ENV"):
         if file_dataset_date == hdx_dataset_date:
             LOGGER.info("No new data by dataset_date, so returning without update")
             with open(os.getenv("GITHUB_ENV"), "a", encoding="utf-8") as environment_file:
                 environment_file.write("CLIMADA_NEW_DATA=No")
+            os.environ["CLIMADA_NEW_DATA"] = "No"  # This works in the current job step
             return None
         else:
             with open(os.getenv("GITHUB_ENV"), "a", encoding="utf-8") as environment_file:
                 environment_file.write("CLIMADA_NEW_DATA=Yes")
+            os.environ["CLIMADA_NEW_DATA"] = "Yes"  # This works in the current job step
 
     dataset, _ = create_or_fetch_base_dataset(
         dataset_name, dataset_attributes, hdx_site=hdx_site, force_create=force_create

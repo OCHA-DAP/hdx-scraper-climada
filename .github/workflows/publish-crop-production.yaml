@@ -15,6 +15,7 @@ jobs:
       USER_AGENT: ${{ vars.USER_AGENT }}
       PREPREFIX: ${{ vars.PREPREFIX }}
       CLIMADA_NEW_DATA: ${{ vars.CLIMADA_NEW_DATA}}
+      CLIMADA_INDICATOR: crop-production
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -43,7 +44,7 @@ jobs:
           hdx-climada download --data_name="population" --hdx_site="prod"
       - name: Publish CLIMADA dataset
         run: |
-          hdx-climada create_dataset --indicator=crop-production --hdx_site=stage --live
+          hdx-climada create_dataset --indicator=$CLIMADA_INDICATOR --hdx_site=stage --live
           echo "NEW_CLIMADA_DATA: $CLIMADA_NEW_DATA"
       - name: Send mail - no new data
         if: env.CLIMADA_NEW_DATA == 'No'
