@@ -279,13 +279,16 @@ def write_detail_data(country_dataframes: list[pd.DataFrame], output_file_path: 
 
 
 if __name__ == "__main__":
-    COUNTRY = "Haiti"
-    INDICATOR = "litpop"
+    COUNTRY = "Colombia"
+    INDICATOR = "flood"
+    EXPORT_DIRECTORY = "temp"
     LOGGER.info("Generating Climada csv files")
     LOGGER.info("============================")
     LOGGER.info(f"Timestamp: {datetime.datetime.now().isoformat()}")
     T0 = time.time()
-    STATUSES = export_indicator_data_to_csv(country=COUNTRY, indicator=INDICATOR)
+    STATUSES = export_indicator_data_to_csv(
+        country=COUNTRY, indicator=INDICATOR, export_directory=EXPORT_DIRECTORY
+    )
     for STATUS in STATUSES:
         LOGGER.info(STATUS)
     LOGGER.info(f"Processed all countries in {time.time()-T0:0.0f} seconds")

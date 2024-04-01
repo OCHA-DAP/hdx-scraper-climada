@@ -18,11 +18,14 @@ from hdx_scraper_climada.utilities import (
     print_banner_to_log,
     CLIMADA_DISCLAIMER,
 )
-from hdx_scraper_climada.create_datasets import get_date_range_from_timeseries_file
+from hdx_scraper_climada.create_datasets import (
+    get_date_range_from_timeseries_file,
+    get_date_range_from_hdx,
+)
+from hdx_scraper_climada.create_csv_files import export_indicator_data_to_csv
 from hdx_scraper_climada.download_from_hdx import (
     download_hdx_admin1_boundaries,
     download_hdx_datasets,
-    get_date_range_from_hdx,
 )
 from hdx_scraper_climada.download_gpw_population_map import download_gpw_population
 from hdx_scraper_climada.run import hdx_climada_run
@@ -207,3 +210,28 @@ def create_dataset(
     """Create CSV data files for an indicator and create dataset in HDX"""
     print_banner_to_log(LOGGER, "create_dataset")
     hdx_climada_run(indicator, "all", hdx_site=hdx_site, dry_run=not live)
+
+
+@hdx_climada.command(name="create_csv", short_help="Create a dataset in HDX with CSV files")
+@click.option(
+    "--indicator",
+    type=click.Choice(INDICATOR_LIST),
+    is_flag=False,
+    default="litpop",
+    help=("an HDX-CLIMADA indicator"),
+)
+@click.option(
+    "--country",
+    is_flag=False,
+    default="all",
+    help="A country name, currently unused the default value is 'all'",
+)
+@click.option("--export_directory", is_flag=False, default=None, help="output directory")
+def create_csv(indicator: str = "litpop", country: str = "Haiti", export_directory: str = ""):
+    """Create CSV data files for an indicator and country"""
+    print_banner_to_log(LOGGER, "create_csv")
+    statuses = export_indicator_data_to_csv(
+        country=country, indicator=indicator, export_directory=export_directory
+    )
+    for status in statuses:
+        print(status, flush=True)

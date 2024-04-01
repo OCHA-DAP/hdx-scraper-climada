@@ -4,10 +4,7 @@
 
 This code is designed to take data from the Climada API for the 23 Humanitarian Response Plan countries on HDX, aggregate it over subnational regions (admin1) where appropriate, export it to CSV and then publish it to HDX.
 
-Getting started:
-https://github.com/CLIMADA-project/climada_python/blob/main/doc/tutorial/climada_util_api_client.ipynb
-
-The data can be explored using this browser:
+The data in the CLIMADA API can be explored using this browser:
 https://climada.ethz.ch/datasets/
 
 The maintainer for this dataset is set in the `climada-litpop.json` file to `emanuel-schmid-3262` and the organisation to `eth-zurich-weather-and-climate-risks`

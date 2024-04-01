@@ -38,11 +38,22 @@ def create_datasets_in_hdx(
     dataset_attributes = read_attributes(dataset_name)
     countries_data = read_countries()
 
+    # Get dataset_date from HDX
+    file_dataset_date = get_date_range_from_timeseries_file(dataset_attributes)
+    # Get dataset_date from
+    hdx_dataset_date = get_date_range_from_hdx(None, hdx_site=hdx_site, dataset_name=dataset_name)
+
+    if file_dataset_date == hdx_dataset_date:
+        os.environ["CLIMADA_NEW_DATA"] = "No"
+        return None
+    else:
+        os.environ["CLIMADA_NEW_DATA"] = "Yes"
+
     dataset, _ = create_or_fetch_base_dataset(
         dataset_name, dataset_attributes, hdx_site=hdx_site, force_create=force_create
     )
 
-    dataset["dataset_date"] = get_date_range_from_timeseries_file(dataset_attributes)
+    dataset["dataset_date"] = file_dataset_date
     dataset["groups"] = make_countries_group(dataset_name)
     dataset["maintainer"] = "76f545b9-6944-41c8-a999-eeb1bb70de7a"  # this is Emanuel
     # dataset["maintainer"] = "972627a5-4f23-4922-8892-371ece6531b6"  # this is me
@@ -306,6 +317,21 @@ def get_date_range_from_timeseries_file(
         end_date = timeseries_data["event_date"].max()
 
         date_range = f"[{start_date} TO {end_date}]"
+
+    return date_range
+
+
+def get_date_range_from_hdx(indicator: str, hdx_site: str = "stage", dataset_name: str = None):
+    configure_hdx_connection(hdx_site=hdx_site)
+    if dataset_name is None:
+        dataset_name = f"climada-{indicator}-dataset"
+
+    dataset = Dataset.read_from_hdx(dataset_name)
+
+    if dataset is None:
+        date_range = "No date on HDX"
+    else:
+        date_range = dataset["dataset_date"]
 
     return date_range
 

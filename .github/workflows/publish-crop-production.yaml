@@ -1,0 +1,70 @@
+name: CLIMADA Publication - crop-production
+
+on:
+  workflow_dispatch:
+  # schedule: # 
+  # - cron: "0 7 * * *" # schedule for test
+jobs:
+  build:
+    environment: 
+      name: test
+    env:
+      HDX_KEY_STAGE: ${{ secrets.HDX_KEY_STAGE }}
+      HDX_KEY: ${{ secrets.HDX_BOT_SCRAPERS_API_TOKEN }}
+      HDX_SITE: ${{ vars.HDX_SITE }}
+      USER_AGENT: ${{ vars.USER_AGENT }}
+      PREPREFIX: ${{ vars.PREPREFIX }}
+      CLIMADA_NEW_DATA: ${{ vars.CLIMADA_NEW_DATA}}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          sudo apt-add-repository ppa:ubuntugis/ubuntugis-unstable
+          sudo apt-get update
+          sudo apt-get install gdal-bin libgdal-dev
+          pip install GDAL==`gdal-config --version`
+          python -m pip install --upgrade pip
+          make install
+      - name: Download HDX and NASA assets
+        env:
+          NASA_EARTHDATA_USERNAME: ${{ vars.NASA_EARTHDATA_USERNAME }}
+          NASA_EARTHDATA_PASSWORD: ${{ secrets.NASA_EARTHDATA_PASSWORD }}
+          HDX_SITE: prod
+        run: |
+          hdx-climada download --data_name="boundaries" --hdx_site="prod"
+          hdx-climada download --data_name="population" --hdx_site="prod"
+      - name: Publish CLIMADA dataset
+        run: |
+          hdx-climada create_dataset --indicator=crop-production --hdx_site=stage --live
+      - name: Send mail - no new data
+        if: ${{ vars.CLIMADA_NEW_DATA }} == 'No'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{secrets.EMAIL_SERVER}}
+          server_port: ${{vars.EMAIL_PORT}}
+          username: ${{vars.EMAIL_USERNAME}}
+          password: ${{secrets.EMAIL_PASSWORD}}
+          subject: "No new data: ${{github.workflow}} run job"
+          body: ${{github.workflow}} produced no new data!
+          to: ${{secrets.EMAIL_LIST}}
+          from: ${{vars.EMAIL_FROM}}
+      - name: Send mail - no new data
+        if: ${{ vars.CLIMADA_NEW_DATA }} == 'Yes'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{secrets.EMAIL_SERVER}}
+          server_port: ${{vars.EMAIL_PORT}}
+          username: ${{vars.EMAIL_USERNAME}}
+          password: ${{secrets.EMAIL_PASSWORD}}
+          subject: "New data! :-) : ${{github.workflow}} run job"
+          body: ${{github.workflow}} produced new data!
+          to: ${{secrets.EMAIL_LIST}}
+          from: ${{vars.EMAIL_FROM}}
