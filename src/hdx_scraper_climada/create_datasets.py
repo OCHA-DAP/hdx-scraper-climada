@@ -45,12 +45,16 @@ def create_datasets_in_hdx(
 
     LOGGER.info(f"dataset_date from new build: {file_dataset_date}")
     LOGGER.info(f"dataset_date from HDX: {hdx_dataset_date}")
-    if file_dataset_date == hdx_dataset_date:
-        LOGGER.info("No new data by dataset_date, so returning without update")
-        os.environ["CLIMADA_NEW_DATA"] = "No"
-        return None
-    else:
-        os.environ["CLIMADA_NEW_DATA"] = "Yes"
+
+    if os.getenv("GITHUB_ENV"):
+        if file_dataset_date == hdx_dataset_date:
+            LOGGER.info("No new data by dataset_date, so returning without update")
+            with open(os.getenv("GITHUB_ENV"), "a", encoding="utf-8") as environment_file:
+                environment_file.write("CLIMADA_NEW_DATA=No")
+            return None
+        else:
+            with open(os.getenv("GITHUB_ENV"), "a", encoding="utf-8") as environment_file:
+                environment_file.write("CLIMADA_NEW_DATA=Yes")
 
     dataset, _ = create_or_fetch_base_dataset(
         dataset_name, dataset_attributes, hdx_site=hdx_site, force_create=force_create
