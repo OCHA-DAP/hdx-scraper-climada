@@ -44,7 +44,7 @@ jobs:
           hdx-climada download --data_name="population" --hdx_site="prod"
       - name: Check API date range
         run: |
-          hdx-climada dataset_date --indicator=all --source=API
+          hdx-climada dataset_date --indicator=$CLIMADA_INDICATOR --source=API
       - name: Send mail - reminder
         uses: dawidd6/action-send-mail@v3
         with:
