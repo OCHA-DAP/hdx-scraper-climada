@@ -45,7 +45,7 @@ jobs:
         run: |
           hdx-climada create_dataset --indicator=crop-production --hdx_site=stage --live
       - name: Send mail - no new data
-        if: ${{ vars.CLIMADA_NEW_DATA }} == 'No'
+        if: env.CLIMADA_NEW_DATA == 'No'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{secrets.EMAIL_SERVER}}
@@ -57,7 +57,7 @@ jobs:
           to: ${{secrets.EMAIL_LIST}}
           from: ${{vars.EMAIL_FROM}}
       - name: Send mail - no new data
-        if: ${{ vars.CLIMADA_NEW_DATA }} == 'Yes'
+        if: env.CLIMADA_NEW_DATA == 'Yes'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{secrets.EMAIL_SERVER}}
