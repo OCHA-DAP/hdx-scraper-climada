@@ -44,6 +44,7 @@ jobs:
       - name: Publish CLIMADA dataset
         run: |
           hdx-climada create_dataset --indicator=crop-production --hdx_site=stage --live
+          echo "NEW_CLIMADA_DATA: ${env.CLIMADA_NEW_DATA}"
       - name: Send mail - no new data
         if: env.CLIMADA_NEW_DATA == 'No'
         uses: dawidd6/action-send-mail@v3

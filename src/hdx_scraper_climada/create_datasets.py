@@ -43,7 +43,10 @@ def create_datasets_in_hdx(
     # Get dataset_date from
     hdx_dataset_date = get_date_range_from_hdx(None, hdx_site=hdx_site, dataset_name=dataset_name)
 
+    LOGGER.info(f"dataset_date from new build: {file_dataset_date}")
+    LOGGER.info(f"dataset_date from HDX: {hdx_dataset_date}")
     if file_dataset_date == hdx_dataset_date:
+        LOGGER.info("No new data by dataset_date, so returning without update")
         os.environ["CLIMADA_NEW_DATA"] = "No"
         return None
     else:
