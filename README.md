@@ -4,19 +4,61 @@
 
 This code is designed to take data from the Climada API for the 23 Humanitarian Response Plan countries on HDX, aggregate it over subnational regions (admin1) where appropriate, export it to CSV and then publish it to HDX.
 
-The data in the CLIMADA API can be explored using this browser:
+The data are all available under the ETH Zürich - Weather and Climate Risks organization on HDX:
+https://data.humdata.org/organization/eth-zurich-weather-and-climate-risks
+
+The source data in the CLIMADA API can be explored using this browser:
 https://climada.ethz.ch/datasets/
 
-The maintainer for this dataset is set in the `climada-litpop.json` file to `emanuel-schmid-3262` and the organisation to `eth-zurich-weather-and-climate-risks`
+The datasets published are lit population, crop_production, earthquake, flood, wildfire, tropical_cyclone and storm_europe.
+
+## Disclaimer
+
+These datasets were generated from the CLIMADA API which comes with the following disclaimer:
+
+In this API we provide datasets in a form that can readily be used in CLIMADA analyses.
+
+Users should determine whether these datasets are suitable for a particular purpose or application,
+considering factors such as resolution (for example, a 4km grid is not suitable for modelling risk
+at the neighborhood level), the way that hazards are represented in the dataset
+(for example, specific events, event thresholds, probabilistic event sets, etc.),
+the way that exposure is represented, and other aspects.
+
+Data provided with no warranty of any kind under CC BY 4.0.
+
+See respective API metadata and referenced publications for details and limitations.
+
+Original at: https://climada.ethz.ch/disclaimer/
+
+
+## Data format
+
+Each dataset will have a a "country" CSV format file for each country where data are available and a CSV format summary file. The country file contains gridded data of the indicator, typically on a 4km grid. The summary file contains data summarised over the "admin1" level - this corresponds to a province or state. Both types of file include [HXL tags](https://hxlstandard.org/) on the second row of the dataset. Both files have the same columns:
+```
+country_name,admin1_name,latitude,longitude,aggregation,indicator,value
+#country,#adm1+name,#geo+lat,#geo+lon,,#indicator+name,#indicator+num
+```
+
+The exposures datasets (earthquake, flood, wildfire, tropical cyclone and storm europe) also have a CSV format timeseries summary file. Which provides a summary value for each "event" in a country at admin1 level or better. These files have the following columns and HXL tags:
+
+```
+country_name,admin1_name,admin2_name,latitude,longitude,aggregation,indicator,event_date,value
+#country,#adm1+name,#adm2+name,#geo+lat,#geo+lon,,#indicator+name,#date,#indicator+num
+```
+
+Where possible timeseries data is provided at the admin2 aggregation level
+
+The country files have aggregation `none` and the summary files will have aggregation of either `sum` or `max`. The `indicator` column may be a compound value such as `crop_production.whe.noirr.USD` where an indicator calculation takes multiple values or it may be simple, such as `litpop`.
+
+The summary file has a row per country per admin1 region per indicator whilst the country file has a row per underlying latitude / longitude grid point per indicator. 
+
+Where the `admin1_name` are as per the private UN dataset [unmap-international-boundaries-geojson]([unmap-international-boundaries-geojson](https://data.humdata.org/dataset/unmap-international-boundaries-geojson)).
 
 ## Publication
 
-Since these datasets are processed locally the following process is followed to publish to production:
-1. Set `INDICATOR` to correct value in `run.py`
-2. Set `DRY_RUN` to `False` in `run.py`
-3. Set the `HDX_SITE` to `prod` in `~/.hdx_configuration.yaml` or in `create_datasets.py`
+The data are updated using GitHub Actions on this repository which run monthly on consecutive days at the beginning of each month. The datasets are only updated on HDX if the date range found in the data from API changes - we anticipate that this will happen yearly.
 
-This changes should be reverted after publication. The resources should have been generated prior to publication with publication itself taking 5-10 minutes
+The flood indicator cannot be processed in GitHub Actions because it exceeds memory/time constrains. A monthly job will be run to highlight the need to consider a manual update which will require the code in this repository to be installed locally, as described below.
 
 ## Installation 
 Create a virtual environment (assuming Windows for the `activate` command):
@@ -36,11 +78,10 @@ It is then installed with `pip`:
 pip install GDAL-3.4.3-cp310-cp310-win_amd64.whl
 ```
 
-The climada Python Library (https://github.com/CLIMADA-project/climada_python) is installed with the
-following, assuming the host machine is Windows based. 
+This repository can then be cloned and installed with
 
-```shell
-pip install climada
+```shell 
+pip install -e .
 ```
 
 The `.from_shape_and_countries` method for `litpop` (at least) requires the following file to be downloaded:
@@ -51,11 +92,17 @@ to
 
 ~\climada\data\gpw-v4-population-count-rev11_2020_30_sec_tif\gpw_v4_population_count_rev11_2020_30_sec.tif
 
-This can be done using the `hdx-climada` commandline tool, described below. This requires an account to be created for the download. An example script is provided to automate this download:
+This can be done using the `hdx-climada` commandline tool, described below. This requires an account to be created on [https://urs.earthdata.nasa.gov/users/new](https://urs.earthdata.nasa.gov/users/new) for the download and the username and password stored in the environment variables `NASA_EARTHDATA_USERNAME` and `NASA_EARTHDATA_PASSWORD` respectively. The command to download the data is then:
 
-https://urs.earthdata.nasa.gov/documentation/for_users/data_access/python
+```shell
+hdx-climada download --data_name="population"
+```
 
-In addition UNMAP boundaries need to be downloaded from HDX which are private datasets, not publically available. This can be done using the `hdx-climada` commandline tool, described below. They can only be downloaded programmatically from the `prod` HDX site but can be downloaded manually from `stage` or elsewhere.
+In addition UNMAP boundaries need to be downloaded from HDX. These are private datasets, not publically available. An appropriate HDX_KEY needs to be provided in an environment variable `HDX_KEY` for this download, and the upload of the completed datasets. The data can be downloaded using the `hdx-climada` commandline tool, described below. They can only be downloaded programmatically from the `prod` HDX site but can be downloaded manually from `stage` or elsewhere.
+
+```shell
+hdx-climada download --data_name="boundaries" --hdx_site="prod"
+```
 
 We use `nbstripout` to remove output cells from Jupyter Notebooks prior, this needs to be installed per repository with:
 
@@ -63,7 +110,9 @@ We use `nbstripout` to remove output cells from Jupyter Notebooks prior, this ne
 nbstripout --install
 ```
 
-The `write_image` function in `plotly` which is used to export figures to png format in Jupyter Notebook functions requires the `kaleido` library which is rather difficult to install on Windows 10. Simply installing with `pip` leads to a hang when an attempt is
+Note that this is not compatible with [GitKraken](https://www.gitkraken.com/).
+
+The `write_image` function in `plotly` which is used to export figures to png format in Jupyter Notebook functions requires the `kaleido` library which is rather difficult to install on Windows 10. Simply installing with `pip` leads to a hang.
 
 The solution is to downgrade to kaleido 0.1.0 and patch the library (file: Kaleido\scope\base.py - Line:70)! In the original `kaleido.cmd` reads `kaleido`.
 
@@ -80,29 +129,6 @@ The solution is to downgrade to kaleido 0.1.0 and patch the library (file: Kalei
 
 Described here:
 https://github.com/plotly/Kaleido/issues/110#issuecomment-1021672450 
-
-## Data format
-
-Each dataset will have a a "country" CSV format file for each country where data are available and a CSV format summary file.  Both types of file include HXL tags on the second row of the dataset. Both files have the same columns:
-```
-country_name,region_name,latitude,longitude,aggregation,indicator,value
-#country,#adm1+name,#geo+lat,#geo+lon,,#indicator+name,#indicator+num
-```
-
-Some datasets also have a CSV format timeseries summary file, these have the following columns and HXL tags:
-
-```
-country_name,admin1_name,admin2_name,latitude,longitude,aggregation,indicator,event_date,value
-#country,#adm1+name,#adm2+name,#geo+lat,#geo+lon,,#indicator+name,#date,#indicator+num
-```
-
-Where possible timeseries data is provided at the admin2 aggregation level
-
-The country files have aggregation `none` and the summary files will have aggregation of either `sum` or `max`. The `indicator` column may be a compound value such as `crop_production.whe.noirr.USD` where an indicator calculation takes multiple values or it may be simple, such as `litpop`.
-
-The summary file has a row per country per admin1 region per indicator whilst the country file has a row per underlying latitude / longitude grid point per indicator. 
-
-Where the `region_name` are `admin1` names as per the private UNOCHA dataset [unmap-international-boundaries-geojson]([unmap-international-boundaries-geojson](https://data.humdata.org/dataset/unmap-international-boundaries-geojson)).
 
 The dataset metadata are compiled in the file from the [CLIMADA data-type endpoint](https://climada.ethz.ch/data-types/):
 ```
@@ -133,13 +159,26 @@ Commands:
 """
 
 
-## Dataset updates
+## Dataset build details
 
-The data are generated using `make run`. Currently updates are manual since there are unresolved challenges in running the process in a GitHub Action.
+A dataset can be generated manually with a commandline like:
 
-### LitPop
+```shell
+hdx-climada create_dataset --indicator=$CLIMADA_INDICATOR --hdx_site=$HDX_SITE --live
+```
 
-Runtime for Litpop is about 50 minutes and generates 58MB of CSV files.
+The bulk properties of the datasets, built in GitHub Actions with the exception of flood:
+
+|Indicator	|Size/MB|	Runtime	|Date range|
+|-----------|-------|---------|----------|
+|Lit population	|58	|34 minutes	|[2020-01-01T00:00:00 TO 2020-12-31T23:59:59]
+|Crop production	|3.62	|6 minutes	|[2018-01-01T00:00:00 TO 2018-12-31T23:59:59]
+|Earthquake	|58.5|	2 hours 11 minutes	|[1905-02-17T00:00:00 TO 2017-12-03T00:00:00]
+|Flood	|239|	12 hours|	[2000-04-05T00:00:00 TO 2018-07-15T00:00:00]
+|Wildfire	|44.9|	31 minutes	|[2001-01-01T00:00:00 TO 2020-01-01T00:00:00]
+|Tropical-cyclone	|28.6|	58 minutes|	[1980-08-01T00:00:00 TO 2020-12-25T00:00:00]
+|Storm-Europe|	11.5|	2 hours 22 minutes	|[1940-11-01T00:00:00 TO 2013-12-05T00:00:00]
+
 
 ### Crop production
 
@@ -179,15 +218,7 @@ Runtime for storm-europe is about 3 hours, generating 11MB. It is only run for U
 The event date are supplied as a float which needs to be coerced to an int to convert to a date. 
 Multiple events are recorded on each date, possibly representing hourly figures.
 
-### River flood - not published
-
-Runtime for river-flood is about 75 minutes for 46MB (single model)
-
-
-### Relative cropyield - not published
-
 ## Analysis
-
 
 The Jupyter Notebook `data_explorer_notebook.ipynb` is used to check datasets "manually". The Excel spreadsheet `2024-01-27-pivot-table-haiti-admin1-crop_production.xlsx` demonstrates the use of PivotTables to convert data from a "narrow" format where there is a single indicator column potentially containing multiple indicator values for different attribute selections in the same set (i.e. `crop_production.whe.noirr.USD` and `crop_production.soy.noirr.USD`)
 
