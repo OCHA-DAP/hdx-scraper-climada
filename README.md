@@ -143,7 +143,7 @@ But they are picked up by `create_datasets` from
 
 This repository implements a commandline interface using the `click` library, this is mainly concerned with the creation of the CLIMADA datasets for HDX but can also be used to download the datasets from HDX. It is accessed via the command `hdx-climada`. Help is provided by invoking `hdx-climada --help`:
 
-"""
+```
 Usage: hdx-climada [OPTIONS] COMMAND [ARGS]...
 
   Tools for the CLIMADA datasets in HDX
@@ -156,7 +156,7 @@ Commands:
   dataset_date    Show dataset date ranges
   download        Download data assets required to build the datasets
   info            Show the data_type info from the CLIMADA interface
-"""
+```
 
 
 ## Dataset build details
