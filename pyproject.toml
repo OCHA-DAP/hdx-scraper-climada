@@ -10,7 +10,7 @@ authors = [
 ]
 
 dependencies = [
-    "climada==4.0.1",
+    "climada>=4.0.1",
     "click",
     "dask_expr",
     "pandas",
