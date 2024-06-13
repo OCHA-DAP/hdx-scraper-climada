@@ -5,6 +5,9 @@ import logging
 import os
 import click
 
+import numpy as np
+from climada.util.constants import SYSTEM_DIR
+
 from hdx.utilities.easy_logging import setup_logging
 
 
@@ -30,11 +33,24 @@ from hdx_scraper_climada.download_from_hdx import (
 from hdx_scraper_climada.download_gpw_population_map import download_gpw_population
 from hdx_scraper_climada.run import hdx_climada_run
 
+from hdx_scraper_climada.patched_nightlight import download_nl_files
+
 setup_logging()
 LOGGER = logging.getLogger(__name__)
 
 INDICATOR_ALL = ["all"]
 INDICATOR_ALL.extend(INDICATOR_LIST)
+
+BM_FILENAMES = [
+    "BlackMarble_%i_A1_geo_gray.tif",
+    "BlackMarble_%i_A2_geo_gray.tif",
+    "BlackMarble_%i_B1_geo_gray.tif",
+    "BlackMarble_%i_B2_geo_gray.tif",
+    "BlackMarble_%i_C1_geo_gray.tif",
+    "BlackMarble_%i_C2_geo_gray.tif",
+    "BlackMarble_%i_D1_geo_gray.tif",
+    "BlackMarble_%i_D2_geo_gray.tif",
+]
 
 
 @click.group()
@@ -106,7 +122,7 @@ def dataset_date(indicator: str = "all", source: str = "local", hdx_site: str = 
 @hdx_climada.command(name="download")
 @click.option(
     "--data_name",
-    type=click.Choice(["boundaries", "population", "climada"]),
+    type=click.Choice(["boundaries", "population", "climada", "blackmarble"]),
     is_flag=False,
     default="all",
     help="data to download",
@@ -170,6 +186,21 @@ def download(
         print("The following files were downloaded:", flush=True)
         for download_path in download_paths:
             print(download_path, flush=True)
+    elif data_name == "blackmarble":
+        print("Downloading NASA Black Marble tiff files", flush=True)
+        if download_directory is None:
+            download_directory = SYSTEM_DIR
+
+        download_nl_files(
+            req_files=np.ones(
+                len(BM_FILENAMES),
+            ),
+            files_exist=np.zeros(
+                len(BM_FILENAMES),
+            ),
+            dwnl_path=download_directory,
+            year=2016,
+        )
     else:
         print(
             f"Data_name '{data_name}' is not know, only 'boundaries', 'population' and 'climada' "
