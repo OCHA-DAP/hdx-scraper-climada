@@ -40,3 +40,7 @@ src/hdx_scraper_climada/analysis/scratch_notebook.ipynb
 src/hdx_scraper_climada/temp/
 
 temp/
+
+src/hdx_scraper_climada/profile.html
+
+src/hdx_scraper_climada/profile.json

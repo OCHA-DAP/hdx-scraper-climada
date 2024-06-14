@@ -201,13 +201,21 @@ def read_documentation_from_file(dataset_name: str) -> dict:
     return documentation
 
 
-def read_countries():
+def read_countries(indicator: str = None) -> list[dict]:
     with open(
         os.path.join(os.path.dirname(__file__), "metadata", "countries.csv"), encoding="utf-8"
     ) as countries_file:
         rows = list(csv.DictReader(countries_file))
 
-    return rows
+    filtered_rows = []
+    if indicator is None:
+        filtered_rows = rows
+    else:
+        for row in rows:
+            if indicator in row["datasets"] or row["datasets"] == "all":
+                filtered_rows.append(row)
+
+    return filtered_rows
 
 
 def print_banner_to_log(logger: logging.Logger, name: str):

@@ -13,6 +13,7 @@ from hdx_scraper_climada.utilities import (
     write_dictionary,
     print_banner_to_log,
     read_documentation_from_file,
+    read_countries,
 )
 
 TEMP_FILE_PATH = os.path.join(Path(__file__).parent, "temp", "tmp.csv")
@@ -79,3 +80,27 @@ def test_print_banner_to_log(caplog):
     assert len(log_rows) == 5
     assert len(log_rows[0]) == len(log_rows[1])
     assert "test-banner" in caplog.text
+
+
+def test_read_countries_all():
+    countries = read_countries()
+    assert len(countries) == 49
+    assert len(countries) == len({x["country_name"] for x in countries})
+
+
+def test_read_countries_earthquake():
+    countries = read_countries(indicator="earthquake")
+    assert len(countries) == 35
+    assert len(countries) == len({x["iso3alpha_country_code"] for x in countries})
+
+
+def test_read_countries_tropical_cyclone():
+    countries = read_countries(indicator="tropical-cyclone")
+    assert len(countries) == 36
+    assert len(countries) == len({x["iso3alpha_country_code"] for x in countries})
+
+
+def test_read_countries_floods():
+    countries = read_countries(indicator="floods")
+    assert len(countries) == 46
+    assert len(countries) == len({x["iso3alpha_country_code"] for x in countries})
