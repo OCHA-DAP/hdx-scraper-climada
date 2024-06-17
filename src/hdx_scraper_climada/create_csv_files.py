@@ -263,6 +263,10 @@ def write_detail_data(country_dataframes: list[pd.DataFrame], output_file_path: 
     if os.path.exists(output_file_path):
         status = f"Output file {output_file_path} already exists, not overwriting"
         return status
+
+    if len(country_dataframes) == 0:
+        status = "No country_dataframes provided"
+        return status
     country_indicator_gdf = pd.concat(country_dataframes, axis=0, ignore_index=True)
     hxl_tag_row = pd.DataFrame([HXL_TAGS])
     country_indicator_gdf = pd.concat(

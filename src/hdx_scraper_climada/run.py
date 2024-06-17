@@ -26,7 +26,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def check_for_existing_csv_files(indicator: str) -> set:
-    all_countries = {x["country_name"] for x in read_countries()}
+    all_countries = {x["country_name"] for x in read_countries(indicator=indicator)}
     if indicator == "storm-europe":
         all_countries = set(["Ukraine"])
     output_paths = make_detail_and_summary_file_paths("Haiti", indicator)

@@ -78,7 +78,7 @@ def plot_summary_barcharts(country: str, indicator: str, export_directory: str =
         )
         fig.show()
     else:
-        countries = read_countries()
+        countries = read_countries(indicator=indicator)
         countries_ = [x["country_name"] for x in countries]
         fig = make_subplots(
             rows=5,

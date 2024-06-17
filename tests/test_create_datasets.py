@@ -43,7 +43,7 @@ def test_create_datasets_in_hdx():
 def test_compile_resource_list():
     dataset_name = "climada-litpop-dataset"
     dataset_attributes = read_attributes(dataset_name)
-    countries_data = read_countries()
+    countries_data = read_countries(indicator="all")
 
     resource_list = compile_resource_list(dataset_attributes, countries_data, test_run=True)
 

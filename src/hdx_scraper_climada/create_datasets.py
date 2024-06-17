@@ -36,7 +36,10 @@ def create_datasets_in_hdx(
     t0 = time.time()
     configure_hdx_connection(hdx_site=hdx_site)
     dataset_attributes = read_attributes(dataset_name)
-    countries_data = read_countries()
+    # A bit nasty, we don't store the indicator in the dataset attributes but we use the
+    # indicator as the name of the output_subdirectory
+    indicator = dataset_attributes["output_subdirectory"]
+    countries_data = read_countries(indicator=indicator)
 
     # Get dataset_date from HDX
     file_dataset_date = get_date_range_from_timeseries_file(dataset_attributes)
@@ -98,10 +101,11 @@ def create_datasets_in_hdx(
 
 
 def make_countries_group(dataset_name: str) -> list[dict]:
-    countries_data = read_countries()
+
     countries_group = []
 
     indicator = dataset_name.replace("climada-", "").replace("-dataset", "")
+    countries_data = read_countries(indicator=indicator)
 
     if indicator == "storm-europe":
         countries_group = [{"name": "ukr"}]
