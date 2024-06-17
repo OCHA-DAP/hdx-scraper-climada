@@ -11,7 +11,6 @@
     "--cov=hdx_scraper_climada",
     "--cov-config=config/.coveragerc",
     "--cov-report=xml:cov.xml",
-    "-p no:logging",
     "tests"
   ],
   "python.testing.unittestEnabled": false,

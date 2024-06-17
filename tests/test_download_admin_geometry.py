@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+import logging
 import os
+
 from hdx_scraper_climada.download_from_hdx import (
     download_hdx_admin1_boundaries,
     get_admin1_shapes_from_hdx,
@@ -47,13 +49,15 @@ def test_get_admin1_shapes_from_hdx():
     assert len(admin1_shapes) == 10
 
 
-def test_get_admin1_shapes_from_hdx_no_data_case():
+def test_get_admin1_shapes_from_hdx_no_data_case(caplog):
+    caplog.set_level(logging.INFO)
     country_isoa3 = "GBR"
 
     admin1_names, admin1_shapes = get_admin1_shapes_from_hdx(country_isoa3)
 
-    assert len(admin1_names) == 0
-    assert len(admin1_shapes) == 0
+    assert len(admin1_names) == 232
+    assert len(admin1_shapes) == 232
+    assert "UNMAP data not found for GBR, trying Natural Earth" in caplog.text
 
 
 def test_get_admin2_shapes_from_hdx():
