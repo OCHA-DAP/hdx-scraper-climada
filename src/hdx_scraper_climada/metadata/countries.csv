@@ -22,16 +22,16 @@ Syrian Arab Republic,SYR,all
 Ukraine,UKR,all
 Venezuela,VEN,all
 Yemen,YEM,all
-The People's Republic of Bangladesh,BGD,earthquake|tropical-cyclone|floods
-Democratic People's Republic of Korea,PRK,tropical-cyclone|floods
+Bangladesh,BGD,earthquake|tropical-cyclone|floods
+North Korea,PRK,tropical-cyclone|floods
 Fiji,FJI,tropical-cyclone|floods
-Republic of Indonesia,IDN,earthquake|tropical-cyclone|floods
+Indonesia,IDN,earthquake|tropical-cyclone|floods
 Madagascar,MDG,tropical-cyclone|floods
 Morocco,MAR,earthquake
-Federal Democratic Republic of Nepal,NPL,earthquake|tropical-cyclone|floods
-Islamic Republic of Pakistan,PAK,earthquake
-Independent State of Papua New Guinea,PNG,earthquake|floods
-Republic of the Philippines,PHL,earthquake|tropical-cyclone|floods
+Nepal,NPL,earthquake|tropical-cyclone|floods
+Pakistan,PAK,earthquake
+Papua New Guinea,PNG,earthquake|floods
+Philippines,PHL,earthquake|tropical-cyclone|floods
 Sri Lanka,LKA,tropical-cyclone|floods
 Timor-Leste,TLS,earthquake
 Turkey,TUR,earthquake|floods

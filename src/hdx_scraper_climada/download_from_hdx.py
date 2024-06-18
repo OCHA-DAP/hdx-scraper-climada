@@ -75,8 +75,8 @@ def get_admin1_shapes_from_hdx(country_iso3a):
     assert len(admin1_names) == len(admin1_shapes)
 
     if len(admin1_shapes) == 0:
-        LOGGER.info(f"UNMAP data not found for {country_iso3a}, trying Natural Earth")
-        admin1_names, admin1_shapes = get_admin1_shapes_from_natural_earth(country_iso3a)
+        LOGGER.info(f"UNMAP data not found for {country_iso3a}, trying GeoBoundaries")
+        admin1_names, admin1_shapes = get_admin1_shapes_from_geoboundaries(country_iso3a)
     return admin1_names, admin1_shapes
 
 
@@ -158,13 +158,53 @@ def get_admin1_shapes_from_natural_earth(country_iso3a):
     try:
         admin1_info, admin1_shapes = u_coord.get_admin1_info(country_iso3a)
         admin1_info = admin1_info[country_iso3a]
-        admin1_shapes = admin1_shapes[country_iso3a]
+        original_admin1_shapes = admin1_shapes[country_iso3a]
+        idx = range(0, len(original_admin1_shapes))
+        admin1_shapes = geopandas.GeoDataFrame(
+            index=idx, crs="epsg:4326", geometry=original_admin1_shapes
+        )
+        # admin1_shapes = []
+        # for admin1_shape in original_admin1_shapes:
+        #     print(type(admin1_shape), flush=True)
+        #     try:
+        #         admin1_shapes.extend(admin1_shape.explode())
+        #     except AttributeError:
+        #         admin1_shapes.append(admin1_shape)
 
         admin1_names = [record["name"] for record in admin1_info]
     except LookupError as error:
         LOGGER.info(error)
         admin1_names = []
         admin1_shapes = []
+
+    return admin1_names, admin1_shapes
+
+
+def get_admin1_shapes_from_geoboundaries(country_iso3a: str):
+    admin1_file_path = os.path.join(ADMIN1_GEOMETRY_FOLDER, "geoBoundariesCGAZ_ADM1.geojson")
+
+    if not os.path.exists(admin1_file_path):
+        raise FileNotFoundError(
+            f"{admin1_file_path} was not found, run `download_admin1_geometry.py` to download"
+        )
+
+    admin1_gpd = geopandas.read_file(admin1_file_path)
+
+    admin1_for_country = admin1_gpd[admin1_gpd["shapeGroup"] == country_iso3a.upper()]
+
+    admin1_names = admin1_for_country["shapeName"].to_list()
+
+    admin1_shapes = []
+    for admin1_name in admin1_names:
+        admin1_shape_geoseries = admin1_for_country[admin1_for_country["shapeName"] == admin1_name][
+            "geometry"
+        ]
+        admin1_shapes.append(admin1_shape_geoseries)
+
+    assert len(admin1_names) == len(admin1_shapes)
+
+    if len(admin1_shapes) == 0:
+        LOGGER.info(f"geoboundaries data not found for {country_iso3a}, giving up")
 
     return admin1_names, admin1_shapes
 
