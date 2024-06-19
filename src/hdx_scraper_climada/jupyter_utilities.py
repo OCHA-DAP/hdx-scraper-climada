@@ -82,9 +82,13 @@ def plot_summary_barcharts(country: str, indicator: str, export_directory: str =
         countries_ = [x["country_name"] for x in countries]
         n_cols = 5
         n_rows = 5
+        print(f"Number of countries for indicator '{indicator}' is '{len(countries_)}'")
         if len(countries_) == 35:
             n_rows = 7
-        print(len(countries_))
+        elif len(countries_) == 36:
+            n_rows = 6
+            n_cols = 6
+
         fig = make_subplots(
             rows=n_rows,
             cols=n_cols,
