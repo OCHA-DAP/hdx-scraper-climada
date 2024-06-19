@@ -80,14 +80,18 @@ def plot_summary_barcharts(country: str, indicator: str, export_directory: str =
     else:
         countries = read_countries(indicator=indicator)
         countries_ = [x["country_name"] for x in countries]
+        n_cols = 5
+        n_rows = 5
+        if len(countries_) == 35:
+            n_rows = 7
+        print(len(countries_))
         fig = make_subplots(
-            rows=5,
-            cols=5,
-            specs=[[{"type": "bar"}] * 5] * 5,
+            rows=n_rows,
+            cols=n_cols,
+            specs=[[{"type": "bar"}] * n_cols] * n_rows,
             subplot_titles=countries_,
             vertical_spacing=0.1,
         )
-        n_cols = 5
 
         figlets = []
         for country_ in countries_:
