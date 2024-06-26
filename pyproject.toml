@@ -15,6 +15,7 @@ dependencies = [
     "dask_expr",
     "pandas",
     "GDAL",
+    "fiona",
     "geopandas",
     "hdx-python-api>=6.2.1",
     "hdx-python-country",
