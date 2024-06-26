@@ -204,7 +204,10 @@ def download(
             year=2016,
         )
     elif data_name == "geoBoundaries":
-        geoBoundaries_admin1_url = "https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM1.geojson"
+        geoBoundaries_admin1_url = (
+            "https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/"
+            "geoBoundariesCGAZ_ADM1.geojson"
+        )
         print("Downloading geoBoundaries admin1 file...", flush=True)
         if download_directory is None:
             download_directory = ADMIN1_GEOMETRY_FOLDER
