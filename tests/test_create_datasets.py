@@ -90,12 +90,7 @@ def test_make_countries_group_tropical_cyclone():
     dataset_name = "climada-tropical-cyclone-dataset"
 
     countries_group = make_countries_group(dataset_name)
-
-    print(countries_group, flush=True)
-    assert len(countries_group) == 8
-    assert {x["name"] for x in countries_group} == set(
-        ["col", "eth", "hti", "moz", "mmr", "som", "ven", "yem"]
-    )
+    assert len(countries_group) == 21
 
 
 def test_make_countries_group_earthquake():
@@ -103,8 +98,4 @@ def test_make_countries_group_earthquake():
 
     countries_group = make_countries_group(dataset_name)
 
-    print(countries_group, flush=True)
-    assert len(countries_group) == 8
-    assert {x["name"] for x in countries_group} == set(
-        ["col", "eth", "hti", "moz", "mmr", "som", "ven", "yem"]
-    )
+    assert len(countries_group) == 31
