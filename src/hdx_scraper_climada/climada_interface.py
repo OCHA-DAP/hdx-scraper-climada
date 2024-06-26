@@ -105,8 +105,6 @@ def calculate_indicator_for_admin1(
         )
     elif indicator == "storm-europe":
         admin1_indicator_gdf = calculate_hazards_for_admin1(admin1_shape, country, "storm_europe")
-    elif indicator == "relative-cropyield":
-        admin1_indicator_gdf = calculate_relative_cropyield_for_admin1(admin1_shape, country)
     else:
         LOGGER.info(f"Indicator {indicator} is not yet implemented")
         raise NotImplementedError

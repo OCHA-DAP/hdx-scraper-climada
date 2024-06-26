@@ -369,7 +369,7 @@ def download_nl_files(
                     "Download failed, file not found and no nasa sites configured,"
                     " check URLs in CONFIG.exposures.litpop.nightlights.nasa_sites!"
                 )
-    except Exception as exc:
+    except Exception:
         print("Download failed", flush=True)
         # raise RuntimeError(
         #     "Download failed. Please check the network "
