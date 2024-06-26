@@ -7,6 +7,7 @@ import click
 
 import numpy as np
 from climada.util.constants import SYSTEM_DIR
+from climada.util.files_handler import download_file
 
 from hdx.utilities.easy_logging import setup_logging
 
@@ -29,6 +30,7 @@ from hdx_scraper_climada.create_csv_files import export_indicator_data_to_csv
 from hdx_scraper_climada.download_from_hdx import (
     download_hdx_admin1_boundaries,
     download_hdx_datasets,
+    ADMIN1_GEOMETRY_FOLDER,
 )
 from hdx_scraper_climada.download_gpw_population_map import download_gpw_population
 from hdx_scraper_climada.run import hdx_climada_run
@@ -122,7 +124,7 @@ def dataset_date(indicator: str = "all", source: str = "local", hdx_site: str = 
 @hdx_climada.command(name="download")
 @click.option(
     "--data_name",
-    type=click.Choice(["boundaries", "population", "climada", "blackmarble"]),
+    type=click.Choice(["boundaries", "population", "climada", "blackmarble", "geoBoundaries"]),
     is_flag=False,
     default="all",
     help="data to download",
@@ -201,10 +203,24 @@ def download(
             dwnl_path=download_directory,
             year=2016,
         )
+    elif data_name == "geoBoundaries":
+        geoBoundaries_admin1_url = "https://github.com/wmgeolab/geoBoundaries/raw/main/releaseData/CGAZ/geoBoundariesCGAZ_ADM1.geojson"
+        print("Downloading geoBoundaries admin1 file...", flush=True)
+        if download_directory is None:
+            download_directory = ADMIN1_GEOMETRY_FOLDER
+        local_path = os.path.join(download_directory, "geoBoundariesCGAZ_ADM1.geojson")
+        if os.path.exists(local_path):
+            print(f"geoBoundaries file has already been downloaded to {local_path}", flush=True)
+        else:
+            path_check = download_file(geoBoundaries_admin1_url, download_dir=download_directory)
+            if not path_check:
+                raise FileNotFoundError
+            else:
+                print(f"geoBoundaries file successfully downloaded to {local_path}", flush=True)
     else:
         print(
-            f"Data_name '{data_name}' is not know, only 'boundaries', 'population' and 'climada' "
-            "are supported"
+            f"Data_name '{data_name}' is not know, only 'boundaries', 'population', 'climada' "
+            " and 'geoboundaries' are supported"
         )
 
 

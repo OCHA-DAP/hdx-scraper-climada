@@ -45,6 +45,7 @@ jobs:
         run: |
           hdx-climada download --data_name="boundaries" --hdx_site="prod"
           hdx-climada download --data_name="population" --hdx_site="prod"
+          hdx-climada download --data_name=geoBoundaries
       - name: Running unit tests
         run: |
           make github_tests
