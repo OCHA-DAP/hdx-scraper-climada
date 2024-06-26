@@ -101,7 +101,6 @@ def create_datasets_in_hdx(
 
 
 def make_countries_group(dataset_name: str) -> list[dict]:
-
     countries_group = []
 
     indicator = dataset_name.replace("climada-", "").replace("-dataset", "")
