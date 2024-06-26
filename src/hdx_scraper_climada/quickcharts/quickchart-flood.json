@@ -53,7 +53,7 @@
                     "explainedFiltersMap": {},
                     "pieChart": false,
                     "title": "Unique Values in region_name by country_name",
-                    "dataTitle": "Flood extent"
+                    "dataTitle": "Flood extent (0.04km^2 grid squares)"
                 },
                 "uiProperties": {
                     "swapAxis": true,
@@ -91,7 +91,7 @@
                     "explainedFiltersMap": {},
                     "pieChart": false,
                     "title": "Row Count by region_name",
-                    "dataTitle": "Total flood extent"
+                    "dataTitle": "Total flood extent (0.04km^2 grid squares)"
                 },
                 "uiProperties": {
                     "swapAxis": true,

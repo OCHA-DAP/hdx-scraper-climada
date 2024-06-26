@@ -91,6 +91,12 @@ def hdx_climada_run(indicator: str, country: str, hdx_site: str = "stage", dry_r
 
     countries_to_process = check_for_existing_csv_files(indicator)
 
+    if country is not "all":
+        if country in countries_to_process:
+            countries_to_process = []
+        else:
+            countries_to_process = [country]
+
     if len(countries_to_process) == 0:
         LOGGER.info("CSV data files for all countries are already available")
     else:

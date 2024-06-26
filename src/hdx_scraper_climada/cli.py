@@ -240,7 +240,7 @@ def create_dataset(
 ):
     """Create CSV data files for an indicator and create dataset in HDX"""
     print_banner_to_log(LOGGER, "create_dataset")
-    hdx_climada_run(indicator, "all", hdx_site=hdx_site, dry_run=not live)
+    hdx_climada_run(indicator, country, hdx_site=hdx_site, dry_run=not live)
 
 
 @hdx_climada.command(name="create_csv", short_help="Create a dataset in HDX with CSV files")
