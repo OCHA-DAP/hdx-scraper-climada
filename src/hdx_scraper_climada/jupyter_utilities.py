@@ -88,6 +88,9 @@ def plot_summary_barcharts(country: str, indicator: str, export_directory: str =
         elif len(countries_) == 36:
             n_rows = 6
             n_cols = 6
+        elif len(countries_) == 46:
+            n_rows = 8
+            n_cols = 6
 
         fig = make_subplots(
             rows=n_rows,

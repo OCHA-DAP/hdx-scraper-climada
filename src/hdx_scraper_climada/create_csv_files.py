@@ -81,12 +81,12 @@ def export_indicator_data_to_csv(
     else:
         # Make detail files
         LOGGER.info(f"Making detail file for {country}-{indicator}")
-        # try:
-        country_dataframes = create_detail_dataframes(country, indicator)
-        status = write_detail_data(country_dataframes, output_paths["output_detail_path"])
-        # except (Client.NoResult, AttributeError):
-        #     country_dataframes = None
-        #     status = f"There is no CLIMADA data for {country}-{indicator}"
+        try:
+            country_dataframes = create_detail_dataframes(country, indicator)
+            status = write_detail_data(country_dataframes, output_paths["output_detail_path"])
+        except (Client.NoResult, AttributeError):
+            country_dataframes = None
+            status = f"There is no CLIMADA data for {country}-{indicator}"
         statuses.append(status)
 
     # Make summary file
