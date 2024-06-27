@@ -222,7 +222,33 @@ Multiple events are recorded on each date, possibly representing hourly figures.
 
 The Jupyter Notebook `data_explorer_notebook.ipynb` is used to check datasets "manually". The Excel spreadsheet `2024-01-27-pivot-table-haiti-admin1-crop_production.xlsx` demonstrates the use of PivotTables to convert data from a "narrow" format where there is a single indicator column potentially containing multiple indicator values for different attribute selections in the same set (i.e. `crop_production.whe.noirr.USD` and `crop_production.soy.noirr.USD`)
 
+## Developer Notes
 
+### Tests
+
+The tests are a bit flakey. `test_get_date_range_from_live_api` fails sometimes with a 503 error, `test_calculate_indicator_for_admin1_litpop` and `test_export_indicator_data_to_csv_litpop` sometimes fail because the NASA Black Marble data does not all download correctly. 
+
+The tests are slow, overall they are slower than they need to be because we test each dataset
+both in test_climada_interface and test_creat_csv_files are essentially the same.
+196.76s call     tests/test_climada_interface.py::test_get_date_range_from_live_api
+112.79s call     tests/test_climada_interface.py::test_flood_shim
+79.38s call     tests/test_create_csv_files.py::test_export_indicator_data_to_csv_tropical_cyclone
+72.41s call     tests/test_create_csv_files.py::test_export_indicator_data_to_csv_river_flood
+60.60s call     tests/test_climada_interface.py::test_calculate_indicator_for_admin1_river_flood
+60.53s call     tests/test_climada_interface.py::test_calculate_indicator_for_admin1_tropical_cyclone
+36.37s call     tests/test_create_csv_files.py::test_export_indicator_data_to_csv_earthquake
+23.37s call     tests/test_climada_interface.py::test_calculate_indicator_for_admin1_crop_production
+18.21s call     tests/test_create_csv_files.py::test_export_indicator_data_to_csv_flood
+17.47s call     tests/test_create_csv_files.py::test_export_indicator_data_to_csv_wildfire
+13.33s call     tests/test_download_admin_geometry.py::test_get_admin1_shapes_from_hdx_no_data_case
+10.42s call     tests/test_climada_interface.py::test_calculate_indicator_for_admin1_earthquake
+8.73s setup    tests/test_create_csv_files.py::test_create_dataframes
+8.56s call     tests/test_climada_interface.py::test_calculate_indicator_for_admin1_flood
+7.33s call     tests/test_climada_interface.py::test_calculate_indicator_for_admin1_wildfire
+6.39s call     tests/test_create_datasets.py::test_create_datasets_in_hdx
+2.33s call     tests/test_climada_interface.py::test_filter_dataframe_with_geometry
+1.60s call     tests/test_climada_interface.py::test_calculate_indicator_timeseries_admin
+1.27s call     tests/test_create_csv_files.py::test_export_indicator_data_to_csv_crop_production
 
 
 
