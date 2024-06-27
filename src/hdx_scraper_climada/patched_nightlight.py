@@ -29,6 +29,7 @@ import pickle
 import logging
 from pathlib import Path
 import rasterio
+import time
 
 import numpy as np
 import scipy.sparse as sparse
@@ -343,6 +344,7 @@ def download_nl_files(
         return dwnl_path
     try:
         for num_files in range(0, np.count_nonzero(BM_FILENAMES)):
+            time.sleep(30)
             if req_files[num_files] == 0 or files_exist[num_files] == 1:
                 continue  # file already available or not required
             path_check = False
