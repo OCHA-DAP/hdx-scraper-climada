@@ -124,7 +124,7 @@ def test_make_detail_and_summary_file_paths():
         assert os.path.dirname(file_path) == os.path.join(EXPORT_DIRECTORY, f"{INDICATOR}")
 
 
-@pytest.skip(reason="Fails with Blackmarble issue")
+@pytest.mark.skip(reason="Fails with Blackmarble issue")
 def test_export_indicator_data_to_csv_litpop():
     country = "Haiti"
     indicator = "litpop"
