@@ -361,7 +361,7 @@ def download_nl_files(
             if value_err:
                 raise ValueError(
                     "Download failed,"
-                    " check URLs inCONFIG.exposures.litpop.nightlights.nasa_sites!\n"
+                    " check URLs in CONFIG.exposures.litpop.nightlights.nasa_sites!\n"
                     f" Last error message:\n {value_err.args[0]}"
                 )
             else:
