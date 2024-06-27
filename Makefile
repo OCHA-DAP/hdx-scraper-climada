@@ -11,6 +11,6 @@ unit_tests:
 timed_tests:
 	pytest -v --durations=0 --durations-min=1 --cov=hdx_scraper_climada --cov-config=config/.coveragerc tests/
 github_tests:
-	pytest -m "not local_only" -v --cov=hdx_scraper_climada --cov-config=config/.coveragerc tests
+	pytest -m "not local_only" -v --durations=0 --durations-min=1 --cov=hdx_scraper_climada --cov-config=config/.coveragerc tests
 run:
 	python src/hdx_scraper_climada/run.py

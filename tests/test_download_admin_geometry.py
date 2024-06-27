@@ -55,9 +55,9 @@ def test_get_admin1_shapes_from_hdx_no_data_case(caplog):
 
     admin1_names, admin1_shapes = get_admin1_shapes_from_hdx(country_isoa3)
 
-    assert len(admin1_names) == 232
-    assert len(admin1_shapes) == 232
-    assert "UNMAP data not found for GBR, trying Natural Earth" in caplog.text
+    assert len(admin1_names) == 4
+    assert len(admin1_shapes) == 4
+    assert "UNMAP data not found for GBR, using geoBoundaries" in caplog.text
 
 
 def test_get_admin2_shapes_from_hdx():
