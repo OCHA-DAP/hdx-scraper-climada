@@ -74,7 +74,8 @@ def test_syria_litpop_population():
     assert syria_litpop_gdf["value"].isna().sum() == 0
 
 
-@pytest.mark.skip(reason="Failing because of Black Marble issues")
+# hopefully fixed by vendoring the black marble files
+# @pytest.mark.skip(reason="Failing because of Black Marble issues")
 def test_calculate_indicator_for_admin1_litpop():
     indicator = "litpop"
 
