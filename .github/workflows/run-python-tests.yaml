@@ -45,8 +45,8 @@ jobs:
         run: |
           hdx-climada download --data_name="boundaries" --hdx_site="prod"
           hdx-climada download --data_name="population" --hdx_site="prod"
-          hdx-climada download --data_name="blackmarble" --hdx_site="prod"
           hdx-climada download --data_name=geoBoundaries
+          cp src/hdx_scraper_climada/nasa-black-marble/*.tif ~/climada/data/
       - name: Running unit tests
         run: |
           make github_tests

@@ -42,8 +42,8 @@ jobs:
         run: |
           hdx-climada download --data_name="boundaries" --hdx_site="prod"
           hdx-climada download --data_name="population" --hdx_site="prod"
-          hdx-climada download --data_name="blackmarble"
           hdx-climada download --data_name=geoBoundaries
+          cp src/hdx_scraper_climada/nasa-black-marble/*.tif ~/climada/data/
       - name: Publish CLIMADA dataset
         run: |
           hdx-climada create_dataset --indicator=$CLIMADA_INDICATOR --hdx_site=$HDX_SITE --live
