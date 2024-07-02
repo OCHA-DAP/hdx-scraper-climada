@@ -137,30 +137,35 @@ def test_export_indicator_data_to_csv_crop_production():
     indicator_data_to_csv_helper(country, indicator)
 
 
+@pytest.mark.skip(reason="Export to CSV test largely replicates CLIMADA interface test")
 def test_export_indicator_data_to_csv_earthquake():
     country = "Haiti"
     indicator = "earthquake"
     indicator_data_to_csv_helper(country, indicator)
 
 
+@pytest.mark.skip(reason="Export to CSV test largely replicates CLIMADA interface test")
 def test_export_indicator_data_to_csv_flood():
     country = "Haiti"
     indicator = "flood"
     indicator_data_to_csv_helper(country, indicator)
 
 
+@pytest.mark.skip(reason="Export to CSV test largely replicates CLIMADA interface test")
 def test_export_indicator_data_to_csv_wildfire():
     country = "Haiti"
     indicator = "wildfire"
     indicator_data_to_csv_helper(country, indicator)
 
 
+@pytest.mark.skip(reason="Export to CSV test largely replicates CLIMADA interface test")
 def test_export_indicator_data_to_csv_river_flood():
     country = "Haiti"
     indicator = "river-flood"
     indicator_data_to_csv_helper(country, indicator)
 
 
+@pytest.mark.skip(reason="Export to CSV test largely replicates CLIMADA interface test")
 def test_export_indicator_data_to_csv_tropical_cyclone():
     country = "Haiti"
     indicator = "tropical-cyclone"
