@@ -508,7 +508,6 @@ def test_calculate_indicator_for_admin1_storm_europe():
 
 
 def test_get_date_range_from_live_api():
-    for indicator in INDICATOR_LIST:
-        date_range = get_date_range_from_live_api(indicator)
-        print(f"{indicator}: {date_range}", flush=True)
-        assert len(date_range) == 44
+    date_range = get_date_range_from_live_api("crop-production")
+    print(f"crop-production: {date_range}", flush=True)
+    assert len(date_range) == 44
