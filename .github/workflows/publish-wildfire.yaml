@@ -56,7 +56,7 @@ jobs:
           username: ${{vars.EMAIL_USERNAME}}
           password: ${{secrets.EMAIL_PASSWORD}}
           subject: "No new data: ${{github.workflow}} run job"
-          body: ${{github.workflow}} produced no new data! ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          html_body: ${{github.workflow}} produced no new data! <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">Run log</a>
           to: ${{secrets.EMAIL_LIST}}
           from: ${{vars.EMAIL_FROM}}
       - name: Send mail - new data
@@ -68,6 +68,6 @@ jobs:
           username: ${{vars.EMAIL_USERNAME}}
           password: ${{secrets.EMAIL_PASSWORD}}
           subject: "New data! :-) : ${{github.workflow}} run job"
-          body: ${{github.workflow}} produced new data! ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          html_body: ${{github.workflow}} produced new data! <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">Run log</a>
           to: ${{secrets.EMAIL_LIST}}
           from: ${{vars.EMAIL_FROM}}
