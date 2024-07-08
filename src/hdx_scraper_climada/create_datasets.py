@@ -5,6 +5,7 @@ import datetime
 import json
 import logging
 import os
+import re
 import time
 import traceback
 
@@ -49,11 +50,13 @@ def create_datasets_in_hdx(
     LOGGER.info(f"dataset_date from new build: {file_dataset_date}")
     LOGGER.info(f"dataset_date from HDX: {hdx_dataset_date}")
 
+    file_start_date, file_end_date = parse_dates_from_string(file_dataset_date)
+    hdx_start_date, hdx_end_date = parse_dates_from_string(hdx_dataset_date)
     # In GitHub Actions environment variables are transmitted between job steps via the file
     # at $GITHUB_ENV but within a job step they sholud be accessed as normal environment variables.
     # However, this seems not to work.
     if os.getenv("GITHUB_ENV"):
-        if file_dataset_date == hdx_dataset_date:
+        if (file_end_date == hdx_end_date) and (file_start_date == hdx_start_date):
             LOGGER.info("No new data by dataset_date - but updating production")
             with open(os.getenv("GITHUB_ENV"), "a", encoding="utf-8") as environment_file:
                 environment_file.write("CLIMADA_NEW_DATA=No")
@@ -347,6 +350,20 @@ def get_date_range_from_hdx(indicator: str, hdx_site: str = "stage", dataset_nam
         date_range = dataset["dataset_date"]
 
     return date_range
+
+
+def parse_dates_from_string(date_str: str) -> list[str]:
+    matched_strings = re.findall(r"(\d{4}-([0]\d|1[0-2])-([0-2]\d|3[01]))", date_str)
+
+    start_date = ""
+    end_date = ""
+    if len(matched_strings) == 1:
+        end_date = matched_strings[-1][0]
+    elif len(matched_strings) == 2:
+        start_date = matched_strings[0][0]
+        end_date = matched_strings[-1][0]
+
+    return start_date, end_date
 
 
 if __name__ == "__main__":
