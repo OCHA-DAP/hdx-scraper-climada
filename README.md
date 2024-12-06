@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This code is designed to take data from the Climada API for the 23 Humanitarian Response Plan countries on HDX, aggregate it over subnational regions (admin1) where appropriate, export it to CSV and then publish it to HDX.
+This code is designed to take data from the Climada API for the 23 Humanitarian Response Plan countries on HDX, aggregate it over subnational regions (admin1) where appropriate, export it to CSV and then publish it to HDX. In a second round of work additional countries were added under [HDXDSYS-770](https://humanitarian.atlassian.net/browse/HDXDSYS-770)
 
 The data are all available under the ETH Zürich - Weather and Climate Risks organization on HDX:
 https://data.humdata.org/organization/eth-zurich-weather-and-climate-risks
@@ -60,6 +60,8 @@ The data are updated using GitHub Actions on this repository which run monthly o
 
 The flood indicator cannot be processed in GitHub Actions because it exceeds memory/time constrains. A monthly job will be run to highlight the need to consider a manual update which will require the code in this repository to be installed locally, as described below.
 
+The earthquake indicator, similarly, cannot be processed in GitHub Actions since the addition of new countries.
+
 ## Installation 
 Create a virtual environment (assuming Windows for the `activate` command):
 
@@ -90,7 +92,7 @@ http://sedac.ciesin.columbia.edu/downloads/data/gpw-v4/gpw-v4-population-count-r
 
 to
 
-~\climada\data\gpw-v4-population-count-rev11_2020_30_sec_tif\gpw_v4_population_count_rev11_2020_30_sec.tif
+`~\climada\data\gpw-v4-population-count-rev11_2020_30_sec_tif\gpw_v4_population_count_rev11_2020_30_sec.tif`
 
 This can be done using the `hdx-climada` commandline tool, described below. This requires an account to be created on [https://urs.earthdata.nasa.gov/users/new](https://urs.earthdata.nasa.gov/users/new) for the download and the username and password stored in the environment variables `NASA_EARTHDATA_USERNAME` and `NASA_EARTHDATA_PASSWORD` respectively. The command to download the data is then:
 
@@ -152,6 +154,7 @@ Options:
   --help  Show this message and exit.
 
 Commands:
+  create_csv      Create a dataset in HDX with CSV files
   create_dataset  Create a dataset in HDX with CSV files
   dataset_date    Show dataset date ranges
   download        Download data assets required to build the datasets
@@ -167,7 +170,7 @@ A dataset can be generated manually with a commandline like:
 hdx-climada create_dataset --indicator=$CLIMADA_INDICATOR --hdx_site=$HDX_SITE --live
 ```
 
-The bulk properties of the datasets, built in GitHub Actions with the exception of flood:
+The bulk properties of the datasets built in GitHub Actions, with the exception of flood, based on the original HRP country builds are as follows:
 
 |Indicator	|Size/MB|	Runtime	|Date range|
 |-----------|-------|---------|----------|
@@ -179,6 +182,9 @@ The bulk properties of the datasets, built in GitHub Actions with the exception 
 |Tropical-cyclone	|28.6|	58 minutes|	[1980-08-01T00:00:00 TO 2020-12-25T00:00:00]
 |Storm-Europe|	11.5|	2 hours 22 minutes	|[1940-11-01T00:00:00 TO 2013-12-05T00:00:00]
 
+Note that the underlying data only extends to 2020 in best case, and as early as 2013 for the storm Europe dataset.
+
+There have been issues with tropical cyclone and storm Europe builds recently as a result of failures to download population data from NASA but these appear to have been resolved as a result of third party action.
 
 ### Crop production
 
