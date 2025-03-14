@@ -12,7 +12,7 @@ authors = [
 dependencies = [
     "pyarrow",
     "numpy==1.26.4",
-    "climada==4.1.1",
+    "climada==6.0.1",
     "click",
     "dask_expr",
     "pandas",

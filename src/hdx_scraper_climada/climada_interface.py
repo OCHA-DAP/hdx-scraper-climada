@@ -21,6 +21,8 @@ from hdx.location.country import Country
 from climada import CONFIG
 from climada.util.api_client import Client
 import climada.util.coordinates as u_coord
+
+# from climada.entity.exposures import LitPop
 from hdx_scraper_climada.patched_litpop import LitPop
 
 from hdx_scraper_climada.download_from_hdx import get_best_admin_shapes
@@ -186,6 +188,8 @@ def calculate_litpop_for_admin1(
     )
     admin1_indicator_gdf = admin1_indicator_data.gdf
     admin1_indicator_gdf["indicator"] = len(admin1_indicator_gdf) * [indicator]
+    admin1_indicator_gdf["longitude"] = admin1_indicator_gdf.geometry.apply(lambda p: p.x)
+    admin1_indicator_gdf["latitude"] = admin1_indicator_gdf.geometry.apply(lambda p: p.y)
     admin1_indicator_gdf = admin1_indicator_gdf[["latitude", "longitude", "indicator", "value"]]
     return admin1_indicator_gdf
 
@@ -206,6 +210,8 @@ def calculate_litpop_alt_for_admin1(
     )
 
     admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
+    admin1_indicator_gdf["longitude"] = admin1_indicator_gdf.geometry.apply(lambda p: p.x)
+    admin1_indicator_gdf["latitude"] = admin1_indicator_gdf.geometry.apply(lambda p: p.y)
 
     admin1_indicator_gdf = filter_dataframe_with_geometry(
         admin1_indicator_gdf, admin1_shape, indicator
@@ -242,6 +248,8 @@ def calculate_crop_production_for_admin1(
                 admin1_indicator_data = GLOBAL_INDICATOR_CACHE[indicator_key]
 
             admin1_indicator_gdf = admin1_indicator_data.gdf.reset_index()
+            admin1_indicator_gdf["longitude"] = admin1_indicator_gdf.geometry.apply(lambda p: p.x)
+            admin1_indicator_gdf["latitude"] = admin1_indicator_gdf.geometry.apply(lambda p: p.y)
             country_iso_numeric = get_country_iso_numeric(country)
             admin1_indicator_gdf = admin1_indicator_gdf[
                 admin1_indicator_gdf["region_id"] == country_iso_numeric

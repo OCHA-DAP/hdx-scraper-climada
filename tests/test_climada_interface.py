@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 """
-This test suite tests aspects of the climada interface for issue reporting 
+This test suite tests aspects of the climada interface for issue reporting
 Ian Hopkinson 2024-01-16
 """
 
@@ -13,6 +13,8 @@ import pytest
 
 
 from climada.util.api_client import Client
+
+# from climada.entity.exposures import LitPop
 
 from hdx_scraper_climada.patched_litpop import LitPop
 from hdx_scraper_climada.download_from_hdx import (
@@ -27,8 +29,6 @@ from hdx_scraper_climada.climada_interface import (
     flood_timeseries_data_shim,
     get_date_range_from_live_api,
 )
-
-from hdx_scraper_climada.utilities import INDICATOR_LIST
 
 from hdx_scraper_climada.create_csv_files import make_detail_and_summary_file_paths
 
