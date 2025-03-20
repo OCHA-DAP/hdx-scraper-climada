@@ -16,29 +16,25 @@ with CLIMADA. If not, see <https://www.gnu.org/licenses/>.
 
 ---
 Define LitPop class.
-
-This is a patched version of litpop.py - a call to .append is replaced with ._append on line ~427
-Ian Hopkinson 2024-03-08
-
 """
 
 import logging
 from pathlib import Path
-import numpy as np
-import rasterio
+
 import geopandas
-from shapefile import Shape
-import shapely
+import numpy as np
 import pandas as pd
+import rasterio
+import shapely
+from shapefile import Shape
 
 import climada.util.coordinates as u_coord
 import climada.util.finance as u_fin
-
-from climada.entity.exposures.litpop import nightlight as nl_util
-from climada.entity.exposures.litpop import gpw_population as pop_util
-from climada.entity.exposures.base import Exposures, INDICATOR_IMPF, DEF_REF_YEAR
-from climada.util.constants import SYSTEM_DIR
 from climada import CONFIG
+from climada.entity.exposures.base import DEF_REF_YEAR, INDICATOR_IMPF, Exposures
+from climada.entity.exposures.litpop import gpw_population as pop_util
+from climada.entity.exposures.litpop import nightlight as nl_util
+from climada.util.constants import SYSTEM_DIR
 
 LOGGER = logging.getLogger(__name__)
 
@@ -48,7 +44,7 @@ GPW_VERSION = CONFIG.exposures.litpop.gpw_population.gpw_version.int()
 
 class LitPop(Exposures):
     """
-    Holds geopandas GeoDataFrame with metada and columns (pd.Series) defined in
+    Holds geopandas GeoDataFrame with metadata and columns (pd.Series) defined in
     Attributes of Exposures class.
     LitPop exposure values are disaggregated proportional to a combination of
     nightlight intensity (NASA) and Gridded Population data (SEDAC).
@@ -74,6 +70,21 @@ class LitPop(Exposures):
     """
 
     _metadata = Exposures._metadata + ["exponents", "fin_mode", "gpw_version"]
+
+    def __init__(
+        self,
+        *args,
+        meta=None,
+        exponents=None,
+        fin_mode=None,
+        gpw_version=None,
+        **kwargs,
+    ):
+        super().__init__(*args, meta=meta, **kwargs)
+        meta = meta or {}
+        self.exponents = Exposures._consolidate(meta, "exponents", exponents, (1, 1))
+        self.fin_mode = Exposures._consolidate(meta, "fin_mode", fin_mode, "pc")
+        self.gpw_version = Exposures._consolidate(meta, "gpw_version", gpw_version, GPW_VERSION)
 
     def set_countries(self, *args, **kwargs):
         """This function is deprecated, use LitPop.from_countries instead."""
@@ -232,12 +243,12 @@ class LitPop(Exposures):
         try:
             rows, cols, ras_trans = u_coord.pts_to_raster_meta(
                 (
-                    exp.gdf.longitude.min(),
-                    exp.gdf.latitude.min(),
-                    exp.gdf.longitude.max(),
-                    exp.gdf.latitude.max(),
+                    exp.longitude.min(),
+                    exp.latitude.min(),
+                    exp.longitude.max(),
+                    exp.latitude.max(),
                 ),
-                u_coord.get_resolution(exp.gdf.longitude, exp.gdf.latitude),
+                u_coord.get_resolution(exp.longitude, exp.latitude),
             )
             exp.meta = {
                 "width": cols,
@@ -537,12 +548,12 @@ class LitPop(Exposures):
         try:
             rows, cols, ras_trans = u_coord.pts_to_raster_meta(
                 (
-                    exp.gdf.longitude.min(),
-                    exp.gdf.latitude.min(),
-                    exp.gdf.longitude.max(),
-                    exp.gdf.latitude.max(),
+                    exp.longitude.min(),
+                    exp.latitude.min(),
+                    exp.longitude.max(),
+                    exp.latitude.max(),
                 ),
-                u_coord.get_resolution(exp.gdf.longitude, exp.gdf.latitude),
+                u_coord.get_resolution(exp.longitude, exp.latitude),
             )
             exp.meta = {
                 "width": cols,
@@ -634,7 +645,13 @@ class LitPop(Exposures):
             )
 
         litpop_gdf, _ = _get_litpop_single_polygon(
-            shape, reference_year, res_arcsec, data_dir, gpw_version, exponents, region_id
+            shape,
+            reference_year,
+            res_arcsec,
+            data_dir,
+            gpw_version,
+            exponents,
+            region_id,
         )
 
         # disaggregate total value proportional to LitPop values:
@@ -663,16 +680,20 @@ class LitPop(Exposures):
             description=description,
         )
 
-        if min(len(exp.gdf.latitude.unique()), len(exp.gdf.longitude.unique())) > 1:
-            # if exp.gdf.shape[0] > 1 and len(exp.gdf.latitude.unique()) > 1:
+        if (
+            exp.gdf.shape[0] > 1
+            and exp.longitude.max() > exp.longitude.min()
+            and exp.latitude.max() > exp.latitude.min()
+        ):
+            # if exp.gdf.shape[0] > 1 and len(exp.latitude.unique()) > 1:
             rows, cols, ras_trans = u_coord.pts_to_raster_meta(
                 (
-                    exp.gdf.longitude.min(),
-                    exp.gdf.latitude.min(),
-                    exp.gdf.longitude.max(),
-                    exp.gdf.latitude.max(),
+                    exp.longitude.min(),
+                    exp.latitude.min(),
+                    exp.longitude.max(),
+                    exp.latitude.max(),
                 ),
-                u_coord.get_resolution(exp.gdf.longitude, exp.gdf.latitude),
+                u_coord.get_resolution(exp.longitude, exp.latitude),
             )
             exp.meta = {
                 "width": cols,
@@ -864,7 +885,10 @@ def _get_litpop_single_polygon(
     # if resolution is the same as for lit (15 arcsec), set grid same as lit:
     if res_arcsec == 15:
         i_align = 1
-        global_origins = (meta_nl["transform"][2], meta_nl["transform"][5])  # lon  # lat
+        global_origins = (
+            meta_nl["transform"][2],  # lon
+            meta_nl["transform"][5],
+        )  # lat
     else:  # align grid for resampling to grid of population data (pop)
         i_align = 0
         global_origins = (global_transform[2], global_transform[5])
@@ -916,7 +940,7 @@ def _get_litpop_single_polygon(
     if region_id is not None:  # set region_id
         gdf["region_id"] = region_id
     else:
-        gdf["region_id"] = u_coord.get_country_code(gdf.latitude, gdf.longitude, gridded=True)
+        gdf["region_id"] = u_coord.get_country_code(gdf.geometry.y, gdf.geometry.x, gridded=True)
     # remove entries outside polygon with `dropna` and return GeoDataFrame:
     return gdf.dropna(), meta_out
 
@@ -1301,7 +1325,14 @@ def _grp_read(country_iso3, admin1_info=None, data_dir=SYSTEM_DIR):
 
 
 def _calc_admin1_one_country(
-    country, res_arcsec, exponents, fin_mode, total_value, reference_year, gpw_version, data_dir
+    country,
+    res_arcsec,
+    exponents,
+    fin_mode,
+    total_value,
+    reference_year,
+    gpw_version,
+    data_dir,
 ):
     """
     Calculates the LitPop on admin1 level for provinces/states where such information are
@@ -1348,7 +1379,8 @@ def _calc_admin1_one_country(
     grp_values = _grp_read(iso3a, admin1_info=admin1_info, data_dir=data_dir)
     if grp_values is None:
         LOGGER.error(
-            "No subnational GRP data found for calc_admin1" " for country %s. Skipping.", country
+            "No subnational GRP data found for calc_admin1" " for country %s. Skipping.",
+            country,
         )
         return None
     # normalize GRP values:
