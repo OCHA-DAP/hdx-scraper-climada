@@ -62,22 +62,25 @@ The flood indicator cannot be processed in GitHub Actions because it exceeds mem
 
 The earthquake indicator, similarly, cannot be processed in GitHub Actions since the addition of new countries.
 
-## Installation 
-Create a virtual environment (assuming Windows for the `activate` command):
+## Installation (for Windows)
+
+Ensure that an appropriate version of Python (3.11) is installed from python.org which allows the py.exe launcher to be used.
+
+Create a virtual environment specifying Python 3.11 (assuming Windows for the `activate` command):
 
 ```shell
-python -m venv venv
+py -3.11 -m venv venv
 source venv/Scripts/activate
 ```
 
 The Climada Python Library requires the GDAL library whose installation can be challenging. On the
-Windows machine used for development the GDAL library is installed from a precompiled binary found
-here: https://www.lfd.uci.edu/~gohlke/pythonlibs/
+Windows machine used for development the GDAL library is downloaded from a precompiled binary found
+here: https://github.com/cgohlke/geospatial-wheels/releases/tag/v2025.7.4
 
 It is then installed with `pip`:
 
 ```shell
-pip install GDAL-3.4.3-cp310-cp310-win_amd64.whl
+pip install gdal-3.11.1-cp311-cp311-win_amd64.whl
 ```
 
 This repository can then be cloned and installed with

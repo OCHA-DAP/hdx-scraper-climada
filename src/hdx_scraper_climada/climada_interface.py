@@ -129,7 +129,11 @@ def calculate_indicator_for_admin1(
     if indicator == "earthquake":
         admin1_indicator_gdf["value"] = admin1_indicator_gdf["value"].round(2)
     else:
-        admin1_indicator_gdf["value"] = admin1_indicator_gdf["value"].round(0)
+        try:
+            admin1_indicator_gdf["value"] = admin1_indicator_gdf["value"].round(0)
+        except TypeError:
+            LOGGER.warning(f"admin1_indicator_gdf has length {len(admin1_indicator_gdf['value'])}")
+            admin1_indicator_gdf["value"] = 0.0
 
     return admin1_indicator_gdf
 
