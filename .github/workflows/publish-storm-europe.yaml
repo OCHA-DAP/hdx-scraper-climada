@@ -51,26 +51,26 @@ jobs:
         if: env.CLIMADA_NEW_DATA == 'No'
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: ${{secrets.EMAIL_SERVER}}
-          server_port: ${{vars.EMAIL_PORT}}
-          username: ${{vars.EMAIL_USERNAME}}
-          password: ${{secrets.EMAIL_PASSWORD}}
+          server_address: ${{secrets.HDX_PIPELINE_EMAIL_SERVER}}
+          server_port: ${{secrets.HDX_PIPELINE_EMAIL_PORT}}
+          username: ${{secrets.HDX_PIPELINE_EMAIL_USERNAME}}
+          password: ${{secrets.HDX_PIPELINE_EMAIL_PASSWORD}}
           subject: "No new data: ${{github.workflow}} run job"
           html_body: ${{github.workflow}} produced no new data! <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">Run log</a>
-          to: ${{secrets.EMAIL_LIST}}
-          from: ${{vars.EMAIL_FROM}}
+          to: ${{vars.HDX_PIPELINE_EMAIL_LIST}}
+          from: ${{secrets.HDX_PIPELINE_EMAIL_FROM}}
       - name: Send mail - new data
         if: env.CLIMADA_NEW_DATA == 'Yes'
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: ${{secrets.EMAIL_SERVER}}
-          server_port: ${{vars.EMAIL_PORT}}
-          username: ${{vars.EMAIL_USERNAME}}
-          password: ${{secrets.EMAIL_PASSWORD}}
+          server_address: ${{secrets.HDX_PIPELINE_EMAIL_SERVER}}
+          server_port: ${{secrets.HDX_PIPELINE_EMAIL_PORT}}
+          username: ${{secrets.HDX_PIPELINE_EMAIL_USERNAME}}
+          password: ${{secrets.HDX_PIPELINE_EMAIL_PASSWORD}}
           subject: "New data! :-) : ${{github.workflow}} run job"
           html_body: ${{github.workflow}} produced new data! <a href="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}">Run log</a>
-          to: ${{secrets.EMAIL_LIST}}
-          from: ${{vars.EMAIL_FROM}}
+          to: ${{vars.HDX_PIPELINE_EMAIL_LIST}}
+          from: ${{secrets.HDX_PIPELINE_EMAIL_FROM}}
   workflow-keepalive:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest

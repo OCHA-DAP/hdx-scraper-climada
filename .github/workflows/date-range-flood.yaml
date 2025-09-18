@@ -49,14 +49,14 @@ jobs:
       - name: Send mail - reminder
         uses: dawidd6/action-send-mail@v3
         with:
-          server_address: ${{secrets.EMAIL_SERVER}}
-          server_port: ${{vars.EMAIL_PORT}}
-          username: ${{vars.EMAIL_USERNAME}}
-          password: ${{secrets.EMAIL_PASSWORD}}
+          server_address: ${{secrets.HDX_PIPELINE_EMAIL_SERVER}}
+          server_port: ${{secrets.HDX_PIPELINE_EMAIL_PORT}}
+          username: ${{secrets.HDX_PIPELINE_EMAIL_USERNAME}}
+          password: ${{secrets.HDX_PIPELINE_EMAIL_PASSWORD}}
           subject: "CLIMADA - check dates for flood indicator"
           body: CLIMADA - check dates for flood indicator
-          to: ${{secrets.EMAIL_LIST}}
-          from: ${{vars.EMAIL_FROM}}
+          to: ${{vars.HDX_PIPELINE_EMAIL_LIST}}
+          from: ${{secrets.HDX_PIPELINE_EMAIL_FROM}}
   workflow-keepalive:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
