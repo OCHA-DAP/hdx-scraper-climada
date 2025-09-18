@@ -46,3 +46,7 @@ src/hdx_scraper_climada/profile.html
 src/hdx_scraper_climada/profile.json
 
 .coverage.*
+
+.idea/
+
+.DS_Store
