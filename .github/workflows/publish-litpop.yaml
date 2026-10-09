@@ -2,8 +2,8 @@ name: CLIMADA Publication - litpop
 
 on:
   workflow_dispatch:
-  schedule: # 
-  - cron: "0 7 2 * *" # schedule for test
+#  schedule: # 
+#  - cron: "0 7 2 * *" # schedule for test
 jobs:
   build:
     environment: 

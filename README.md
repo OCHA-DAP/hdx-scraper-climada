@@ -1,3 +1,4 @@
+# DEPRECATED - Pipeline discontinued
 # HDX-SCRAPER-CLIMADA
 
 ## Introduction

@@ -2,8 +2,8 @@ name: CLIMADA Publication - earthquake
 
 on:
   workflow_dispatch:
-  schedule: # 
-  - cron: "0 7 4 * *" # schedule for test
+#  schedule: # 
+#  - cron: "0 7 4 * *" # schedule for test
 jobs:
   build:
     environment: 

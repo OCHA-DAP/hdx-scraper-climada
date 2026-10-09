@@ -2,8 +2,8 @@ name: CLIMADA Publication - tropical-cyclone
 
 on:
   workflow_dispatch:
-  schedule: # 
-  - cron: "0 7 6 * *" # schedule for test
+#  schedule: # 
+#  - cron: "0 7 6 * *" # schedule for test
 jobs:
   build:
     environment: 

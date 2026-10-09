@@ -2,8 +2,8 @@ name: CLIMADA API data date range - flood
 
 on:
   workflow_dispatch:
-  schedule: # 
-  - cron: "0 7 8 * *" # schedule for test
+#  schedule: # 
+#  - cron: "0 7 8 * *" # schedule for test
 jobs:
   build:
     environment: 
